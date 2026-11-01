@@ -11,6 +11,7 @@
 #include "Missions/MissionStartMarker.h"
 #include "World/CityGreyboxGenerator.h"
 #include "World/MishpachaRouteGuide.h"
+#include "World/MishpachaDayNight.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "Engine/Texture2D.h"
@@ -1111,6 +1112,13 @@ void AMishpachaHUD::DrawMinimap()
 	DrawMapContents(View, false);
 
 	DrawLabel(LOCTEXT("North", "N"), X + Size * 0.5f, Y + S(3.f), Font(10.f, true), FLinearColor(1.f, 1.f, 1.f, 0.85f), 0.5f);
+	if (const AMishpachaDayNight* DayNight = AMishpachaDayNight::Find(this))
+	{
+		const float Hour = DayNight->GetTimeOfDay();
+		const int32 Minutes = FMath::FloorToInt(Hour * 60.f);
+		const FText Clock = FText::FromString(FString::Printf(TEXT("%02d:%02d"), (Minutes / 60) % 24, Minutes % 60));
+		DrawLabel(Clock, X + S(8.f), Y + S(3.f), Font(10.f, true), FLinearColor(1.f, 1.f, 1.f, 0.85f));
+	}
 	DrawLabel(LOCTEXT("MapKeyHint", "TAB  MAP"), X + Size - S(8.f), Y + Size - S(20.f), Font(8.5f, true), FLinearColor(1.f, 1.f, 1.f, 0.55f), 1.f);
 
 	if (!HUDWidget && bDrawDebugOverlay)

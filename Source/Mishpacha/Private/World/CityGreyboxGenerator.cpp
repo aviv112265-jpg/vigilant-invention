@@ -74,6 +74,8 @@ ACityGreyboxGenerator::ACityGreyboxGenerator()
 	TreeCanopiesISM = MakeISM(this, Root, TEXT("TreeCanopies"));
 	PalmTrunksISM = MakeISM(this, Root, TEXT("PalmTrunks"));
 	PalmFrondsISM = MakeISM(this, Root, TEXT("PalmFronds"));
+	LampPostsISM = MakeISM(this, Root, TEXT("LampPosts"));
+	LampHeadsISM = MakeISM(this, Root, TEXT("LampHeads"));
 
 	CivilianClass = AMishpachaCivilian::StaticClass();
 	ParkedCarClass = AMishpachaVehicle::StaticClass();
@@ -424,6 +426,10 @@ void ACityGreyboxGenerator::BuildGeometry()
 	SetupISM(TreeCanopiesISM, Sphere ? Sphere : Cube, BaseMaterial, FLinearColor(0.07f, 0.19f, 0.05f), false);
 	SetupISM(PalmTrunksISM, Cylinder ? Cylinder : Cube, BaseMaterial, FLinearColor(0.33f, 0.26f, 0.17f), true);
 	SetupISM(PalmFrondsISM, Sphere ? Sphere : Cube, BaseMaterial, FLinearColor(0.09f, 0.24f, 0.07f), false);
+	SetupISM(LampPostsISM, Cylinder ? Cylinder : Cube, BaseMaterial, FLinearColor(0.12f, 0.12f, 0.13f), true);
+	SetupISM(LampHeadsISM, Cube, Surface(TEXT("M_LampGlow")), FLinearColor::White, false);
+	LampPostsISM->SetCastShadow(false);
+	LampHeadsISM->SetCastShadow(false);
 	for (UInstancedStaticMeshComponent* DetailISM : { BalconiesISM.Get(), ACUnitsISM.Get(), TreeCanopiesISM.Get(), PalmFrondsISM.Get() })
 	{
 		// Small things: skip them in the shadow pass and cull them early in the distance.
@@ -666,6 +672,66 @@ void ACityGreyboxGenerator::BuildGeometry()
 		}
 	}
 	LaneMarksISM->AddInstances(Marks, false);
+
+	// --- Street lamps: both curbs of every road, a quarter block apart, clear of the intersections.
+	// M_Asphalt / M_Sidewalk paint their light pools from the same numbers (set on their MIDs below).
+	{
+		const float LampSpacing = Step * 0.25f;
+		const float LampPhase = Step * 0.125f;
+		const float PostOffset = RoadWidth * 0.5f + 60.f;   // on the sidewalk, just past the curb
+		const float LightOffset = PostOffset - 100.f;       // the head leans over the road
+		const FVector2D GridOrigin(MinX + RoadWidth * 0.5f, MinY + RoadWidth * 0.5f); // first intersection (local)
+
+		if (bStreetDetails)
+		{
+			TArray<FTransform> Posts, Heads;
+			auto AddLamp = [&](const FVector& Base, const FVector& TowardRoad)
+			{
+				Posts.Add(FTransform(FRotator::ZeroRotator, Base + FVector(0.f, 0.f, SidewalkHeight + 300.f), FVector(0.12f, 0.12f, 6.f)));
+				const FVector Head = Base + TowardRoad * 100.f + FVector(0.f, 0.f, SidewalkHeight + 590.f);
+				Heads.Add(FTransform(TowardRoad.Rotation(), Head, FVector(0.7f, 0.32f, 0.14f)));
+			};
+			for (int32 Line = 0; Line <= FMath::Max(BlocksX, BlocksY); ++Line)
+			{
+				for (int32 Segment = 0; Segment < FMath::Max(BlocksX, BlocksY); ++Segment)
+				{
+					for (int32 K = 0; K < 4; ++K)
+					{
+						const float Along = LampPhase + K * LampSpacing; // from the segment's intersection
+						if (Line <= BlocksX && Segment < BlocksY)
+						{
+							const float X = GridOrigin.X + Line * Step;
+							const float Y = GridOrigin.Y + Segment * Step + Along;
+							AddLamp(FVector(X + PostOffset, Y, 0.f), FVector(-1.f, 0.f, 0.f));
+							AddLamp(FVector(X - PostOffset, Y, 0.f), FVector(1.f, 0.f, 0.f));
+						}
+						if (Line <= BlocksY && Segment < BlocksX)
+						{
+							const float X = GridOrigin.X + Segment * Step + Along;
+							const float Y = GridOrigin.Y + Line * Step;
+							AddLamp(FVector(X, Y + PostOffset, 0.f), FVector(0.f, -1.f, 0.f));
+							AddLamp(FVector(X, Y - PostOffset, 0.f), FVector(0.f, 1.f, 0.f));
+						}
+					}
+				}
+			}
+			LampPostsISM->AddInstances(Posts, false);
+			LampHeadsISM->AddInstances(Heads, false);
+		}
+
+		const FVector WorldGridOrigin = ToWorld(FVector(GridOrigin.X, GridOrigin.Y, 0.f));
+		for (UInstancedStaticMeshComponent* GroundISM : { RoadsISM.Get(), SidewalksISM.Get() })
+		{
+			if (UMaterialInstanceDynamic* MID = Cast<UMaterialInstanceDynamic>(GroundISM->GetMaterial(0)))
+			{
+				MID->SetVectorParameterValue(FName(TEXT("GridOrigin")), FLinearColor(WorldGridOrigin.X, WorldGridOrigin.Y, 0.f, 0.f));
+				MID->SetScalarParameterValue(FName(TEXT("GridStep")), Step);
+				MID->SetScalarParameterValue(FName(TEXT("LampOffset")), bStreetDetails ? LightOffset : 1.0e6f);
+				MID->SetScalarParameterValue(FName(TEXT("LampSpacing")), LampSpacing);
+				MID->SetScalarParameterValue(FName(TEXT("LampPhase")), LampPhase);
+			}
+		}
+	}
 
 	// --- Beach and sea on the west (negative X), like the real coast ---
 	TArray<FTransform> Sand, Sea;

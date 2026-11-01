@@ -11,6 +11,7 @@
 #include "Family/SiblingSpawnPoint.h"
 #include "Heat/PoliceDispatchConfig.h"
 #include "World/CityGreyboxGenerator.h"
+#include "World/MishpachaDayNight.h"
 #include "Mishpacha.h"
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
@@ -74,7 +75,18 @@ void AMishpachaGameModeBase::EnsureAutoContent()
 	bAutoContentChecked = true;
 
 	UWorld* World = GetWorld();
-	if (!World || !bAutoGreybox)
+	if (!World)
+	{
+		return;
+	}
+
+	if (bAutoDayNight && !TActorIterator<AMishpachaDayNight>(World))
+	{
+		FActorSpawnParameters DayNightParams;
+		DayNightParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		World->SpawnActor<AMishpachaDayNight>(AMishpachaDayNight::StaticClass(), FTransform::Identity, DayNightParams);
+	}
+	if (!bAutoGreybox)
 	{
 		return;
 	}

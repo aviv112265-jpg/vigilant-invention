@@ -29,11 +29,29 @@ def noise(p, var):
 """
 
 
+# Street-lamp light pools, matching the lamps ACityGreyboxGenerator places: on both curbs of every
+# road, LampSpacing apart, LampPhase after each intersection. Writes float "pool" (0..1).
+LAMP_POOLS = """
+float2 rel = WP.xy - GridOrigin.xy;
+float dxa = rel.x - round(rel.x / GridStep) * GridStep;
+float la_x = abs(abs(dxa) - LampOffset);
+float la_y = abs(frac((rel.y - LampPhase) / LampSpacing + 0.5) - 0.5) * LampSpacing;
+float dyb = rel.y - round(rel.y / GridStep) * GridStep;
+float lb_y = abs(abs(dyb) - LampOffset);
+float lb_x = abs(frac((rel.x - LampPhase) / LampSpacing + 0.5) - 0.5) * LampSpacing;
+float pool = max(exp(-(la_x * la_x + la_y * la_y) / 90000.0), exp(-(lb_x * lb_x + lb_y * lb_y) / 90000.0));
+"""
+LAMP_INPUTS = ["Night", "GridOrigin", "GridStep", "LampOffset", "LampSpacing", "LampPhase"]
+LAMP_COLOR = "float3(1.0, 0.72, 0.42)"
+# Defaults match the generator's defaults (it overrides them per city anyway); never 0 (divisions).
+LAMP_DEFAULTS = {"GridStep": 7600.0, "LampOffset": 760.0, "LampSpacing": 1900.0, "LampPhase": 950.0}
+
 FACADE = """
 float3 wp = WP;
 float3 n = normalize(N);
 Roughness = 0.85;
 Metallic = 0.0;
+Emissive = float3(0, 0, 0);
 float3 tint = Color.rgb;
 float z = wp.z - GroundZ;
 
@@ -57,6 +75,8 @@ if (Tower > 0.5)
     bool mullion = uv.x < 0.045 || uv.y < 0.06;
     Roughness = mullion ? 0.45 : 0.06;
     Metallic = mullion ? 0.85 : 0.25;
+    // Offices left on at night.
+    Emissive = (!mullion && r > 0.55) ? float3(0.85, 0.85, 0.75) * Night * (0.8 + r) : float3(0, 0, 0);
     return mullion ? float3(0.52, 0.55, 0.58) : tint * float3(0.32, 0.42, 0.52) * (0.75 + 0.45 * r);
 }
 
@@ -92,6 +112,11 @@ if (fz > 0.0)
             col = float3(0.035, 0.05, 0.065) + 0.04 * r;
             Roughness = 0.08;
             Metallic = 0.15;
+            // About half the flats have the lights on at night (warm, a bit different each).
+            if (r < 0.5)
+            {
+                Emissive = float3(1.0, 0.75, 0.45) * Night * (1.2 + 2.4 * r);
+            }
         }
     }
     else if (fv > 0.24 && fv < 0.30 && fu > 0.18 && fu < 0.82)
@@ -105,19 +130,24 @@ return col;
 
 ASPHALT = """
 float2 p = WP.xy;
-""" + noise("p / 35.0", "fine") + noise("p / 700.0", "patch") + """
+""" + noise("p / 35.0", "fine") + noise("p / 700.0", "patch") + LAMP_POOLS + """
 Roughness = 0.78 + 0.12 * fine;
 Metallic = 0.0;
-return float3(0.028, 0.029, 0.032) * (0.75 + 0.45 * fine) * (0.8 + 0.4 * patch);
+float3 col = float3(0.028, 0.029, 0.032) * (0.75 + 0.45 * fine) * (0.8 + 0.4 * patch);
+Emissive = col * """ + LAMP_COLOR + """ * pool * Night * 7.0;
+return col;
 """
 
 SIDEWALK = """
 float3 n = normalize(N);
 Roughness = 0.75;
 Metallic = 0.0;
+""" + LAMP_POOLS + """
+Emissive = float3(0, 0, 0);
 if (n.z < 0.5)
 {
     // Curb face (Israeli curbs are often painted, keep it a plain light concrete here).
+    Emissive = float3(0.38, 0.37, 0.35) * """ + LAMP_COLOR + """ * pool * Night * 6.0;
     return float3(0.38, 0.37, 0.35);
 }
 float2 t = WP.xy / 60.0;
@@ -127,7 +157,16 @@ float r = """ + HASH.format(p="cell") + """;
 bool grout = uv.x < 0.035 || uv.y < 0.035;
 """ + noise("WP.xy / 300.0", "dirt") + """
 float3 tile = float3(0.30, 0.29, 0.27) * (0.88 + 0.2 * r) * (0.88 + 0.16 * dirt);
-return grout ? tile * 0.55 : tile;
+tile = grout ? tile * 0.55 : tile;
+Emissive = tile * """ + LAMP_COLOR + """ * pool * Night * 6.0;
+return tile;
+"""
+
+LAMP_GLOW = """
+Roughness = 0.4;
+Metallic = 0.0;
+Emissive = """ + LAMP_COLOR + """ * lerp(0.02, 12.0, Night);
+return float3(0.9, 0.85, 0.7);
 """
 
 SAND = """
@@ -148,7 +187,28 @@ return float3(0.015, 0.10, 0.17) * (0.8 + 0.35 * swell) + float3(0.0, 0.02, 0.02
 """
 
 
-def make_material(name, code, inputs, color=None, scalars=None):
+VECTOR_PARAMS = ("Color", "GridOrigin")
+
+
+def make_collection():
+    """MPC_Mishpacha: scalar "Night" (0 day .. 1 night), driven by AMishpachaDayNight."""
+    path = f"{FOLDER}/MPC_Mishpacha"
+    if eal.does_asset_exist(path):
+        return eal.load_asset(path)
+    collection = asset_tools.create_asset("MPC_Mishpacha", FOLDER, unreal.MaterialParameterCollection,
+                                          unreal.MaterialParameterCollectionFactoryNew())
+    night = unreal.CollectionScalarParameter()
+    night.set_editor_property("parameter_name", "Night")
+    night.set_editor_property("default_value", 0.0)
+    collection.set_editor_property("scalar_parameters", [night])
+    eal.save_asset(path, only_if_is_dirty=False)
+    return collection
+
+
+COLLECTION = make_collection()
+
+
+def make_material(name, code, inputs, color=None, scalars=None, emissive=False):
     path = f"{FOLDER}/{name}"
     if eal.does_asset_exist(path):
         eal.delete_asset(path)
@@ -167,10 +227,13 @@ def make_material(name, code, inputs, color=None, scalars=None):
         custom_inputs.append(custom_input)
     custom.set_editor_property("inputs", custom_inputs)
     outputs = []
-    for output_name in ("Roughness", "Metallic"):
+    extra = [("Roughness", unreal.CustomMaterialOutputType.CMOT_FLOAT1), ("Metallic", unreal.CustomMaterialOutputType.CMOT_FLOAT1)]
+    if emissive:
+        extra.append(("Emissive", unreal.CustomMaterialOutputType.CMOT_FLOAT3))
+    for output_name, output_type in extra:
         output = unreal.CustomOutput()
         output.set_editor_property("output_name", output_name)
-        output.set_editor_property("output_type", unreal.CustomMaterialOutputType.CMOT_FLOAT1)
+        output.set_editor_property("output_type", output_type)
         outputs.append(output)
     custom.set_editor_property("additional_outputs", outputs)
 
@@ -182,10 +245,14 @@ def make_material(name, code, inputs, color=None, scalars=None):
             node = mel.create_material_expression(material, unreal.MaterialExpressionVertexNormalWS, -800, y)
         elif input_name == "Time":
             node = mel.create_material_expression(material, unreal.MaterialExpressionTime, -800, y)
-        elif input_name == "Color":
+        elif input_name == "Night":
+            node = mel.create_material_expression(material, unreal.MaterialExpressionCollectionParameter, -800, y)
+            node.set_editor_property("collection", COLLECTION)
+            node.set_editor_property("parameter_name", "Night")
+        elif input_name in VECTOR_PARAMS:
             node = mel.create_material_expression(material, unreal.MaterialExpressionVectorParameter, -800, y)
-            node.set_editor_property("parameter_name", "Color")
-            node.set_editor_property("default_value", color or unreal.LinearColor(1, 1, 1, 1))
+            node.set_editor_property("parameter_name", input_name)
+            node.set_editor_property("default_value", (color if input_name == "Color" else None) or unreal.LinearColor(1, 1, 1, 1))
         else:
             node = mel.create_material_expression(material, unreal.MaterialExpressionScalarParameter, -800, y)
             node.set_editor_property("parameter_name", input_name)
@@ -196,14 +263,17 @@ def make_material(name, code, inputs, color=None, scalars=None):
     mel.connect_material_property(custom, "", unreal.MaterialProperty.MP_BASE_COLOR)
     mel.connect_material_property(custom, "Roughness", unreal.MaterialProperty.MP_ROUGHNESS)
     mel.connect_material_property(custom, "Metallic", unreal.MaterialProperty.MP_METALLIC)
+    if emissive:
+        mel.connect_material_property(custom, "Emissive", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     mel.recompile_material(material)
     eal.save_asset(path, only_if_is_dirty=False)
     unreal.log(f"[Mishpacha] created {path}")
 
 
-make_material("M_Facade", FACADE, ["WP", "N", "Color", "GroundZ", "Tower"], unreal.LinearColor(0.85, 0.85, 0.82, 1))
-make_material("M_Asphalt", ASPHALT, ["WP"])
-make_material("M_Sidewalk", SIDEWALK, ["WP", "N"])
+make_material("M_Facade", FACADE, ["WP", "N", "Color", "GroundZ", "Tower", "Night"], unreal.LinearColor(0.85, 0.85, 0.82, 1), emissive=True)
+make_material("M_Asphalt", ASPHALT, ["WP"] + LAMP_INPUTS, scalars=LAMP_DEFAULTS, emissive=True)
+make_material("M_Sidewalk", SIDEWALK, ["WP", "N"] + LAMP_INPUTS, scalars=LAMP_DEFAULTS, emissive=True)
 make_material("M_Sand", SAND, ["WP"])
 make_material("M_Sea", SEA, ["WP", "Time"])
+make_material("M_LampGlow", LAMP_GLOW, ["Night"], emissive=True)
 unreal.log("[Mishpacha] materials done")

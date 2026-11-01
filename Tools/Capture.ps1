@@ -3,7 +3,8 @@
 param(
     [string]$Engine = "D:\Epic Games\UE_5.8",
     [string]$Map = "/Engine/Maps/Templates/Template_Default",
-    [int]$Seconds = 80
+    [int]$Seconds = 80,
+    [string]$Extra = ""   # e.g. "-MishpachaHour=22" for a night capture
 )
 
 $Project = Join-Path $PSScriptRoot "..\Mishpacha.uproject" | Resolve-Path
@@ -12,7 +13,7 @@ $Shots = Join-Path $Saved "Screenshots\WindowsEditor"
 Get-ChildItem $Shots -Filter "Capture_*.png" -ErrorAction SilentlyContinue | Remove-Item
 
 $exe = Join-Path $Engine "Engine\Binaries\Win64\UnrealEditor.exe"
-$game = Start-Process -FilePath $exe -PassThru -ArgumentList "`"$Project`" $Map -game -windowed -resx=1600 -resy=900 -nosound -nosplash -MishpachaCapture -log=Capture.log"
+$game = Start-Process -FilePath $exe -PassThru -ArgumentList "`"$Project`" $Map -game -windowed -resx=1600 -resy=900 -nosound -nosplash -MishpachaCapture -log=Capture.log $Extra"
 Start-Sleep $Seconds
 if (-not $game.HasExited) { Stop-Process -Id $game.Id -Force }
 

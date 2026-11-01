@@ -163,7 +163,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
 	TObjectPtr<UInstancedStaticMeshComponent> PalmFrondsISM;
 
-	/** Balconies, AC units, street trees and beach palms. */
+	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
+	TObjectPtr<UInstancedStaticMeshComponent> LampPostsISM;
+
+	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
+	TObjectPtr<UInstancedStaticMeshComponent> LampHeadsISM;
+
+	/** Balconies, AC units, street trees, beach palms and street lamps. */
 	UPROPERTY(EditAnywhere, Category = "Greybox|Details")
 	bool bStreetDetails = true;
 

@@ -49,6 +49,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Auto Setup")
 	bool bAutoGreybox = true;
 
+	/** Spawn a day/night cycle (moves the level's sun, lights windows and street lamps) if the level has none. */
+	UPROPERTY(EditDefaultsOnly, Category = "Auto Setup")
+	bool bAutoDayNight = true;
+
 	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Respawn", meta = (ClampMin = "0.1"))

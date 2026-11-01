@@ -144,6 +144,29 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Greybox")
 	TObjectPtr<UInstancedStaticMeshComponent> BeaconsISM;
 
+	// ----- Street details -----
+	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
+	TObjectPtr<UInstancedStaticMeshComponent> BalconiesISM;
+
+	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
+	TObjectPtr<UInstancedStaticMeshComponent> ACUnitsISM;
+
+	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
+	TObjectPtr<UInstancedStaticMeshComponent> TreeTrunksISM;
+
+	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
+	TObjectPtr<UInstancedStaticMeshComponent> TreeCanopiesISM;
+
+	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
+	TObjectPtr<UInstancedStaticMeshComponent> PalmTrunksISM;
+
+	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
+	TObjectPtr<UInstancedStaticMeshComponent> PalmFrondsISM;
+
+	/** Balconies, AC units, street trees and beach palms. */
+	UPROPERTY(EditAnywhere, Category = "Greybox|Details")
+	bool bStreetDetails = true;
+
 	UFUNCTION()
 	void OnRep_Seed();
 

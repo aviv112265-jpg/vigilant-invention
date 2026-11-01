@@ -107,6 +107,7 @@ private:
 	FTimerHandle BindTimer;
 
 	void RefreshBindings();
+	void StartAutomatedCapture();
 
 	// ----- Toasts / banners -----
 	FText LastNotification;

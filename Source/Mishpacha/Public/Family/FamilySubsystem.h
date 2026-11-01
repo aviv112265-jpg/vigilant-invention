@@ -151,6 +151,7 @@ private:
 	void MaintainInactiveSiblings();
 	void ParkPawn(AMishpachaCharacter* PawnToPark, bool bPark) const;
 	bool HasGroundBelow(const FVector& Location, const AActor* IgnoreActor) const;
+	bool IsBuried(const FVector& Location) const;
 	void BlockInput(APlayerController* PC, bool bBlock);
 	static void DestroySiblingPawn(AMishpachaCharacter* PawnToDestroy);
 };

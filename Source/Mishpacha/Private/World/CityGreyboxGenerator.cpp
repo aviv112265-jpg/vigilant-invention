@@ -68,6 +68,12 @@ ACityGreyboxGenerator::ACityGreyboxGenerator()
 	SandISM = MakeISM(this, Root, TEXT("Sand"));
 	SeaISM = MakeISM(this, Root, TEXT("Sea"));
 	BeaconsISM = MakeISM(this, Root, TEXT("Beacons"));
+	BalconiesISM = MakeISM(this, Root, TEXT("Balconies"));
+	ACUnitsISM = MakeISM(this, Root, TEXT("ACUnits"));
+	TreeTrunksISM = MakeISM(this, Root, TEXT("TreeTrunks"));
+	TreeCanopiesISM = MakeISM(this, Root, TEXT("TreeCanopies"));
+	PalmTrunksISM = MakeISM(this, Root, TEXT("PalmTrunks"));
+	PalmFrondsISM = MakeISM(this, Root, TEXT("PalmFronds"));
 
 	CivilianClass = AMishpachaCivilian::StaticClass();
 	ParkedCarClass = AMishpachaVehicle::StaticClass();
@@ -411,6 +417,20 @@ void ACityGreyboxGenerator::BuildGeometry()
 	}
 	SetupISM(BeaconsISM, Cylinder ? Cylinder : Cube, BaseMaterial, FLinearColor(1.f, 0.8f, 0.1f), false);
 
+	UStaticMesh* Sphere = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere"), nullptr, LOAD_Quiet | LOAD_NoWarn);
+	SetupISM(BalconiesISM, Cube, BaseMaterial, FLinearColor(0.86f, 0.86f, 0.83f), false);
+	SetupISM(ACUnitsISM, Cube, BaseMaterial, FLinearColor(0.62f, 0.63f, 0.62f), false);
+	SetupISM(TreeTrunksISM, Cylinder ? Cylinder : Cube, BaseMaterial, FLinearColor(0.16f, 0.11f, 0.07f), true);
+	SetupISM(TreeCanopiesISM, Sphere ? Sphere : Cube, BaseMaterial, FLinearColor(0.07f, 0.19f, 0.05f), false);
+	SetupISM(PalmTrunksISM, Cylinder ? Cylinder : Cube, BaseMaterial, FLinearColor(0.33f, 0.26f, 0.17f), true);
+	SetupISM(PalmFrondsISM, Sphere ? Sphere : Cube, BaseMaterial, FLinearColor(0.09f, 0.24f, 0.07f), false);
+	for (UInstancedStaticMeshComponent* DetailISM : { BalconiesISM.Get(), ACUnitsISM.Get(), TreeCanopiesISM.Get(), PalmFrondsISM.Get() })
+	{
+		// Small things: skip them in the shadow pass and cull them early in the distance.
+		DetailISM->SetCastShadow(DetailISM == TreeCanopiesISM || DetailISM == PalmFrondsISM);
+		DetailISM->SetCullDistances(0, 12000);
+	}
+
 	FRandomStream Stream(Seed);
 
 	const float ExtentX = BlocksX * BlockSize + (BlocksX + 1) * RoadWidth;
@@ -447,7 +467,61 @@ void ACityGreyboxGenerator::BuildGeometry()
 
 	// --- Blocks: sidewalk slab + 2x2 lots of buildings ---
 	TArray<FTransform> Sidewalks, White, Cream, Towers, Roof;
+	TArray<FTransform> Balconies, ACUnits, TreeTrunks, TreeCanopies;
 	SidewalkPoints.Reset();
+
+	// Details use their own stream so adding them never changes the city's layout.
+	FRandomStream DetailStream(Seed + 101);
+	const FVector WorldOffset = GetActorLocation(); // the facade shader's window grid is in world space
+
+	// Balconies and AC units on one Bauhaus building, aligned with M_Facade's window grid
+	// (a window every 300 cm along the wall, a floor every 320 cm above a 115 cm base).
+	auto AddFacadeDetails = [&](const FVector& LotCenter, float SizeX, float SizeY, int32 Floors)
+	{
+		const float BaseZ = SidewalkHeight + 115.f;
+		for (int32 Side = 0; Side < 4; ++Side)
+		{
+			const bool bWallAlongY = Side < 2; // the wall faces +-X and runs along Y
+			const float Sign = (Side % 2 == 0) ? 1.f : -1.f;
+			const float WallLength = bWallAlongY ? SizeY : SizeX;
+			const FVector Normal = bWallAlongY ? FVector(Sign, 0.f, 0.f) : FVector(0.f, Sign, 0.f);
+			const FVector WallCenter = LotCenter + Normal * ((bWallAlongY ? SizeX : SizeY) * 0.5f);
+			auto Size = [bWallAlongY](float Depth, float Along, float Tall) { return bWallAlongY ? FVector(Depth, Along, Tall) : FVector(Along, Depth, Tall); };
+
+			// Ribbon balconies: a slab under each window row and a solid parapet, floors 1 and up.
+			const bool bBalconies = Floors >= 2 && DetailStream.FRand() < 0.35f;
+			if (bBalconies)
+			{
+				const float Length = WallLength * DetailStream.FRandRange(0.5f, 0.85f);
+				for (int32 Floor = 1; Floor < Floors; ++Floor)
+				{
+					const float Z = BaseZ + Floor * 320.f + 70.f;
+					Balconies.Add(Box(WallCenter + Normal * 65.f + FVector(0.f, 0.f, Z - 7.5f), Size(130.f, Length, 15.f)));
+					Balconies.Add(Box(WallCenter + Normal * 124.f + FVector(0.f, 0.f, Z + 47.5f), Size(12.f, Length, 95.f)));
+				}
+			}
+
+			// AC units under a few windows (the window centers sit at 300k + 150 in world space).
+			const float WorldAlong = bWallAlongY ? WorldOffset.Y : WorldOffset.X;
+			const float WallStart = (bWallAlongY ? LotCenter.Y : LotCenter.X) - WallLength * 0.5f + WorldAlong;
+			const float FirstWindow = FMath::CeilToFloat((WallStart + 100.f - 150.f) / 300.f) * 300.f + 150.f;
+			for (float H = FirstWindow; H < WallStart + WallLength - 100.f; H += 300.f)
+			{
+				const int32 ACFloors = bBalconies ? 1 : Floors; // balconies hide the upper floors' wall
+				for (int32 Floor = 0; Floor < ACFloors; ++Floor)
+				{
+					if (DetailStream.FRand() > 0.12f)
+					{
+						continue;
+					}
+					const float LocalAlong = H - WorldAlong;
+					FVector Center = WallCenter + Normal * 20.f + FVector(0.f, 0.f, BaseZ + Floor * 320.f + 45.f);
+					(bWallAlongY ? Center.Y : Center.X) = LocalAlong;
+					ACUnits.Add(Box(Center, Size(40.f, 85.f, 55.f)));
+				}
+			}
+		}
+	};
 
 	for (int32 BX = 0; BX < BlocksX; ++BX)
 	{
@@ -522,10 +596,42 @@ void ACityGreyboxGenerator::BuildGeometry()
 							SidewalkHeight + Height + 60.f);
 						Roof.Add(Box(RoofSpot, FVector(200.f, 120.f, 120.f)));
 					}
+
+					if (bStreetDetails)
+					{
+						AddFacadeDetails(LotCenter, SizeX, SizeY, Floors);
+					}
+				}
+			}
+
+			// Street trees along the block's sidewalk, clear of the corners.
+			if (bStreetDetails)
+			{
+				const float TreeInset = 200.f;
+				for (float T = 800.f; T <= BlockSize - 800.f; T += 1200.f)
+				{
+					const FVector Spots[] = {
+						FVector(X0 + T, Y0 + TreeInset, 0.f), FVector(X0 + T, Y0 + BlockSize - TreeInset, 0.f),
+						FVector(X0 + TreeInset, Y0 + T, 0.f), FVector(X0 + BlockSize - TreeInset, Y0 + T, 0.f) };
+					for (const FVector& Spot : Spots)
+					{
+						if (DetailStream.FRand() < 0.3f)
+						{
+							continue;
+						}
+						const float Scale = DetailStream.FRandRange(0.85f, 1.2f);
+						TreeTrunks.Add(FTransform(FRotator::ZeroRotator, Spot + FVector(0.f, 0.f, SidewalkHeight + 150.f * Scale), FVector(0.22f, 0.22f, 3.f * Scale)));
+						TreeCanopies.Add(FTransform(FRotator(0.f, DetailStream.FRandRange(0.f, 360.f), 0.f), Spot + FVector(0.f, 0.f, SidewalkHeight + 390.f * Scale),
+							FVector(2.4f, 2.1f, 1.9f) * Scale));
+					}
 				}
 			}
 		}
 	}
+	BalconiesISM->AddInstances(Balconies, false);
+	ACUnitsISM->AddInstances(ACUnits, false);
+	TreeTrunksISM->AddInstances(TreeTrunks, false);
+	TreeCanopiesISM->AddInstances(TreeCanopies, false);
 
 	SidewalksISM->AddInstances(Sidewalks, false);
 	BuildingsWhiteISM->AddInstances(White, false);
@@ -567,6 +673,29 @@ void ACityGreyboxGenerator::BuildGeometry()
 	Sea.Add(Box(FVector(MinX - BeachWidth - SeaWidth * 0.5f, 0.f, -150.f), FVector(SeaWidth, ExtentY + 40000.f, 100.f)));
 	SandISM->AddInstances(Sand, false);
 	SeaISM->AddInstances(Sea, false);
+
+	// --- Palms along the beach promenade (sand top at Z = -10) ---
+	if (bStreetDetails)
+	{
+		TArray<FTransform> PalmTrunks, PalmFronds;
+		for (float Y = MinY; Y <= -MinY; Y += 1400.f)
+		{
+			const FVector Base(MinX - 600.f + DetailStream.FRandRange(-150.f, 150.f), Y + DetailStream.FRandRange(-200.f, 200.f), -10.f);
+			const float Height = DetailStream.FRandRange(650.f, 900.f);
+			const float Lean = DetailStream.FRandRange(-6.f, 6.f);
+			const FRotator Tilt(Lean, 0.f, 0.f);
+			PalmTrunks.Add(FTransform(Tilt, Base + Tilt.RotateVector(FVector(0.f, 0.f, Height * 0.5f)), FVector(0.28f, 0.28f, Height / 100.f)));
+			const FVector Crown = Base + Tilt.RotateVector(FVector(0.f, 0.f, Height));
+			const float Spin = DetailStream.FRandRange(0.f, 60.f);
+			for (int32 Frond = 0; Frond < 3; ++Frond)
+			{
+				// Three long, flat ellipsoids crossed into a star.
+				PalmFronds.Add(FTransform(FRotator(DetailStream.FRandRange(-12.f, 12.f), Spin + Frond * 60.f, 0.f), Crown, FVector(4.4f, 1.1f, 0.35f)));
+			}
+		}
+		PalmTrunksISM->AddInstances(PalmTrunks, false);
+		PalmFrondsISM->AddInstances(PalmFronds, false);
+	}
 
 	// --- Destination beacons (tall yellow pillars over mission targets) ---
 	TArray<FTransform> Beacons;

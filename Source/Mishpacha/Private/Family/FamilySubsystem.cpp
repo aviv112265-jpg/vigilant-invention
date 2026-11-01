@@ -53,9 +53,15 @@ void UFamilySubsystem::InitializeFamily(const TArray<TObjectPtr<USiblingDefiniti
 			if (const FSiblingSaveData* Saved = Save->Siblings.Find(Definition->SiblingId))
 			{
 				State.Money = Saved->Money;
-				if (Saved->bHasTransform)
+				// A saved spot under the road or inside a building (fell through, level changed) -> back home.
+				if (Saved->bHasTransform && !IsBuried(Saved->Transform.GetLocation()))
 				{
 					State.StoredTransform = Saved->Transform;
+				}
+				else if (Saved->bHasTransform)
+				{
+					UE_LOG(LogMishpacha, Warning, TEXT("FamilySubsystem: %s's saved position %s is under the world - using the spawn point."),
+						*Definition->SiblingId.ToString(), *Saved->Transform.GetLocation().ToString());
 				}
 			}
 		}
@@ -460,6 +466,18 @@ void UFamilySubsystem::ParkPawn(AMishpachaCharacter* PawnToPark, bool bPark) con
 	{
 		MoveComp->SetMovementMode(MOVE_Falling);
 	}
+}
+
+bool UFamilySubsystem::IsBuried(const FVector& Location) const
+{
+	// Look down from high above: the first static surface must be below the body's center
+	// (saved transforms are capsule centers, ~90 cm above the feet).
+	FCollisionObjectQueryParams ObjectParams;
+	ObjectParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(FamilyBuriedCheck), false);
+	FHitResult Hit;
+	const bool bHit = GetWorld()->LineTraceSingleByObjectType(Hit, Location + FVector(0.f, 0.f, 20000.f), Location, ObjectParams, Params);
+	return bHit && Hit.ImpactPoint.Z > Location.Z;
 }
 
 bool UFamilySubsystem::HasGroundBelow(const FVector& Location, const AActor* IgnoreActor) const

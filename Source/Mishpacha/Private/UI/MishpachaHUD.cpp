@@ -25,6 +25,8 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "TimerManager.h"
+#include "UnrealClient.h"
+#include "Misc/CommandLine.h"
 
 #define LOCTEXT_NAMESPACE "MishpachaHUD"
 
@@ -77,6 +79,48 @@ void AMishpachaHUD::BeginPlay()
 	// PlayerState / pawn / game state arrive at different times on clients - keep (re)binding.
 	GetWorldTimerManager().SetTimer(BindTimer, this, &AMishpachaHUD::RefreshBindings, 0.5f, true, 0.f);
 	GetWorldTimerManager().SetTimer(RouteTimer, this, &AMishpachaHUD::UpdateRoute, 0.25f, true, 0.5f);
+
+	if (FParse::Param(FCommandLine::Get(), TEXT("MishpachaCapture")))
+	{
+		StartAutomatedCapture();
+	}
+}
+
+void AMishpachaHUD::StartAutomatedCapture()
+{
+	// Dev tool (-MishpachaCapture): FPS chart for 25 s (written to the log), then four screenshots
+	// (Saved/Screenshots/.../Capture_N.png) turning around the player.
+	auto Command = [this](const TCHAR* Cmd)
+	{
+		return FTimerDelegate::CreateWeakLambda(this, [this, Cmd]()
+		{
+			if (APlayerController* PC = GetOwningPlayerController())
+			{
+				PC->ConsoleCommand(Cmd);
+			}
+		});
+	};
+	auto After = [this](float Delay, const FTimerDelegate& Delegate)
+	{
+		FTimerHandle Handle; // one handle per timer: reusing a handle would cancel the previous one
+		GetWorldTimerManager().SetTimer(Handle, Delegate, Delay, false);
+	};
+	After(15.f, Command(TEXT("startfpschart")));
+	After(40.f, Command(TEXT("stopfpschart")));
+	for (int32 Shot = 0; Shot < 4; ++Shot)
+	{
+		After(42.f + Shot * 3.f, FTimerDelegate::CreateWeakLambda(this, [this, Shot]()
+		{
+			if (APlayerController* PC = GetOwningPlayerController())
+			{
+				PC->SetControlRotation(FRotator(Shot == 3 ? -25.f : -4.f, Shot * 90.f + 20.f, 0.f));
+			}
+		}));
+		After(43.5f + Shot * 3.f, FTimerDelegate::CreateWeakLambda(this, [Shot]()
+		{
+			FScreenshotRequest::RequestScreenshot(FString::Printf(TEXT("Capture_%d.png"), Shot), false, false);
+		}));
+	}
 }
 
 void AMishpachaHUD::EndPlay(const EEndPlayReason::Type EndPlayReason)

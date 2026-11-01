@@ -7,6 +7,7 @@
 #include "Mishpacha.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "EngineUtils.h"
 
 // ----- Reach Location -----
 
@@ -36,6 +37,12 @@ FVector UObjective_ReachLocation::GetDestination() const
 	return Target ? Target->GetActorLocation() : TargetLocation;
 }
 
+bool UObjective_ReachLocation::GetGuideLocation(FVector& OutLocation) const
+{
+	OutLocation = GetDestination();
+	return true;
+}
+
 void UObjective_ReachLocation::TickObjective(float DeltaTime)
 {
 	const APawn* Pawn = GetPlayerPawn();
@@ -54,6 +61,32 @@ void UObjective_EnterVehicle::TickObjective(float DeltaTime)
 	{
 		MarkComplete();
 	}
+}
+
+bool UObjective_EnterVehicle::GetGuideLocation(FVector& OutLocation) const
+{
+	const APawn* Pawn = GetPlayerPawn();
+	UWorld* World = GetWorld();
+	if (!Pawn || !World || Cast<AMishpachaVehicle>(Pawn))
+	{
+		return false;
+	}
+
+	double BestDistSq = TNumericLimits<double>::Max();
+	for (TActorIterator<AMishpachaVehicle> It(World); It; ++It)
+	{
+		if (!VehicleTag.IsNone() && !It->ActorHasTag(VehicleTag))
+		{
+			continue;
+		}
+		const double DistSq = FVector::DistSquared(It->GetActorLocation(), Pawn->GetActorLocation());
+		if (DistSq < BestDistSq)
+		{
+			BestDistSq = DistSq;
+			OutLocation = It->GetActorLocation();
+		}
+	}
+	return BestDistSq < TNumericLimits<double>::Max();
 }
 
 // ----- Eliminate Targets -----
@@ -95,6 +128,29 @@ void UObjective_EliminateTargets::TickObjective(float DeltaTime)
 	{
 		MarkComplete();
 	}
+}
+
+bool UObjective_EliminateTargets::GetGuideLocation(FVector& OutLocation) const
+{
+	const APawn* Pawn = GetPlayerPawn();
+	const FVector From = Pawn ? Pawn->GetActorLocation() : FVector::ZeroVector;
+	double BestDistSq = TNumericLimits<double>::Max();
+	for (const TWeakObjectPtr<AActor>& Weak : Targets)
+	{
+		const AActor* Target = Weak.Get();
+		const AMishpachaCharacter* TargetCharacter = Cast<AMishpachaCharacter>(Target);
+		if (!IsValid(Target) || (TargetCharacter && TargetCharacter->IsDead()))
+		{
+			continue;
+		}
+		const double DistSq = FVector::DistSquared(Target->GetActorLocation(), From);
+		if (DistSq < BestDistSq)
+		{
+			BestDistSq = DistSq;
+			OutLocation = Target->GetActorLocation();
+		}
+	}
+	return BestDistSq < TNumericLimits<double>::Max();
 }
 
 // ----- Lose Heat -----

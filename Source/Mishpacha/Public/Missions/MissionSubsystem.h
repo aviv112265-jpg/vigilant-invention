@@ -62,6 +62,10 @@ private:
 	int32 ObjectiveIndex = INDEX_NONE;
 	FTimerHandle TickHandle;
 
+	/** Last GPS target sent to clients (re-sent when it moves, e.g. the nearest car changes). */
+	FVector LastGuideLocation = FVector::ZeroVector;
+	bool bLastHasGuide = false;
+
 	static constexpr float TickInterval = 0.2f;
 
 	void TickMission();

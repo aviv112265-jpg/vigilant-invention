@@ -155,6 +155,186 @@ FVector ACityGreyboxGenerator::ToWorld(const FVector& Local) const
 	return GetActorTransform().TransformPosition(Local);
 }
 
+// ---------------------------------------------------------------------------
+// Map data + GPS routing along the street grid
+// ---------------------------------------------------------------------------
+
+void ACityGreyboxGenerator::AddMapArea(const FVector& LocalCenter, float SizeX, float SizeY, EMishpachaMapAreaType Type)
+{
+	const FVector A = ToWorld(LocalCenter - FVector(SizeX * 0.5f, SizeY * 0.5f, 0.f));
+	const FVector B = ToWorld(LocalCenter + FVector(SizeX * 0.5f, SizeY * 0.5f, 0.f));
+	FMishpachaMapArea& Area = MapAreas.AddDefaulted_GetRef();
+	Area.Box = FBox2D(FVector2D(FMath::Min(A.X, B.X), FMath::Min(A.Y, B.Y)), FVector2D(FMath::Max(A.X, B.X), FMath::Max(A.Y, B.Y)));
+	Area.Type = Type;
+}
+
+ACityGreyboxGenerator::FRoadSnap ACityGreyboxGenerator::SnapLocal(const FVector2D& Local) const
+{
+	const float ExtentX = BlocksX * BlockSize + (BlocksX + 1) * RoadWidth;
+	const float ExtentY = BlocksY * BlockSize + (BlocksY + 1) * RoadWidth;
+	const float Step = BlockSize + RoadWidth;
+	const float X0 = -ExtentX * 0.5f + RoadWidth * 0.5f;
+	const float Y0 = -ExtentY * 0.5f + RoadWidth * 0.5f;
+	const float ClampedX = FMath::Clamp<float>(Local.X, X0, X0 + BlocksX * Step);
+	const float ClampedY = FMath::Clamp<float>(Local.Y, Y0, Y0 + BlocksY * Step);
+	const int32 I = FMath::Clamp(FMath::RoundToInt((Local.X - X0) / Step), 0, BlocksX);
+	const int32 J = FMath::Clamp(FMath::RoundToInt((Local.Y - Y0) / Step), 0, BlocksY);
+
+	const FVector2D OnRoadAlongY(X0 + I * Step, ClampedY);
+	const FVector2D OnRoadAlongX(ClampedX, Y0 + J * Step);
+
+	FRoadSnap Snap;
+	if (FVector2D::DistSquared(Local, OnRoadAlongY) <= FVector2D::DistSquared(Local, OnRoadAlongX))
+	{
+		Snap.Point = OnRoadAlongY;
+		Snap.bAlongY = true;
+		Snap.Line = I;
+		Snap.Segment = FMath::Clamp(FMath::FloorToInt((ClampedY - Y0) / Step), 0, BlocksY - 1);
+	}
+	else
+	{
+		Snap.Point = OnRoadAlongX;
+		Snap.bAlongY = false;
+		Snap.Line = J;
+		Snap.Segment = FMath::Clamp(FMath::FloorToInt((ClampedX - X0) / Step), 0, BlocksX - 1);
+	}
+	return Snap;
+}
+
+FVector ACityGreyboxGenerator::SnapToRoad(const FVector& WorldLocation) const
+{
+	const FVector Local = GetActorTransform().InverseTransformPosition(WorldLocation);
+	const FRoadSnap Snap = SnapLocal(FVector2D(Local.X, Local.Y));
+	return ToWorld(FVector(Snap.Point.X, Snap.Point.Y, 2.f));
+}
+
+bool ACityGreyboxGenerator::FindRoadRoute(const FVector& From, const FVector& To, TArray<FVector>& OutPoints) const
+{
+	OutPoints.Reset();
+	if (BlocksX < 1 || BlocksY < 1)
+	{
+		return false;
+	}
+
+	const FTransform& Xform = GetActorTransform();
+	const FVector LocalFrom = Xform.InverseTransformPosition(From);
+	const FVector LocalTo = Xform.InverseTransformPosition(To);
+	const FRoadSnap SnapA = SnapLocal(FVector2D(LocalFrom.X, LocalFrom.Y));
+	const FRoadSnap SnapB = SnapLocal(FVector2D(LocalTo.X, LocalTo.Y));
+
+	const float ExtentX = BlocksX * BlockSize + (BlocksX + 1) * RoadWidth;
+	const float ExtentY = BlocksY * BlockSize + (BlocksY + 1) * RoadWidth;
+	const float Step = BlockSize + RoadWidth;
+	const FVector2D Origin(-ExtentX * 0.5f + RoadWidth * 0.5f, -ExtentY * 0.5f + RoadWidth * 0.5f);
+
+	// Nodes: every intersection, then A (start) and B (end).
+	const int32 NumY = BlocksY + 1;
+	const int32 NumGrid = (BlocksX + 1) * NumY;
+	const int32 NodeA = NumGrid;
+	const int32 NodeB = NumGrid + 1;
+	auto GridIndex = [NumY](int32 I, int32 J) { return I * NumY + J; };
+
+	TArray<FVector2D> Positions;
+	Positions.SetNum(NumGrid + 2);
+	for (int32 I = 0; I <= BlocksX; ++I)
+	{
+		for (int32 J = 0; J <= BlocksY; ++J)
+		{
+			Positions[GridIndex(I, J)] = Origin + FVector2D(I * Step, J * Step);
+		}
+	}
+	Positions[NodeA] = SnapA.Point;
+	Positions[NodeB] = SnapB.Point;
+
+	TArray<TArray<int32>> Links;
+	Links.SetNum(NumGrid + 2);
+	auto Link = [&Links](int32 U, int32 V)
+	{
+		Links[U].AddUnique(V);
+		Links[V].AddUnique(U);
+	};
+	for (int32 I = 0; I <= BlocksX; ++I)
+	{
+		for (int32 J = 0; J <= BlocksY; ++J)
+		{
+			if (I < BlocksX) { Link(GridIndex(I, J), GridIndex(I + 1, J)); }
+			if (J < BlocksY) { Link(GridIndex(I, J), GridIndex(I, J + 1)); }
+		}
+	}
+	auto LinkSnap = [&](const FRoadSnap& Snap, int32 Node)
+	{
+		if (Snap.bAlongY)
+		{
+			Link(Node, GridIndex(Snap.Line, Snap.Segment));
+			Link(Node, GridIndex(Snap.Line, Snap.Segment + 1));
+		}
+		else
+		{
+			Link(Node, GridIndex(Snap.Segment, Snap.Line));
+			Link(Node, GridIndex(Snap.Segment + 1, Snap.Line));
+		}
+	};
+	LinkSnap(SnapA, NodeA);
+	LinkSnap(SnapB, NodeB);
+	if (SnapA.bAlongY == SnapB.bAlongY && SnapA.Line == SnapB.Line && SnapA.Segment == SnapB.Segment)
+	{
+		Link(NodeA, NodeB); // same stretch of road
+	}
+
+	// Dijkstra (a few dozen nodes - a linear scan for the next node is plenty).
+	TArray<double> Dist;
+	TArray<int32> Prev;
+	TArray<bool> Done;
+	Dist.Init(TNumericLimits<double>::Max(), Positions.Num());
+	Prev.Init(INDEX_NONE, Positions.Num());
+	Done.Init(false, Positions.Num());
+	Dist[NodeA] = 0.0;
+	for (int32 Iteration = 0; Iteration < Positions.Num(); ++Iteration)
+	{
+		int32 Best = INDEX_NONE;
+		for (int32 N = 0; N < Positions.Num(); ++N)
+		{
+			if (!Done[N] && (Best == INDEX_NONE || Dist[N] < Dist[Best]))
+			{
+				Best = N;
+			}
+		}
+		if (Best == INDEX_NONE || Dist[Best] == TNumericLimits<double>::Max() || Best == NodeB)
+		{
+			break;
+		}
+		Done[Best] = true;
+		for (const int32 Next : Links[Best])
+		{
+			const double Candidate = Dist[Best] + FVector2D::Distance(Positions[Best], Positions[Next]);
+			if (Candidate < Dist[Next])
+			{
+				Dist[Next] = Candidate;
+				Prev[Next] = Best;
+			}
+		}
+	}
+	if (Prev[NodeB] == INDEX_NONE && NodeA != NodeB && FVector2D::DistSquared(SnapA.Point, SnapB.Point) > 1.0)
+	{
+		return false;
+	}
+
+	TArray<int32> Path;
+	for (int32 N = NodeB; N != INDEX_NONE; N = Prev[N])
+	{
+		Path.Insert(N, 0);
+	}
+	for (const int32 N : Path)
+	{
+		const FVector Point = ToWorld(FVector(Positions[N].X, Positions[N].Y, 2.f));
+		if (OutPoints.Num() == 0 || FVector::DistSquared(OutPoints.Last(), Point) > 1.0)
+		{
+			OutPoints.Add(Point);
+		}
+	}
+	return OutPoints.Num() > 0;
+}
+
 void ACityGreyboxGenerator::SetupISM(UInstancedStaticMeshComponent* ISM, UStaticMesh* Mesh, UMaterialInterface* BaseMaterial, const FLinearColor& Color, bool bCollision)
 {
 	if (!ISM)
@@ -224,6 +404,21 @@ void ACityGreyboxGenerator::BuildGeometry()
 		return FTransform(FRotator::ZeroRotator, Center, SizeCm / 100.f);
 	};
 
+	// --- Map data (paint order: sea, sand, asphalt, then blocks and their buildings) ---
+	const float SeaWidth = 40000.f;
+	MapAreas.Reset();
+	MapPlaces.Reset();
+	AddMapArea(FVector(MinX - BeachWidth - SeaWidth * 0.5f, 0.f, 0.f), SeaWidth, ExtentY + 40000.f, EMishpachaMapAreaType::Sea);
+	AddMapArea(FVector(MinX - BeachWidth * 0.5f, 0.f, 0.f), BeachWidth, ExtentY + 4000.f, EMishpachaMapAreaType::Sand);
+	AddMapArea(FVector::ZeroVector, ExtentX, ExtentY, EMishpachaMapAreaType::Road);
+	{
+		const FVector A = ToWorld(FVector(MinX - BeachWidth - 6000.f, MinY - 5000.f, 0.f));
+		const FVector B = ToWorld(FVector(-MinX + 5000.f, -MinY + 5000.f, 0.f));
+		const FVector2D Center((A.X + B.X) * 0.5f, (A.Y + B.Y) * 0.5f);
+		const double Half = FMath::Max(FMath::Abs(B.X - A.X), FMath::Abs(B.Y - A.Y)) * 0.5;
+		MapBounds = FBox2D(Center - FVector2D(Half), Center + FVector2D(Half));
+	}
+
 	// --- Asphalt base covering the whole grid (top at Z = 0) ---
 	TArray<FTransform> Roads;
 	Roads.Add(Box(FVector(0.f, 0.f, -50.f), FVector(ExtentX, ExtentY, 100.f)));
@@ -242,6 +437,7 @@ void ACityGreyboxGenerator::BuildGeometry()
 			const FVector BlockCenter(X0 + BlockSize * 0.5f, Y0 + BlockSize * 0.5f, 0.f);
 
 			Sidewalks.Add(Box(BlockCenter + FVector(0.f, 0.f, SidewalkHeight * 0.5f), FVector(BlockSize, BlockSize, SidewalkHeight)));
+			AddMapArea(BlockCenter, BlockSize, BlockSize, EMishpachaMapAreaType::Block);
 
 			// Sidewalk walking points (ring just inside the curb), used for spawning pedestrians.
 			const float Inset = 180.f;
@@ -268,6 +464,7 @@ void ACityGreyboxGenerator::BuildGeometry()
 					const FVector LotCenter(X0 + Lot * (LX + 0.5f), Y0 + Lot * (LY + 0.5f), 0.f);
 					if (bEmptyLot)
 					{
+						AddMapArea(LotCenter, Lot - 400.f, Lot - 400.f, EMishpachaMapAreaType::Plaza);
 						continue;
 					}
 
@@ -276,6 +473,7 @@ void ACityGreyboxGenerator::BuildGeometry()
 					{
 						Height = Stream.FRandRange(6000.f, 15000.f);
 						Towers.Add(Box(LotCenter + FVector(0.f, 0.f, SidewalkHeight + Height * 0.5f), FVector(SizeX, SizeY, Height)));
+						AddMapArea(LotCenter, SizeX, SizeY, EMishpachaMapAreaType::Tower);
 						continue;
 					}
 
@@ -283,6 +481,7 @@ void ACityGreyboxGenerator::BuildGeometry()
 					const int32 Floors = (Stream.FRand() < 0.1f) ? Stream.RandRange(8, 12) : Stream.RandRange(2, 5);
 					Height = Floors * 320.f + 100.f;
 					const FTransform Building = Box(LotCenter + FVector(0.f, 0.f, SidewalkHeight + Height * 0.5f), FVector(SizeX, SizeY, Height));
+					AddMapArea(LotCenter, SizeX, SizeY, EMishpachaMapAreaType::Building);
 					if (Stream.FRand() < 0.6f)
 					{
 						White.Add(Building);
@@ -344,7 +543,6 @@ void ACityGreyboxGenerator::BuildGeometry()
 	// --- Beach and sea on the west (negative X), like the real coast ---
 	TArray<FTransform> Sand, Sea;
 	Sand.Add(Box(FVector(MinX - BeachWidth * 0.5f, 0.f, -60.f), FVector(BeachWidth, ExtentY + 4000.f, 100.f)));
-	const float SeaWidth = 40000.f;
 	Sea.Add(Box(FVector(MinX - BeachWidth - SeaWidth * 0.5f, 0.f, -150.f), FVector(SeaWidth, ExtentY + 40000.f, 100.f)));
 	SandISM->AddInstances(Sand, false);
 	SeaISM->AddInstances(Sea, false);
@@ -358,6 +556,22 @@ void ACityGreyboxGenerator::BuildGeometry()
 		Beacons.Add(FTransform(FRotator::ZeroRotator, Spot + FVector(0.f, 0.f, 1500.f), FVector(0.5f, 0.5f, 30.f)));
 	}
 	BeaconsISM->AddInstances(Beacons, false);
+
+	// --- Place names for the full map (same cells as the beacons, plus the family home) ---
+	const TPair<FIntPoint, FText> Places[] = {
+		TPair<FIntPoint, FText>(FIntPoint(1, 1), LOCTEXT("PlaceMarket", "Old Yafeh Market")),
+		TPair<FIntPoint, FText>(FIntPoint(BlocksX - 1, 2), LOCTEXT("PlaceWarehouse", "Evidence Warehouse")),
+		TPair<FIntPoint, FText>(FIntPoint(BlocksX - 2, BlocksY - 1), LOCTEXT("PlaceGarage", "Moshe's Garage")),
+		TPair<FIntPoint, FText>(FIntPoint(1, BlocksY - 2), LOCTEXT("PlaceDropoff", "Family Drop-off")),
+		TPair<FIntPoint, FText>(FIntPoint(1, BlocksY - 1), LOCTEXT("PlaceHospital", "Hospital")),
+		TPair<FIntPoint, FText>(FIntPoint(BlocksX / 2, BlocksY / 2), LOCTEXT("PlaceHome", "Sela Family")),
+	};
+	for (const TPair<FIntPoint, FText>& Place : Places)
+	{
+		FMishpachaMapPlace& MapPlace = MapPlaces.AddDefaulted_GetRef();
+		MapPlace.Location = ToWorld(IntersectionLocal(Place.Key.X, Place.Key.Y));
+		MapPlace.Label = Place.Value;
+	}
 
 	UE_LOG(LogMishpacha, Log, TEXT("CityGreyboxGenerator: built %d buildings, %d towers (seed %d)."), White.Num() + Cream.Num(), Towers.Num(), Seed);
 }

@@ -24,6 +24,7 @@ public:
 
 	virtual void Activate(UMissionSubsystem* InMissions, APlayerController* InPlayer) override;
 	virtual void TickObjective(float DeltaTime) override;
+	virtual bool GetGuideLocation(FVector& OutLocation) const override;
 
 	UFUNCTION(BlueprintPure, Category = "Objective")
 	FVector GetDestination() const;
@@ -44,6 +45,9 @@ public:
 	FName VehicleTag;
 
 	virtual void TickObjective(float DeltaTime) override;
+
+	/** The nearest matching vehicle. */
+	virtual bool GetGuideLocation(FVector& OutLocation) const override;
 };
 
 /** Kill / destroy actors with a tag. */
@@ -62,6 +66,9 @@ public:
 
 	virtual void Activate(UMissionSubsystem* InMissions, APlayerController* InPlayer) override;
 	virtual void TickObjective(float DeltaTime) override;
+
+	/** The nearest target still standing. */
+	virtual bool GetGuideLocation(FVector& OutLocation) const override;
 
 private:
 	TArray<TWeakObjectPtr<AActor>> Targets;

@@ -136,6 +136,15 @@ void UMissionSubsystem::TickMission()
 	{
 		AdvanceObjective();
 	}
+	else
+	{
+		FVector Guide;
+		const bool bHasGuide = Objective->GetGuideLocation(Guide);
+		if (bHasGuide != bLastHasGuide || (bHasGuide && FVector::DistSquared(Guide, LastGuideLocation) > FMath::Square(300.f)))
+		{
+			PushReplicatedState();
+		}
+	}
 }
 
 void UMissionSubsystem::AdvanceObjective()
@@ -244,11 +253,15 @@ void UMissionSubsystem::PushReplicatedState()
 		State.Title = ActiveMission->Title;
 		State.ObjectiveIndex = ObjectiveIndex;
 		State.ObjectiveCount = ActiveObjectives.Num();
+		State.RequiredSibling = ActiveMission->RequiredSibling;
 		if (ActiveObjectives.IsValidIndex(ObjectiveIndex) && ActiveObjectives[ObjectiveIndex])
 		{
 			State.ObjectiveText = ActiveObjectives[ObjectiveIndex]->Description;
+			State.bHasGuide = ActiveObjectives[ObjectiveIndex]->GetGuideLocation(State.GuideLocation);
 		}
 	}
+	LastGuideLocation = State.GuideLocation;
+	bLastHasGuide = State.bHasGuide;
 
 	if (AMishpachaGameState* GameState = GetWorld()->GetGameState<AMishpachaGameState>())
 	{

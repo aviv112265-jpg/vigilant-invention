@@ -22,13 +22,14 @@ public class Mishpacha : ModuleRules
 			"UMG",
 			"NetCore",
 			"OnlineSubsystem",
-			"OnlineSubsystemUtils"
+			"OnlineSubsystemUtils",
+			"SlateCore" // FSlateFontInfo in MishpachaHUD.h
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 			"Slate",
-			"SlateCore"
+			"RenderCore" // GWhiteTexture for the canvas HUD
 		});
 	}
 }

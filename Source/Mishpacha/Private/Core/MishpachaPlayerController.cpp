@@ -151,6 +151,38 @@ void AMishpachaPlayerController::BuildDefaultInput()
 	Map(VehicleContext, RadioAction, EKeys::Gamepad_DPad_Right);
 }
 
+void AMishpachaPlayerController::BuildMapInput()
+{
+	using namespace MishpachaInput;
+
+	MapToggleAction = MakeAction(TEXT("IA_MapToggle"), EInputActionValueType::Boolean);
+	MapSelectAction = MakeAction(TEXT("IA_MapSelect"), EInputActionValueType::Boolean);
+	MapClearAction = MakeAction(TEXT("IA_MapClear"), EInputActionValueType::Boolean);
+	MapPanAction = MakeAction(TEXT("IA_MapPan"), EInputActionValueType::Axis2D);
+	MapZoomAction = MakeAction(TEXT("IA_MapZoom"), EInputActionValueType::Axis1D);
+
+	// Always on top of the pawn context: open / close the map.
+	UIContext = NewObject<UInputMappingContext>(this, TEXT("IMC_UI_Default"));
+	Map(UIContext, MapToggleAction, EKeys::Tab);
+	Map(UIContext, MapToggleAction, EKeys::M);
+	Map(UIContext, MapToggleAction, EKeys::Gamepad_Special_Left);
+
+	// Only while the map is open (highest priority, so it swallows these keys).
+	MapContext = NewObject<UInputMappingContext>(this, TEXT("IMC_Map_Default"));
+	Map(MapContext, MapSelectAction, EKeys::LeftMouseButton);
+	Map(MapContext, MapSelectAction, EKeys::Gamepad_FaceButton_Bottom);
+	Map(MapContext, MapClearAction, EKeys::RightMouseButton);
+	Map(MapContext, MapClearAction, EKeys::Gamepad_FaceButton_Left);
+	Map(MapContext, MapPanAction, EKeys::W, MF_Swizzle);
+	Map(MapContext, MapPanAction, EKeys::S, MF_Swizzle | MF_Negate);
+	Map(MapContext, MapPanAction, EKeys::A, MF_Negate);
+	Map(MapContext, MapPanAction, EKeys::D);
+	Map(MapContext, MapPanAction, EKeys::Gamepad_Left2D, MF_DeadZone);
+	Map(MapContext, MapZoomAction, EKeys::MouseWheelAxis);
+	Map(MapContext, MapZoomAction, EKeys::Gamepad_RightTriggerAxis);
+	Map(MapContext, MapZoomAction, EKeys::Gamepad_LeftTriggerAxis, MF_Negate);
+}
+
 void AMishpachaPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
@@ -159,6 +191,10 @@ void AMishpachaPlayerController::SetupInputComponent()
 	{
 		UE_LOG(LogMishpacha, Log, TEXT("Input assets not fully assigned - building default bindings at runtime."));
 		BuildDefaultInput();
+	}
+	if (!MapToggleAction)
+	{
+		BuildMapInput();
 	}
 
 	UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent);
@@ -194,6 +230,11 @@ void AMishpachaPlayerController::SetupInputComponent()
 	EIC->BindAction(HandbrakeAction, ETriggerEvent::Started, this, &ThisClass::HandleHandbrakeStarted);
 	EIC->BindAction(HandbrakeAction, ETriggerEvent::Completed, this, &ThisClass::HandleHandbrakeCompleted);
 	EIC->BindAction(RadioAction, ETriggerEvent::Started, this, &ThisClass::HandleRadio);
+	EIC->BindAction(MapToggleAction, ETriggerEvent::Started, this, &ThisClass::HandleMapToggle);
+	EIC->BindAction(MapSelectAction, ETriggerEvent::Started, this, &ThisClass::HandleMapSelect);
+	EIC->BindAction(MapClearAction, ETriggerEvent::Started, this, &ThisClass::HandleMapClear);
+	EIC->BindAction(MapPanAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMapPan);
+	EIC->BindAction(MapZoomAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMapZoom);
 
 	ApplyContextForPawn(GetPawn());
 }
@@ -223,6 +264,60 @@ void AMishpachaPlayerController::ApplyContextForPawn(APawn* InPawn)
 	if (Context)
 	{
 		InputSubsystem->AddMappingContext(Context, 0);
+	}
+	if (UIContext)
+	{
+		InputSubsystem->AddMappingContext(UIContext, 50);
+	}
+	if (bMapOpen && MapContext)
+	{
+		InputSubsystem->AddMappingContext(MapContext, 100);
+	}
+}
+
+void AMishpachaPlayerController::SetMapOpen(bool bOpen)
+{
+	if (bMapOpen == bOpen || !IsLocalController())
+	{
+		return;
+	}
+	bMapOpen = bOpen;
+
+	// Let go of everything that was held when the map opened.
+	if (bOpen)
+	{
+		if (AMishpachaCharacter* MyCharacter = GetMishpachaCharacter())
+		{
+			MyCharacter->StopFire();
+			MyCharacter->SetAiming(false);
+			MyCharacter->SetSprinting(false);
+		}
+		else if (AMishpachaVehicle* Vehicle = GetMishpachaVehicle())
+		{
+			Vehicle->SetThrottle(0.f);
+			Vehicle->SetBrake(0.f);
+			Vehicle->SetSteering(0.f);
+		}
+		SetSwitchMenuOpen(false);
+	}
+
+	bShowMouseCursor = bOpen;
+	if (bOpen)
+	{
+		FInputModeGameAndUI InputMode;
+		InputMode.SetHideCursorDuringCapture(false);
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+		SetInputMode(InputMode);
+	}
+	else
+	{
+		SetInputMode(FInputModeGameOnly());
+	}
+	ApplyContextForPawn(GetPawn());
+
+	if (AMishpachaHUD* MishpachaHUD = GetHUD<AMishpachaHUD>())
+	{
+		MishpachaHUD->SetMapOpen(bOpen);
 	}
 }
 
@@ -316,6 +411,10 @@ void AMishpachaPlayerController::ClientShowNotification_Implementation(const FTe
 
 void AMishpachaPlayerController::HandleMove(const FInputActionValue& Value)
 {
+	if (bMapOpen)
+	{
+		return;
+	}
 	const FVector2D Axis = Value.Get<FVector2D>();
 	if (AMishpachaCharacter* MyCharacter = GetMishpachaCharacter())
 	{
@@ -329,6 +428,10 @@ void AMishpachaPlayerController::HandleMove(const FInputActionValue& Value)
 
 void AMishpachaPlayerController::HandleLook(const FInputActionValue& Value)
 {
+	if (bMapOpen)
+	{
+		return;
+	}
 	const FVector2D Axis = Value.Get<FVector2D>();
 	if (AMishpachaCharacter* MyCharacter = GetMishpachaCharacter())
 	{
@@ -346,6 +449,10 @@ void AMishpachaPlayerController::HandleLook(const FInputActionValue& Value)
 
 void AMishpachaPlayerController::HandleJumpStarted()
 {
+	if (bMapOpen)
+	{
+		return;
+	}
 	if (AMishpachaCharacter* MyCharacter = GetMishpachaCharacter())
 	{
 		MyCharacter->Jump();
@@ -394,6 +501,10 @@ void AMishpachaPlayerController::HandleSprintCompleted()
 
 void AMishpachaPlayerController::HandleInteract()
 {
+	if (bMapOpen)
+	{
+		return;
+	}
 	if (AMishpachaVehicle* Vehicle = GetMishpachaVehicle())
 	{
 		Vehicle->RequestExit();
@@ -406,6 +517,10 @@ void AMishpachaPlayerController::HandleInteract()
 
 void AMishpachaPlayerController::HandleFireStarted()
 {
+	if (bMapOpen)
+	{
+		return;
+	}
 	if (AMishpachaCharacter* MyCharacter = GetMishpachaCharacter())
 	{
 		MyCharacter->StartFire();
@@ -422,6 +537,10 @@ void AMishpachaPlayerController::HandleFireCompleted()
 
 void AMishpachaPlayerController::HandleAimStarted()
 {
+	if (bMapOpen)
+	{
+		return;
+	}
 	if (AMishpachaCharacter* MyCharacter = GetMishpachaCharacter())
 	{
 		MyCharacter->SetAiming(true);
@@ -438,6 +557,10 @@ void AMishpachaPlayerController::HandleAimCompleted()
 
 void AMishpachaPlayerController::HandleAbility()
 {
+	if (bMapOpen)
+	{
+		return;
+	}
 	if (ADronePawn* Drone = GetDrone())
 	{
 		Drone->RequestRecall();
@@ -475,6 +598,10 @@ void AMishpachaPlayerController::HandleSwitch3()
 
 void AMishpachaPlayerController::HandleThrottle(const FInputActionValue& Value)
 {
+	if (bMapOpen)
+	{
+		return;
+	}
 	if (AMishpachaVehicle* Vehicle = GetMishpachaVehicle())
 	{
 		Vehicle->SetThrottle(Value.Get<float>());
@@ -491,6 +618,10 @@ void AMishpachaPlayerController::HandleThrottleReleased()
 
 void AMishpachaPlayerController::HandleBrake(const FInputActionValue& Value)
 {
+	if (bMapOpen)
+	{
+		return;
+	}
 	if (AMishpachaVehicle* Vehicle = GetMishpachaVehicle())
 	{
 		Vehicle->SetBrake(Value.Get<float>());
@@ -507,6 +638,10 @@ void AMishpachaPlayerController::HandleBrakeReleased()
 
 void AMishpachaPlayerController::HandleSteer(const FInputActionValue& Value)
 {
+	if (bMapOpen)
+	{
+		return;
+	}
 	if (AMishpachaVehicle* Vehicle = GetMishpachaVehicle())
 	{
 		Vehicle->SetSteering(Value.Get<float>());
@@ -542,6 +677,46 @@ void AMishpachaPlayerController::HandleRadio()
 	if (AMishpachaVehicle* Vehicle = GetMishpachaVehicle())
 	{
 		Vehicle->NextRadioStation();
+	}
+}
+
+void AMishpachaPlayerController::HandleMapToggle()
+{
+	SetMapOpen(!bMapOpen);
+}
+
+void AMishpachaPlayerController::HandleMapSelect()
+{
+	float MouseX = 0.f;
+	float MouseY = 0.f;
+	AMishpachaHUD* MishpachaHUD = GetHUD<AMishpachaHUD>();
+	if (bMapOpen && MishpachaHUD && GetMousePosition(MouseX, MouseY))
+	{
+		MishpachaHUD->HandleMapClick(FVector2D(MouseX, MouseY));
+	}
+}
+
+void AMishpachaPlayerController::HandleMapClear()
+{
+	if (AMishpachaHUD* MishpachaHUD = bMapOpen ? GetHUD<AMishpachaHUD>() : nullptr)
+	{
+		MishpachaHUD->ClearWaypoint();
+	}
+}
+
+void AMishpachaPlayerController::HandleMapPan(const FInputActionValue& Value)
+{
+	if (AMishpachaHUD* MishpachaHUD = bMapOpen ? GetHUD<AMishpachaHUD>() : nullptr)
+	{
+		MishpachaHUD->PanMap(Value.Get<FVector2D>(), GetWorld()->GetDeltaSeconds());
+	}
+}
+
+void AMishpachaPlayerController::HandleMapZoom(const FInputActionValue& Value)
+{
+	if (AMishpachaHUD* MishpachaHUD = bMapOpen ? GetHUD<AMishpachaHUD>() : nullptr)
+	{
+		MishpachaHUD->ZoomMap(Value.Get<float>());
 	}
 }
 

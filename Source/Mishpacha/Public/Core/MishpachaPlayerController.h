@@ -36,6 +36,13 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Family")
 	bool IsSwitchMenuOpen() const { return bSwitchMenuOpen; }
 
+	/** Full-screen map (Tab / M): shows the cursor and routes clicks, WASD and the wheel to the map. */
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void SetMapOpen(bool bOpen);
+
+	UFUNCTION(BlueprintPure, Category = "UI")
+	bool IsMapOpen() const { return bMapOpen; }
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -102,8 +109,33 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerRequestSwitchSibling(int32 SiblingIndex);
 
+	// ----- Map input (always built in code; Tab works on foot, in cars and in the drone) -----
+	UPROPERTY(Transient)
+	TObjectPtr<UInputMappingContext> UIContext;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputMappingContext> MapContext;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> MapToggleAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> MapSelectAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> MapClearAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> MapPanAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> MapZoomAction;
+
 private:
 	bool bSwitchMenuOpen = false;
+	bool bMapOpen = false;
+
+	void BuildMapInput();
 
 	bool HasInputAssets() const;
 	void BuildDefaultInput();
@@ -143,4 +175,9 @@ private:
 	void HandleHandbrakeStarted();
 	void HandleHandbrakeCompleted();
 	void HandleRadio();
+	void HandleMapToggle();
+	void HandleMapSelect();
+	void HandleMapClear();
+	void HandleMapPan(const FInputActionValue& Value);
+	void HandleMapZoom(const FInputActionValue& Value);
 };

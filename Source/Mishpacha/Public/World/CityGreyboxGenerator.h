@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "World/MishpachaMapTypes.h"
 #include "CityGreyboxGenerator.generated.h"
 
 class UInstancedStaticMeshComponent;
@@ -38,6 +39,20 @@ public:
 
 	/** Total width of the street grid (cm). */
 	float GetCityExtent() const;
+
+	// ----- Map / GPS (valid on every machine once the geometry is built) -----
+	bool IsGeometryBuilt() const { return bGeometryBuilt; }
+	const TArray<FMishpachaMapArea>& GetMapAreas() const { return MapAreas; }
+	const TArray<FMishpachaMapPlace>& GetMapPlaces() const { return MapPlaces; }
+
+	/** Square world-space X/Y region the map texture covers (city, beach and some sea). */
+	FBox2D GetMapBounds() const { return MapBounds; }
+
+	/** Closest point on a road center line. */
+	FVector SnapToRoad(const FVector& WorldLocation) const;
+
+	/** Shortest path along the street grid (world points, on the road surface). False if there's no grid. */
+	bool FindRoadRoute(const FVector& From, const FVector& To, TArray<FVector>& OutPoints) const;
 
 protected:
 	virtual void BeginPlay() override;
@@ -134,6 +149,9 @@ private:
 
 	TArray<TWeakObjectPtr<APawn>> Civilians;
 	TArray<FVector> SidewalkPoints; // local space
+	TArray<FMishpachaMapArea> MapAreas;
+	TArray<FMishpachaMapPlace> MapPlaces;
+	FBox2D MapBounds = FBox2D(ForceInit);
 	FTimerHandle CivilianTimer;
 	bool bGeometryBuilt = false;
 	bool bGameplaySpawned = false;
@@ -149,4 +167,17 @@ private:
 	/** Local-space center of the intersection between vertical road I and horizontal road J. */
 	FVector IntersectionLocal(int32 I, int32 J) const;
 	FVector ToWorld(const FVector& Local) const;
+
+	/** Local-space map rectangle -> world-space map area. */
+	void AddMapArea(const FVector& LocalCenter, float SizeX, float SizeY, EMishpachaMapAreaType Type);
+
+	/** Where a local point lands on the road grid: the road line, which segment of it, and the point. */
+	struct FRoadSnap
+	{
+		FVector2D Point = FVector2D::ZeroVector;
+		bool bAlongY = false; // true: road of constant X (runs along Y)
+		int32 Line = 0;
+		int32 Segment = 0;
+	};
+	FRoadSnap SnapLocal(const FVector2D& Local) const;
 };

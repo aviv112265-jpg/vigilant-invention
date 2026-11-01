@@ -29,6 +29,9 @@ public:
 	virtual bool IsComplete() const { return bComplete; }
 	virtual bool HasFailed() const { return false; }
 
+	/** Where the player should head for this objective (GPS route / map). False = no single place. */
+	virtual bool GetGuideLocation(FVector& OutLocation) const { return false; }
+
 	virtual UWorld* GetWorld() const override;
 
 protected:

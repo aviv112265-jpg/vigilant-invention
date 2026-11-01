@@ -24,6 +24,10 @@ public:
 
 	UMissionDefinition* GetMission() const { return Mission; }
 
+	/** Sibling accent color and "WHO: job" label (replicated; the map draws these). */
+	FLinearColor GetMarkerColor() const { return MarkerColor; }
+	const FText& GetMarkerText() const { return MarkerText; }
+
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

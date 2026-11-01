@@ -3,16 +3,25 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "Fonts/SlateFontInfo.h"
 #include "Missions/MissionTypes.h"
 #include "MishpachaHUD.generated.h"
 
 class UMishpachaHUDWidget;
 class AMishpachaPlayerState;
 class AMishpachaCharacter;
+class ACityGreyboxGenerator;
+class AMishpachaRouteGuide;
+class UTexture2D;
+class UFont;
+struct FCanvasUVTri;
 
 /**
  * If HUDWidgetClass is set (BP child of this HUD), creates the widget and forwards events to it.
- * Without a widget, draws a small debug overlay so the gray-box build is playable immediately.
+ * Without a widget, draws the built-in canvas HUD: job card, status panel, toasts and banners.
+ *
+ * Always (widget or not): the minimap (top left), the full map (Tab / M) with a player waypoint,
+ * and the GPS route painted on the road towards the current objective or the waypoint.
  */
 UCLASS()
 class MISHPACHA_API AMishpachaHUD : public AHUD
@@ -26,6 +35,22 @@ public:
 	void ShowNotification(const FText& Message);
 	void SetSwitchMenuOpen(bool bOpen);
 
+	// ----- Map (driven by AMishpachaPlayerController) -----
+	void SetMapOpen(bool bOpen);
+	bool IsMapOpen() const { return bMapOpen; }
+	void HandleMapClick(const FVector2D& ScreenPosition);
+	void PanMap(const FVector2D& Axis, float DeltaSeconds);
+	void ZoomMap(float Steps);
+
+	UFUNCTION(BlueprintCallable, Category = "HUD|Map")
+	void SetWaypoint(const FVector& WorldLocation);
+
+	UFUNCTION(BlueprintCallable, Category = "HUD|Map")
+	void ClearWaypoint();
+
+	UFUNCTION(BlueprintPure, Category = "HUD|Map")
+	bool HasWaypoint() const { return bHasWaypoint; }
+
 	virtual void DrawHUD() override;
 
 protected:
@@ -35,8 +60,23 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "HUD")
 	TSubclassOf<UMishpachaHUDWidget> HUDWidgetClass;
 
+	/** Built-in canvas HUD when there's no widget. */
 	UPROPERTY(EditDefaultsOnly, Category = "HUD")
 	bool bDrawDebugOverlay = true;
+
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Map")
+	bool bDrawMinimap = true;
+
+	/** Paint the GPS route on the road (chevrons). The route is always drawn on the maps. */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Map")
+	bool bShowRouteOnRoad = true;
+
+	/** World width (cm) the minimap shows on foot / in a vehicle. */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Map")
+	float MinimapRangeOnFoot = 9000.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Map")
+	float MinimapRangeInVehicle = 16000.f;
 
 	UPROPERTY()
 	TObjectPtr<UMishpachaHUDWidget> HUDWidget;
@@ -66,8 +106,105 @@ private:
 	bool bBoundFamily = false;
 	FTimerHandle BindTimer;
 
+	void RefreshBindings();
+
+	// ----- Toasts / banners -----
 	FText LastNotification;
 	double LastNotificationTime = -1000.0;
+	FText BannerTitle;
+	FText BannerSubtitle;
+	FLinearColor BannerColor = FLinearColor::White;
+	double BannerTime = -1000.0;
 
-	void RefreshBindings();
+	// ----- Job card animation -----
+	FName ShownMissionId;
+	int32 ShownObjectiveIndex = INDEX_NONE;
+	double MissionShownTime = -1000.0;
+	double ObjectiveChangedTime = -1000.0;
+
+	// ----- Map -----
+	UPROPERTY(Transient)
+	TObjectPtr<UTexture2D> MapTexture;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UFont> UIFont;
+
+	UPROPERTY(Transient)
+	TObjectPtr<AMishpachaRouteGuide> RouteGuide;
+
+	TWeakObjectPtr<ACityGreyboxGenerator> Generator;
+	FBox2D MapBounds = FBox2D(ForceInit);
+
+	bool bMapOpen = false;
+	FVector2D MapViewCenter = FVector2D::ZeroVector;
+	float MapZoom = 1.f;
+
+	/** Where the full map was last drawn (screen) and which world rectangle it showed. */
+	FVector2D FullMapScreenMin = FVector2D::ZeroVector;
+	FVector2D FullMapScreenSize = FVector2D::ZeroVector;
+	FVector2D FullMapWorldMin = FVector2D::ZeroVector;
+	FVector2D FullMapWorldSize = FVector2D(1.0, 1.0);
+
+	bool bHasWaypoint = false;
+	FVector Waypoint = FVector::ZeroVector;
+
+	/** Current GPS route (world), starting at the player. */
+	TArray<FVector> RoutePoints;
+	FLinearColor RouteColor = FLinearColor::Yellow;
+	bool bRouteIsMission = false;
+	FTimerHandle RouteTimer;
+
+	/** UI scale for the current frame (1 at 1080p). */
+	float UIScale = 1.f;
+
+	ACityGreyboxGenerator* FindGenerator();
+	void EnsureMapTexture();
+	void UpdateRoute();
+	void TrackMissionState();
+	FBox2D GetEffectiveMapBounds() const;
+	FLinearColor GetSiblingColor(FName SiblingId, const FLinearColor& Fallback) const;
+	FVector GetPlayerLocation(float* OutYaw = nullptr) const;
+	void ClampMapView();
+
+	// ----- Drawing -----
+	struct FMapView
+	{
+		FVector2D ScreenMin;
+		FVector2D ScreenSize;
+		FVector2D WorldMin;
+		FVector2D WorldSize;
+
+		FVector2D ToScreen(const FVector& World) const;
+		FVector ToWorld(const FVector2D& Screen) const;
+		bool Contains(const FVector2D& Screen, float Inset = 0.f) const;
+		FVector2D ClampToEdge(const FVector2D& Screen, float Inset) const;
+	};
+
+	void DrawMinimap();
+	void DrawFullMap();
+	void DrawMapContents(const FMapView& View, bool bFullMap);
+	void DrawMapLayer(const FMapView& View);
+	void DrawStatusPanel(float X, float Y, float Width);
+	void DrawMissionCard();
+	void DrawNotification();
+	void DrawBanner();
+	void DrawControlsHint();
+	void DrawCrosshair();
+
+	float S(float Value) const { return Value * UIScale; }
+	FSlateFontInfo Font(float Size, bool bBold = false) const;
+	FVector2D MeasureText(const FText& Text, const FSlateFontInfo& FontInfo) const;
+	void DrawLabel(const FText& Text, float X, float Y, const FSlateFontInfo& FontInfo, const FLinearColor& Color, float HAlign = 0.f, bool bShadow = true);
+	void FillRect(float X, float Y, float W, float H, const FLinearColor& Color);
+	void DrawTris(const TArray<FCanvasUVTri>& Tris);
+	static void AddTri(TArray<FCanvasUVTri>& Tris, const FVector2D& A, const FVector2D& B, const FVector2D& C, const FLinearColor& Color);
+	static void AddQuad(TArray<FCanvasUVTri>& Tris, const FVector2D& A, const FVector2D& B, const FVector2D& C, const FVector2D& D, const FLinearColor& Color);
+	void DrawDisc(const FVector2D& Center, float Radius, const FLinearColor& Color, int32 Segments = 20);
+	void DrawRing(const FVector2D& Center, float Radius, float Thickness, const FLinearColor& Color, int32 Segments = 24);
+	void DrawThickLine(const FVector2D& A, const FVector2D& B, float Thickness, const FLinearColor& Color);
+	void DrawPlayerArrow(const FVector2D& Center, float Yaw, float Size, const FLinearColor& Color);
+	void DrawStar(const FVector2D& Center, float Radius, const FLinearColor& Color);
+	void DrawDiamond(const FVector2D& Center, float Radius, const FLinearColor& Color);
+	void DrawPolylineClipped(const TArray<FVector>& WorldPoints, const FMapView& View, float Thickness, const FLinearColor& Color);
+	void DrawKeyChip(float& X, float Y, const FText& Key, const FText& Label);
 };

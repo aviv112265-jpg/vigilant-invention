@@ -7,6 +7,8 @@
 
 class USphereComponent;
 class UStaticMeshComponent;
+class UTextRenderComponent;
+class UMaterialInstanceDynamic;
 class UMissionDefinition;
 
 UCLASS()
@@ -22,6 +24,9 @@ public:
 
 	UMissionDefinition* GetMission() const { return Mission; }
 
+	virtual void Tick(float DeltaSeconds) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -32,8 +37,28 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mission")
 	TObjectPtr<UStaticMeshComponent> Visual;
 
+	/** Floating "WHO: job title" label, turned toward the local camera. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mission")
+	TObjectPtr<UTextRenderComponent> Label;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mission")
 	TObjectPtr<UMissionDefinition> Mission;
+
+	/** Resolved on the server from the required sibling's accent color / name, replicated for clients. */
+	UPROPERTY(ReplicatedUsing = OnRep_Appearance)
+	FLinearColor MarkerColor = FLinearColor(0.9f, 0.75f, 0.1f);
+
+	UPROPERTY(ReplicatedUsing = OnRep_Appearance)
+	FText MarkerText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UMaterialInstanceDynamic> DiscMaterial;
+
+	UFUNCTION()
+	void OnRep_Appearance();
+
+	/** Server: read the sibling's color / name (the family is set up after markers spawn, so this runs a tick later). */
+	void ResolveAppearance();
 
 	UFUNCTION()
 	void HandleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

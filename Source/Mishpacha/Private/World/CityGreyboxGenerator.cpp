@@ -380,15 +380,35 @@ void ACityGreyboxGenerator::BuildGeometry()
 		SpawnLightingIfMissing();
 	}
 
-	SetupISM(RoadsISM, Cube, BaseMaterial, FLinearColor(0.04f, 0.04f, 0.045f), true);
-	SetupISM(SidewalksISM, Cube, BaseMaterial, FLinearColor(0.35f, 0.34f, 0.32f), true);
-	SetupISM(BuildingsWhiteISM, Cube, BaseMaterial, FLinearColor(0.85f, 0.85f, 0.82f), true);
-	SetupISM(BuildingsCreamISM, Cube, BaseMaterial, FLinearColor(0.8f, 0.72f, 0.58f), true);
-	SetupISM(TowersISM, Cube, BaseMaterial, FLinearColor(0.25f, 0.33f, 0.4f), true);
+	// Procedural materials from Tools/CreateMaterials.py (facade windows, asphalt, tiles, sand, sea);
+	// plain colored basic shapes when they haven't been generated.
+	auto Surface = [BaseMaterial](const TCHAR* Name) -> UMaterialInterface*
+	{
+		UMaterialInterface* Material = LoadObject<UMaterialInterface>(nullptr, *FString::Printf(TEXT("/Game/Mishpacha/Materials/%s.%s"), Name, Name), nullptr, LOAD_Quiet | LOAD_NoWarn);
+		return Material ? Material : BaseMaterial;
+	};
+	UMaterialInterface* Facade = Surface(TEXT("M_Facade"));
+	const bool bProceduralFacade = Facade != BaseMaterial;
+
+	SetupISM(RoadsISM, Cube, Surface(TEXT("M_Asphalt")), FLinearColor(0.04f, 0.04f, 0.045f), true);
+	SetupISM(SidewalksISM, Cube, Surface(TEXT("M_Sidewalk")), FLinearColor(0.35f, 0.34f, 0.32f), true);
+	SetupISM(BuildingsWhiteISM, Cube, Facade, FLinearColor(0.85f, 0.85f, 0.82f), true);
+	SetupISM(BuildingsCreamISM, Cube, Facade, FLinearColor(0.8f, 0.72f, 0.58f), true);
+	SetupISM(TowersISM, Cube, Facade, bProceduralFacade ? FLinearColor(1.f, 1.f, 1.f) : FLinearColor(0.25f, 0.33f, 0.4f), true);
 	SetupISM(RoofDetailsISM, Cube, BaseMaterial, FLinearColor(0.15f, 0.15f, 0.17f), false);
 	SetupISM(LaneMarksISM, Cube, BaseMaterial, FLinearColor(0.9f, 0.9f, 0.85f), false);
-	SetupISM(SandISM, Cube, BaseMaterial, FLinearColor(0.76f, 0.66f, 0.45f), true);
-	SetupISM(SeaISM, Cube, BaseMaterial, FLinearColor(0.02f, 0.18f, 0.35f), true);
+	SetupISM(SandISM, Cube, Surface(TEXT("M_Sand")), FLinearColor(0.76f, 0.66f, 0.45f), true);
+	SetupISM(SeaISM, Cube, Surface(TEXT("M_Sea")), FLinearColor(0.02f, 0.18f, 0.35f), true);
+
+	// Facade shader: floors are counted from the top of the sidewalk; towers get a curtain wall.
+	for (UInstancedStaticMeshComponent* BuildingISM : { BuildingsWhiteISM.Get(), BuildingsCreamISM.Get(), TowersISM.Get() })
+	{
+		if (UMaterialInstanceDynamic* MID = Cast<UMaterialInstanceDynamic>(BuildingISM->GetMaterial(0)))
+		{
+			MID->SetScalarParameterValue(FName(TEXT("GroundZ")), GetActorLocation().Z + SidewalkHeight);
+			MID->SetScalarParameterValue(FName(TEXT("Tower")), BuildingISM == TowersISM ? 1.f : 0.f);
+		}
+	}
 	SetupISM(BeaconsISM, Cylinder ? Cylinder : Cube, BaseMaterial, FLinearColor(1.f, 0.8f, 0.1f), false);
 
 	FRandomStream Stream(Seed);

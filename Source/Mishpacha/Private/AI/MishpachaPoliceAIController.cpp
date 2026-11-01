@@ -44,10 +44,10 @@ APawn* AMishpachaPoliceAIController::FindNearestWantedPlayer() const
 
 	APawn* Best = nullptr;
 	double BestDistSq = FMath::Square(30000.0);
-	for (APlayerState* PlayerState : GameState->PlayerArray)
+	for (APlayerState* PS : GameState->PlayerArray)
 	{
-		APawn* Candidate = PlayerState ? PlayerState->GetPawn() : nullptr;
-		const UHeatComponent* Heat = PlayerState ? PlayerState->FindComponentByClass<UHeatComponent>() : nullptr;
+		APawn* Candidate = PS ? PS->GetPawn() : nullptr;
+		const UHeatComponent* Heat = PS ? PS->FindComponentByClass<UHeatComponent>() : nullptr;
 		if (!Candidate || !Heat || Heat->GetHeatLevel() <= 0)
 		{
 			continue;

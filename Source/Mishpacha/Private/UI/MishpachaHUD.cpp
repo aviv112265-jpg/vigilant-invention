@@ -27,7 +27,14 @@
 #include "EngineUtils.h"
 #include "TimerManager.h"
 #include "UnrealClient.h"
+#include "Containers/Ticker.h"
 #include "Misc/CommandLine.h"
+#include "Core/MishpachaGameInstance.h"
+#include "Core/MishpachaPlayerController.h"
+#include "Save/MishpachaSaveGame.h"
+#include "GameFramework/GameUserSettings.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 #define LOCTEXT_NAMESPACE "MishpachaHUD"
 
@@ -85,6 +92,18 @@ void AMishpachaHUD::BeginPlay()
 	{
 		StartAutomatedCapture();
 	}
+	else if (bShowMainMenuOnStart && GetNetMode() == NM_Standalone && !FParse::Param(FCommandLine::Get(), TEXT("NoMenu")))
+	{
+		// Main menu over the (paused) city once everything has spawned.
+		FTimerHandle MenuHandle;
+		GetWorldTimerManager().SetTimer(MenuHandle, FTimerDelegate::CreateWeakLambda(this, [this]()
+		{
+			if (AMishpachaPlayerController* PC = Cast<AMishpachaPlayerController>(GetOwningPlayerController()))
+			{
+				PC->SetMenuOpen(true, EMishpachaMenuPage::Main);
+			}
+		}), 0.3f, false);
+	}
 }
 
 void AMishpachaHUD::StartAutomatedCapture()
@@ -101,10 +120,14 @@ void AMishpachaHUD::StartAutomatedCapture()
 			}
 		});
 	};
+	// Real-time ticker (keeps going while the game is paused behind a menu).
 	auto After = [this](float Delay, const FTimerDelegate& Delegate)
 	{
-		FTimerHandle Handle; // one handle per timer: reusing a handle would cancel the previous one
-		GetWorldTimerManager().SetTimer(Handle, Delegate, Delay, false);
+		FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateWeakLambda(this, [Delegate](float)
+		{
+			Delegate.ExecuteIfBound();
+			return false; // once
+		}), Delay);
 	};
 	After(15.f, Command(TEXT("startfpschart")));
 	After(40.f, Command(TEXT("stopfpschart")));
@@ -1531,6 +1554,345 @@ void AMishpachaHUD::DrawSubtitle()
 	DrawLabel(Mission.ObjectiveDialogue, X + S(22.f) + WhoW, Y + (H - LineSize.Y) * 0.5f, LineFont, WithAlpha(MishpachaHUDStyle::TextMain, Alpha));
 }
 
+// ---------------------------------------------------------------------------
+// Menus
+// ---------------------------------------------------------------------------
+
+void AMishpachaHUD::SetMenuPage(EMishpachaMenuPage Page)
+{
+	if (Page != MenuPage)
+	{
+		MenuSelected = 0;
+		bConfirmNewStory = false;
+		MenuStatus = FText::GetEmpty();
+		MenuOpenedTime = GetWorld() ? GetWorld()->GetRealTimeSeconds() : 0.0;
+	}
+	MenuPage = Page;
+}
+
+void AMishpachaHUD::CloseMenu()
+{
+	if (AMishpachaPlayerController* PC = Cast<AMishpachaPlayerController>(GetOwningPlayerController()))
+	{
+		PC->SetMenuOpen(false);
+	}
+	else
+	{
+		SetMenuPage(EMishpachaMenuPage::None);
+	}
+}
+
+void AMishpachaHUD::ApplyGraphicsLevel(int32 Level)
+{
+	if (UGameUserSettings* Settings = GEngine ? GEngine->GetGameUserSettings() : nullptr)
+	{
+		Settings->SetOverallScalabilityLevel(Level);
+		Settings->ApplySettings(false);
+		Settings->SaveSettings();
+	}
+}
+
+void AMishpachaHUD::ApplyFrameLimit(float Limit)
+{
+	if (UGameUserSettings* Settings = GEngine ? GEngine->GetGameUserSettings() : nullptr)
+	{
+		Settings->SetFrameRateLimit(Limit);
+		Settings->ApplySettings(false);
+		Settings->SaveSettings();
+	}
+}
+
+void AMishpachaHUD::HandleSessionsFound(const TArray<FMishpachaSessionInfo>& Sessions, bool bSuccessful)
+{
+	bSearchingSessions = false;
+	FoundSessions.Reset();
+	for (const FMishpachaSessionInfo& Session : Sessions)
+	{
+		FoundSessions.Add(FText::Format(LOCTEXT("SessionFmt", "{0}  ({1}/{2})  {3} ms"),
+			FText::FromString(Session.HostName), FText::AsNumber(Session.CurrentPlayers), FText::AsNumber(Session.MaxPlayers), FText::AsNumber(Session.PingMs)));
+	}
+	MenuStatus = bSuccessful ? FText::Format(LOCTEXT("SessionsFound", "{0} game(s) found."), FText::AsNumber(FoundSessions.Num())) : LOCTEXT("SessionsFailed", "Search failed.");
+}
+
+void AMishpachaHUD::BuildMenuItems(TArray<FMenuItem>& Items)
+{
+	UMishpachaGameInstance* GI = GetGameInstance<UMishpachaGameInstance>();
+	UMishpachaSessionSubsystem* Sessions = GI ? GI->GetSessions() : nullptr;
+	auto Item = [&Items](const FText& Label, const FText& Detail, TFunction<void()> Action, bool bEnabled = true)
+	{
+		FMenuItem& New = Items.AddDefaulted_GetRef();
+		New.Label = Label;
+		New.Detail = Detail;
+		New.Action = MoveTemp(Action);
+		New.bEnabled = bEnabled;
+	};
+	auto GoTo = [this](EMishpachaMenuPage Page) { return [this, Page]() { SetMenuPage(Page); }; };
+	auto Quit = [this]() { UKismetSystemLibrary::QuitGame(this, GetOwningPlayerController(), EQuitPreference::Quit, false); };
+
+	switch (MenuPage)
+	{
+	case EMishpachaMenuPage::Main:
+	{
+		const UMishpachaSaveGame* Save = GI ? GI->GetSave() : nullptr;
+		const int32 JobsDone = Save ? Save->CompletedMissions.Num() : 0;
+		Item(JobsDone > 0 ? LOCTEXT("MenuContinue", "CONTINUE") : LOCTEXT("MenuStart", "START STORY"),
+			JobsDone > 0 ? FText::Format(LOCTEXT("MenuJobsDone", "{0} job(s) done"), FText::AsNumber(JobsDone)) : LOCTEXT("MenuStartDetail", "Rafi, Shira and Omer. Tel Avir is waiting."),
+			[this]() { CloseMenu(); });
+		Item(bConfirmNewStory ? LOCTEXT("MenuNewConfirm", "NEW STORY - SURE?") : LOCTEXT("MenuNew", "NEW STORY"),
+			bConfirmNewStory ? LOCTEXT("MenuNewConfirmDetail", "Select again to erase all progress") : LOCTEXT("MenuNewDetail", "Start over from the first job"),
+			[this, GI]()
+			{
+				if (!bConfirmNewStory)
+				{
+					bConfirmNewStory = true;
+					return;
+				}
+				if (GI)
+				{
+					GI->ResetSave();
+					GI->SaveToDisk();
+				}
+				UGameplayStatics::OpenLevel(this, FName(*UGameplayStatics::GetCurrentLevelName(this)));
+			});
+		Item(LOCTEXT("MenuMultiplayer", "MULTIPLAYER"), LOCTEXT("MenuMultiplayerDetail", "Play with friends on your network"), GoTo(EMishpachaMenuPage::Multiplayer));
+		Item(LOCTEXT("MenuSettings", "SETTINGS"), LOCTEXT("MenuSettingsDetail", "Graphics quality, frame rate"), GoTo(EMishpachaMenuPage::Settings));
+		Item(LOCTEXT("MenuQuit", "QUIT"), FText::GetEmpty(), Quit);
+		break;
+	}
+	case EMishpachaMenuPage::Pause:
+		Item(LOCTEXT("MenuResume", "RESUME"), FText::GetEmpty(), [this]() { CloseMenu(); });
+		Item(LOCTEXT("MenuSettings", "SETTINGS"), LOCTEXT("MenuSettingsDetail", "Graphics quality, frame rate"), GoTo(EMishpachaMenuPage::Settings));
+		Item(LOCTEXT("MenuMainMenu", "MAIN MENU"), FText::GetEmpty(), GoTo(EMishpachaMenuPage::Main));
+		Item(LOCTEXT("MenuQuit", "QUIT"), FText::GetEmpty(), Quit);
+		break;
+	case EMishpachaMenuPage::Multiplayer:
+		Item(LOCTEXT("MenuHost", "HOST A GAME (LAN)"), LOCTEXT("MenuHostDetail", "Friends on the same network join you"), [this, Sessions]()
+		{
+			MenuStatus = (Sessions && Sessions->HostSession(8, true)) ? LOCTEXT("MenuHosting", "Starting the game...") : LOCTEXT("MenuHostFailed", "Couldn't host (online subsystem not available).");
+		}, Sessions != nullptr);
+		Item(LOCTEXT("MenuFind", "FIND GAMES (LAN)"), LOCTEXT("MenuFindDetail", "Look for games on your network"), [this, Sessions]()
+		{
+			FoundSessions.Reset();
+			if (Sessions)
+			{
+				Sessions->OnFindSessionsComplete.AddUniqueDynamic(this, &AMishpachaHUD::HandleSessionsFound);
+				bSearchingSessions = Sessions->FindSessions(20, true);
+			}
+			MenuStatus = bSearchingSessions ? LOCTEXT("MenuSearching", "Searching...") : LOCTEXT("MenuSearchFailed", "Couldn't search (online subsystem not available).");
+			SetMenuPage(EMishpachaMenuPage::Sessions);
+			if (bSearchingSessions)
+			{
+				MenuStatus = LOCTEXT("MenuSearching", "Searching...");
+			}
+		}, Sessions != nullptr);
+		Item(LOCTEXT("MenuBack", "BACK"), FText::GetEmpty(), [this]() { MenuBack(); });
+		break;
+	case EMishpachaMenuPage::Sessions:
+		for (int32 Index = 0; Index < FoundSessions.Num(); ++Index)
+		{
+			Item(FoundSessions[Index], LOCTEXT("MenuJoinDetail", "Join"), [this, Sessions, Index]()
+			{
+				MenuStatus = (Sessions && Sessions->JoinSessionByIndex(Index)) ? LOCTEXT("MenuJoining", "Joining...") : LOCTEXT("MenuJoinFailed", "Couldn't join.");
+			});
+		}
+		if (FoundSessions.Num() == 0)
+		{
+			Item(bSearchingSessions ? LOCTEXT("MenuSearchingItem", "SEARCHING...") : LOCTEXT("MenuNoGames", "NO GAMES FOUND"), FText::GetEmpty(), []() {}, false);
+		}
+		Item(LOCTEXT("MenuRefresh", "SEARCH AGAIN"), FText::GetEmpty(), [this, Sessions]()
+		{
+			FoundSessions.Reset();
+			bSearchingSessions = Sessions && Sessions->FindSessions(20, true);
+			MenuStatus = bSearchingSessions ? LOCTEXT("MenuSearching", "Searching...") : LOCTEXT("MenuSearchFailed", "Couldn't search (online subsystem not available).");
+		}, Sessions != nullptr);
+		Item(LOCTEXT("MenuBack", "BACK"), FText::GetEmpty(), [this]() { MenuBack(); });
+		break;
+	case EMishpachaMenuPage::Settings:
+	{
+		const UGameUserSettings* Settings = GEngine ? GEngine->GetGameUserSettings() : nullptr;
+		const int32 Level = Settings ? Settings->GetOverallScalabilityLevel() : 1;
+		const FText LevelNames[] = { LOCTEXT("QualityLow", "LOW"), LOCTEXT("QualityMedium", "MEDIUM"), LOCTEXT("QualityHigh", "HIGH"), LOCTEXT("QualityEpic", "EPIC") };
+		const FText LevelName = (Level >= 0 && Level <= 3) ? LevelNames[Level] : LOCTEXT("QualityCustom", "CUSTOM");
+		Item(FText::Format(LOCTEXT("MenuGraphics", "GRAPHICS: {0}"), LevelName), LOCTEXT("MenuGraphicsDetail", "Medium suits a GTX 1650 laptop"), [this, Level]()
+		{
+			ApplyGraphicsLevel((FMath::Max(Level, 0) + 1) % 4);
+		});
+		const float Limit = Settings ? Settings->GetFrameRateLimit() : 60.f;
+		const FText LimitName = Limit <= 0.f ? LOCTEXT("FpsUnlimited", "UNLIMITED") : FText::AsNumber(FMath::RoundToInt(Limit));
+		Item(FText::Format(LOCTEXT("MenuFps", "FRAME RATE LIMIT: {0}"), LimitName), LOCTEXT("MenuFpsDetail", "A limit keeps the laptop cooler"), [this, Limit]()
+		{
+			ApplyFrameLimit(Limit <= 0.f ? 30.f : (Limit < 45.f ? 60.f : 0.f));
+		});
+		Item(LOCTEXT("MenuBack", "BACK"), FText::GetEmpty(), [this]() { MenuBack(); });
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+void AMishpachaHUD::MenuNavigate(int32 Delta)
+{
+	TArray<FMenuItem> Items;
+	BuildMenuItems(Items);
+	if (Items.Num() == 0)
+	{
+		return;
+	}
+	for (int32 Step = 0; Step < Items.Num(); ++Step)
+	{
+		MenuSelected = (MenuSelected + Delta + Items.Num()) % Items.Num();
+		if (Items[MenuSelected].bEnabled)
+		{
+			break;
+		}
+	}
+}
+
+void AMishpachaHUD::MenuActivate()
+{
+	TArray<FMenuItem> Items;
+	BuildMenuItems(Items);
+	if (Items.IsValidIndex(MenuSelected) && Items[MenuSelected].bEnabled && Items[MenuSelected].Action)
+	{
+		const bool bWasConfirming = bConfirmNewStory;
+		Items[MenuSelected].Action();
+		if (bWasConfirming && bConfirmNewStory && MenuPage == EMishpachaMenuPage::Main && MenuSelected != 1)
+		{
+			bConfirmNewStory = false;
+		}
+	}
+}
+
+void AMishpachaHUD::MenuBack()
+{
+	switch (MenuPage)
+	{
+	case EMishpachaMenuPage::Pause:
+		CloseMenu();
+		break;
+	case EMishpachaMenuPage::Sessions:
+		SetMenuPage(EMishpachaMenuPage::Multiplayer);
+		break;
+	case EMishpachaMenuPage::Settings:
+	case EMishpachaMenuPage::Multiplayer:
+		// Back to where we came from: the pause menu during play, otherwise the main menu.
+		SetMenuPage(bMenuFromPause ? EMishpachaMenuPage::Pause : EMishpachaMenuPage::Main);
+		break;
+	default:
+		break; // the main menu stays until you pick something
+	}
+}
+
+void AMishpachaHUD::MenuClick(const FVector2D& ScreenPosition)
+{
+	for (int32 Index = 0; Index < MenuItemRects.Num(); ++Index)
+	{
+		if (MenuItemRects[Index].IsInside(ScreenPosition))
+		{
+			MenuSelected = Index;
+			MenuActivate();
+			return;
+		}
+	}
+}
+
+void AMishpachaHUD::DrawMenu()
+{
+	if (MenuPage == EMishpachaMenuPage::Pause)
+	{
+		bMenuFromPause = true;
+	}
+	else if (MenuPage == EMishpachaMenuPage::Main)
+	{
+		bMenuFromPause = false;
+	}
+
+	const float ClipX = Canvas->ClipX;
+	const float ClipY = Canvas->ClipY;
+	const double Now = GetWorld()->GetRealTimeSeconds();
+	const float Appear = FMath::Clamp(float(Now - MenuOpenedTime) / 0.3f, 0.f, 1.f);
+	using MishpachaHUDStyle::WithAlpha;
+
+	// Backdrop: the (paused) city, darkened, with a panel on the left.
+	FillRect(0.f, 0.f, ClipX, ClipY, FLinearColor(0.f, 0.f, 0.f, 0.45f));
+	const float PanelW = FMath::Min(S(620.f), ClipX);
+	FillRect(0.f, 0.f, PanelW, ClipY, FLinearColor(0.008f, 0.01f, 0.016f, 0.82f));
+	FillRect(PanelW, 0.f, S(2.f), ClipY, WithAlpha(MishpachaHUDStyle::Gold, 0.5f));
+
+	const float Left = S(84.f) - (1.f - Appear) * S(30.f);
+	DrawLabel(LOCTEXT("MenuTitle", "MISHPACHA"), Left, S(110.f), Font(54.f, true), WithAlpha(MishpachaHUDStyle::Gold, Appear));
+	DrawLabel(LOCTEXT("MenuTagline", "THE SELA FAMILY   /   TEL AVIR"), Left + S(4.f), S(190.f), Font(11.f, true), WithAlpha(MishpachaHUDStyle::TextDim, Appear));
+
+	FText PageTitle;
+	switch (MenuPage)
+	{
+	case EMishpachaMenuPage::Pause: PageTitle = LOCTEXT("PagePaused", "PAUSED"); break;
+	case EMishpachaMenuPage::Multiplayer: PageTitle = LOCTEXT("PageMultiplayer", "MULTIPLAYER"); break;
+	case EMishpachaMenuPage::Sessions: PageTitle = LOCTEXT("PageSessions", "GAMES ON YOUR NETWORK"); break;
+	case EMishpachaMenuPage::Settings: PageTitle = LOCTEXT("PageSettings", "SETTINGS"); break;
+	default: break;
+	}
+	if (!PageTitle.IsEmpty())
+	{
+		DrawLabel(PageTitle, Left + S(4.f), S(245.f), Font(13.f, true), WithAlpha(MishpachaHUDStyle::TextMain, Appear));
+	}
+
+	TArray<FMenuItem> Items;
+	BuildMenuItems(Items);
+	MenuSelected = FMath::Clamp(MenuSelected, 0, FMath::Max(0, Items.Num() - 1));
+
+	// Mouse hover picks the item under the cursor (only when the mouse actually moved).
+	float MouseX = 0.f;
+	float MouseY = 0.f;
+	const APlayerController* PC = GetOwningPlayerController();
+	const bool bHasMouse = PC && PC->GetMousePosition(MouseX, MouseY);
+	const FVector2D Mouse(MouseX, MouseY);
+	const bool bMouseMoved = bHasMouse && FVector2D::DistSquared(Mouse, LastMenuMouse) > 4.0;
+	LastMenuMouse = Mouse;
+
+	MenuItemRects.Reset();
+	float Y = S(300.f);
+	const float ItemH = S(58.f);
+	for (int32 Index = 0; Index < Items.Num(); ++Index)
+	{
+		const FBox2D Rect(FVector2D(Left - S(24.f), Y), FVector2D(PanelW - S(40.f), Y + ItemH - S(6.f)));
+		MenuItemRects.Add(Rect);
+		if (bMouseMoved && Rect.IsInside(Mouse) && Items[Index].bEnabled)
+		{
+			MenuSelected = Index;
+		}
+		const bool bSelected = Index == MenuSelected && Items[Index].bEnabled;
+		const float ItemAppear = FMath::Clamp(float(Now - MenuOpenedTime - 0.04 * Index) / 0.25f, 0.f, 1.f);
+		if (bSelected)
+		{
+			FillRect(Rect.Min.X, Rect.Min.Y, Rect.GetSize().X, Rect.GetSize().Y, WithAlpha(FLinearColor(1.f, 1.f, 1.f, 0.07f), ItemAppear));
+			FillRect(Rect.Min.X, Rect.Min.Y, S(4.f), Rect.GetSize().Y, WithAlpha(MishpachaHUDStyle::Gold, ItemAppear));
+		}
+		const FLinearColor LabelColor = !Items[Index].bEnabled ? FLinearColor(1.f, 1.f, 1.f, 0.28f) : (bSelected ? MishpachaHUDStyle::TextMain : MishpachaHUDStyle::TextDim);
+		DrawLabel(Items[Index].Label, Left + (bSelected ? S(8.f) : 0.f), Y + S(4.f), Font(19.f, true), WithAlpha(LabelColor, ItemAppear));
+		if (!Items[Index].Detail.IsEmpty())
+		{
+			DrawLabel(Items[Index].Detail, Left + (bSelected ? S(8.f) : 0.f), Y + S(32.f), Font(9.5f), WithAlpha(FLinearColor(1.f, 1.f, 1.f, bSelected ? 0.6f : 0.35f), ItemAppear));
+		}
+		Y += ItemH;
+	}
+
+	if (!MenuStatus.IsEmpty())
+	{
+		DrawLabel(MenuStatus, Left, Y + S(14.f), Font(11.f, true), MishpachaHUDStyle::Info);
+	}
+
+	float HintX = Left;
+	const float HintY = ClipY - S(60.f);
+	DrawKeyChip(HintX, HintY, LOCTEXT("KeyEnter", "ENTER"), LOCTEXT("HintSelect", "Select"));
+	DrawKeyChip(HintX, HintY, LOCTEXT("KeyWS", "W / S"), LOCTEXT("HintMove", "Move"));
+	if (MenuPage != EMishpachaMenuPage::Main)
+	{
+		DrawKeyChip(HintX, HintY, LOCTEXT("KeyP", "P"), LOCTEXT("HintBack", "Back"));
+	}
+}
+
 void AMishpachaHUD::DrawKeyChip(float& X, float Y, const FText& Key, const FText& Label)
 {
 	const FSlateFontInfo KeyFont = Font(9.f, true);
@@ -1602,6 +1964,12 @@ void AMishpachaHUD::DrawHUD()
 
 	EnsureMapTexture();
 	TrackMissionState();
+
+	if (IsMenuOpen())
+	{
+		DrawMenu();
+		return;
+	}
 
 	if (bMapOpen)
 	{

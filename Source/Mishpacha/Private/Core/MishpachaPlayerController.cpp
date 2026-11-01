@@ -190,6 +190,36 @@ void AMishpachaPlayerController::BuildMapInput()
 	Map(MapContext, MapZoomAction, EKeys::MouseWheelAxis);
 	Map(MapContext, MapZoomAction, EKeys::Gamepad_RightTriggerAxis);
 	Map(MapContext, MapZoomAction, EKeys::Gamepad_LeftTriggerAxis, MF_Negate);
+
+	// Menus (work while the game is paused). P / Esc / Start open the pause menu and go back.
+	auto MenuAction = [this](const TCHAR* ActionName)
+	{
+		UInputAction* Action = MakeAction(ActionName, EInputActionValueType::Boolean);
+		Action->bTriggerWhenPaused = true;
+		return Action;
+	};
+	MenuToggleAction = MenuAction(TEXT("IA_MenuToggle"));
+	MenuSelectAction = MenuAction(TEXT("IA_MenuSelect"));
+	MenuClickAction = MenuAction(TEXT("IA_MenuClick"));
+	MenuUpAction = MenuAction(TEXT("IA_MenuUp"));
+	MenuDownAction = MenuAction(TEXT("IA_MenuDown"));
+	Map(UIContext, MenuToggleAction, EKeys::P);
+	Map(UIContext, MenuToggleAction, EKeys::Escape);
+	Map(UIContext, MenuToggleAction, EKeys::Gamepad_Special_Right);
+
+	MenuContext = NewObject<UInputMappingContext>(this, TEXT("IMC_Menu_Default"));
+	Map(MenuContext, MenuClickAction, EKeys::LeftMouseButton);
+	Map(MenuContext, MenuSelectAction, EKeys::Enter);
+	Map(MenuContext, MenuSelectAction, EKeys::SpaceBar);
+	Map(MenuContext, MenuSelectAction, EKeys::Gamepad_FaceButton_Bottom);
+	Map(MenuContext, MenuToggleAction, EKeys::Gamepad_FaceButton_Right);
+	Map(MenuContext, MenuToggleAction, EKeys::BackSpace);
+	Map(MenuContext, MenuUpAction, EKeys::W);
+	Map(MenuContext, MenuUpAction, EKeys::Up);
+	Map(MenuContext, MenuUpAction, EKeys::Gamepad_DPad_Up);
+	Map(MenuContext, MenuDownAction, EKeys::S);
+	Map(MenuContext, MenuDownAction, EKeys::Down);
+	Map(MenuContext, MenuDownAction, EKeys::Gamepad_DPad_Down);
 }
 
 void AMishpachaPlayerController::SetupInputComponent()
@@ -244,6 +274,11 @@ void AMishpachaPlayerController::SetupInputComponent()
 	EIC->BindAction(MapClearAction, ETriggerEvent::Started, this, &ThisClass::HandleMapClear);
 	EIC->BindAction(MapPanAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMapPan);
 	EIC->BindAction(MapZoomAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMapZoom);
+	EIC->BindAction(MenuToggleAction, ETriggerEvent::Started, this, &ThisClass::HandleMenuToggle);
+	EIC->BindAction(MenuSelectAction, ETriggerEvent::Started, this, &ThisClass::HandleMenuSelect);
+	EIC->BindAction(MenuClickAction, ETriggerEvent::Started, this, &ThisClass::HandleMenuClick);
+	EIC->BindAction(MenuUpAction, ETriggerEvent::Started, this, &ThisClass::HandleMenuUp);
+	EIC->BindAction(MenuDownAction, ETriggerEvent::Started, this, &ThisClass::HandleMenuDown);
 
 	ApplyContextForPawn(GetPawn());
 }
@@ -278,9 +313,73 @@ void AMishpachaPlayerController::ApplyContextForPawn(APawn* InPawn)
 	{
 		InputSubsystem->AddMappingContext(UIContext, 50);
 	}
-	if (bMapOpen && MapContext)
+	if (bMapOpen && MapContext && !bMenuOpen)
 	{
 		InputSubsystem->AddMappingContext(MapContext, 100);
+	}
+	if (bMenuOpen && MenuContext)
+	{
+		InputSubsystem->AddMappingContext(MenuContext, 200);
+	}
+}
+
+void AMishpachaPlayerController::ApplyCursorMode()
+{
+	const bool bCursor = bMapOpen || bMenuOpen;
+	bShowMouseCursor = bCursor;
+	if (bCursor)
+	{
+		FInputModeGameAndUI InputMode;
+		InputMode.SetHideCursorDuringCapture(false);
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
+		SetInputMode(InputMode);
+	}
+	else
+	{
+		SetInputMode(FInputModeGameOnly());
+	}
+}
+
+void AMishpachaPlayerController::SetMenuOpen(bool bOpen, EMishpachaMenuPage Page)
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	if (bOpen && bMapOpen)
+	{
+		SetMapOpen(false);
+	}
+	if (bOpen && !bMenuOpen)
+	{
+		// Let go of everything that was held.
+		if (AMishpachaCharacter* MyCharacter = GetMishpachaCharacter())
+		{
+			MyCharacter->StopFire();
+			MyCharacter->SetAiming(false);
+			MyCharacter->SetSprinting(false);
+		}
+		else if (AMishpachaVehicle* Vehicle = GetMishpachaVehicle())
+		{
+			Vehicle->SetThrottle(0.f);
+			Vehicle->SetBrake(0.f);
+			Vehicle->SetSteering(0.f);
+		}
+		SetSwitchMenuOpen(false);
+	}
+	bMenuOpen = bOpen;
+
+	// Pause single-player games behind the menu (online games keep running).
+	if (GetNetMode() == NM_Standalone)
+	{
+		SetPause(bOpen);
+	}
+	ApplyCursorMode();
+	ApplyContextForPawn(GetPawn());
+
+	if (AMishpachaHUD* MishpachaHUD = GetHUD<AMishpachaHUD>())
+	{
+		MishpachaHUD->SetMenuPage(bOpen ? Page : EMishpachaMenuPage::None);
 	}
 }
 
@@ -310,18 +409,7 @@ void AMishpachaPlayerController::SetMapOpen(bool bOpen)
 		SetSwitchMenuOpen(false);
 	}
 
-	bShowMouseCursor = bOpen;
-	if (bOpen)
-	{
-		FInputModeGameAndUI InputMode;
-		InputMode.SetHideCursorDuringCapture(false);
-		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
-		SetInputMode(InputMode);
-	}
-	else
-	{
-		SetInputMode(FInputModeGameOnly());
-	}
+	ApplyCursorMode();
 	ApplyContextForPawn(GetPawn());
 
 	if (AMishpachaHUD* MishpachaHUD = GetHUD<AMishpachaHUD>())
@@ -420,7 +508,7 @@ void AMishpachaPlayerController::ClientShowNotification_Implementation(const FTe
 
 void AMishpachaPlayerController::HandleMove(const FInputActionValue& Value)
 {
-	if (bMapOpen)
+	if (bMapOpen || bMenuOpen)
 	{
 		return;
 	}
@@ -437,7 +525,7 @@ void AMishpachaPlayerController::HandleMove(const FInputActionValue& Value)
 
 void AMishpachaPlayerController::HandleLook(const FInputActionValue& Value)
 {
-	if (bMapOpen)
+	if (bMapOpen || bMenuOpen)
 	{
 		return;
 	}
@@ -458,7 +546,7 @@ void AMishpachaPlayerController::HandleLook(const FInputActionValue& Value)
 
 void AMishpachaPlayerController::HandleJumpStarted()
 {
-	if (bMapOpen)
+	if (bMapOpen || bMenuOpen)
 	{
 		return;
 	}
@@ -510,7 +598,7 @@ void AMishpachaPlayerController::HandleSprintCompleted()
 
 void AMishpachaPlayerController::HandleInteract()
 {
-	if (bMapOpen)
+	if (bMapOpen || bMenuOpen)
 	{
 		return;
 	}
@@ -526,7 +614,7 @@ void AMishpachaPlayerController::HandleInteract()
 
 void AMishpachaPlayerController::HandleFireStarted()
 {
-	if (bMapOpen)
+	if (bMapOpen || bMenuOpen)
 	{
 		return;
 	}
@@ -546,7 +634,7 @@ void AMishpachaPlayerController::HandleFireCompleted()
 
 void AMishpachaPlayerController::HandleAimStarted()
 {
-	if (bMapOpen)
+	if (bMapOpen || bMenuOpen)
 	{
 		return;
 	}
@@ -566,7 +654,7 @@ void AMishpachaPlayerController::HandleAimCompleted()
 
 void AMishpachaPlayerController::HandleAbility()
 {
-	if (bMapOpen)
+	if (bMapOpen || bMenuOpen)
 	{
 		return;
 	}
@@ -607,7 +695,7 @@ void AMishpachaPlayerController::HandleSwitch3()
 
 void AMishpachaPlayerController::HandleThrottle(const FInputActionValue& Value)
 {
-	if (bMapOpen)
+	if (bMapOpen || bMenuOpen)
 	{
 		return;
 	}
@@ -627,7 +715,7 @@ void AMishpachaPlayerController::HandleThrottleReleased()
 
 void AMishpachaPlayerController::HandleBrake(const FInputActionValue& Value)
 {
-	if (bMapOpen)
+	if (bMapOpen || bMenuOpen)
 	{
 		return;
 	}
@@ -647,7 +735,7 @@ void AMishpachaPlayerController::HandleBrakeReleased()
 
 void AMishpachaPlayerController::HandleSteer(const FInputActionValue& Value)
 {
-	if (bMapOpen)
+	if (bMapOpen || bMenuOpen)
 	{
 		return;
 	}
@@ -754,6 +842,11 @@ void AMishpachaPlayerController::Mish_EnterNearestCar()
 	}
 }
 
+void AMishpachaPlayerController::Mish_Menu()
+{
+	SetMenuOpen(true, EMishpachaMenuPage::Main);
+}
+
 void AMishpachaPlayerController::Mish_SkipStep()
 {
 	if (UMissionSubsystem* Missions = HasAuthority() ? GetWorld()->GetSubsystem<UMissionSubsystem>() : nullptr)
@@ -772,7 +865,62 @@ void AMishpachaPlayerController::Mish_Hour(float Hour)
 
 void AMishpachaPlayerController::HandleMapToggle()
 {
-	SetMapOpen(!bMapOpen);
+	if (!bMenuOpen)
+	{
+		SetMapOpen(!bMapOpen);
+	}
+}
+
+void AMishpachaPlayerController::HandleMenuToggle()
+{
+	AMishpachaHUD* MishpachaHUD = GetHUD<AMishpachaHUD>();
+	if (bMenuOpen && MishpachaHUD)
+	{
+		MishpachaHUD->MenuBack(); // back a page, or resume from the pause menu
+	}
+	else if (bMapOpen)
+	{
+		SetMapOpen(false);
+	}
+	else
+	{
+		SetMenuOpen(true, EMishpachaMenuPage::Pause);
+	}
+}
+
+void AMishpachaPlayerController::HandleMenuSelect()
+{
+	if (AMishpachaHUD* MishpachaHUD = bMenuOpen ? GetHUD<AMishpachaHUD>() : nullptr)
+	{
+		MishpachaHUD->MenuActivate();
+	}
+}
+
+void AMishpachaPlayerController::HandleMenuClick()
+{
+	float MouseX = 0.f;
+	float MouseY = 0.f;
+	AMishpachaHUD* MishpachaHUD = bMenuOpen ? GetHUD<AMishpachaHUD>() : nullptr;
+	if (MishpachaHUD && GetMousePosition(MouseX, MouseY))
+	{
+		MishpachaHUD->MenuClick(FVector2D(MouseX, MouseY));
+	}
+}
+
+void AMishpachaPlayerController::HandleMenuUp()
+{
+	if (AMishpachaHUD* MishpachaHUD = bMenuOpen ? GetHUD<AMishpachaHUD>() : nullptr)
+	{
+		MishpachaHUD->MenuNavigate(-1);
+	}
+}
+
+void AMishpachaPlayerController::HandleMenuDown()
+{
+	if (AMishpachaHUD* MishpachaHUD = bMenuOpen ? GetHUD<AMishpachaHUD>() : nullptr)
+	{
+		MishpachaHUD->MenuNavigate(1);
+	}
 }
 
 void AMishpachaPlayerController::HandleMapSelect()

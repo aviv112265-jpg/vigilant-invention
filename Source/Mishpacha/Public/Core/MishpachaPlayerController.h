@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
+#include "UI/MishpachaHUD.h"
 #include "MishpachaPlayerController.generated.h"
 
 class UInputAction;
@@ -43,6 +44,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "UI")
 	bool IsMapOpen() const { return bMapOpen; }
 
+	/** Main / pause menu: pauses single-player games, shows the cursor, routes input to the menu. */
+	void SetMenuOpen(bool bOpen, EMishpachaMenuPage Page = EMishpachaMenuPage::Pause);
+
+	UFUNCTION(BlueprintPure, Category = "UI")
+	bool IsMenuOpen() const { return bMenuOpen; }
+
 	// ----- Dev console commands (single player / listen server host) -----
 	/** Start a job by id, e.g. "Mish_StartJob Rafi_02" (the usual sibling / prerequisite rules apply). */
 	UFUNCTION(Exec)
@@ -59,6 +66,10 @@ public:
 	/** Get into the nearest car (handy for testing chases). */
 	UFUNCTION(Exec)
 	void Mish_EnterNearestCar();
+
+	/** Open the main menu. */
+	UFUNCTION(Exec)
+	void Mish_Menu();
 
 	/** Complete the current job step. */
 	UFUNCTION(Exec)
@@ -156,9 +167,28 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> MapZoomAction;
 
+	UPROPERTY(Transient)
+	TObjectPtr<UInputMappingContext> MenuContext;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> MenuToggleAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> MenuSelectAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> MenuClickAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> MenuUpAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> MenuDownAction;
+
 private:
 	bool bSwitchMenuOpen = false;
 	bool bMapOpen = false;
+	bool bMenuOpen = false;
 
 	void BuildMapInput();
 
@@ -205,4 +235,10 @@ private:
 	void HandleMapClear();
 	void HandleMapPan(const FInputActionValue& Value);
 	void HandleMapZoom(const FInputActionValue& Value);
+	void HandleMenuToggle();
+	void HandleMenuSelect();
+	void HandleMenuClick();
+	void HandleMenuUp();
+	void HandleMenuDown();
+	void ApplyCursorMode();
 };

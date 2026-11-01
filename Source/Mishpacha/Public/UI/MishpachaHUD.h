@@ -5,6 +5,7 @@
 #include "GameFramework/HUD.h"
 #include "Fonts/SlateFontInfo.h"
 #include "Missions/MissionTypes.h"
+#include "Online/MishpachaSessionSubsystem.h" // FMishpachaSessionInfo (menu session list)
 #include "MishpachaHUD.generated.h"
 
 class UMishpachaHUDWidget;
@@ -15,6 +16,17 @@ class AMishpachaRouteGuide;
 class UTexture2D;
 class UFont;
 struct FCanvasUVTri;
+
+UENUM()
+enum class EMishpachaMenuPage : uint8
+{
+	None,
+	Main,
+	Pause,
+	Multiplayer,
+	Sessions,
+	Settings
+};
 
 /**
  * If HUDWidgetClass is set (BP child of this HUD), creates the widget and forwards events to it.
@@ -51,6 +63,15 @@ public:
 	UFUNCTION(BlueprintPure, Category = "HUD|Map")
 	bool HasWaypoint() const { return bHasWaypoint; }
 
+	// ----- Menus (main menu at start, pause menu on P / Esc); input comes from the player controller -----
+	void SetMenuPage(EMishpachaMenuPage Page);
+	EMishpachaMenuPage GetMenuPage() const { return MenuPage; }
+	bool IsMenuOpen() const { return MenuPage != EMishpachaMenuPage::None; }
+	void MenuNavigate(int32 Delta);
+	void MenuActivate();
+	void MenuBack();
+	void MenuClick(const FVector2D& ScreenPosition);
+
 	virtual void DrawHUD() override;
 
 protected:
@@ -66,6 +87,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Map")
 	bool bDrawMinimap = true;
+
+	/** Show the main menu when a single-player game starts. */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Menu")
+	bool bShowMainMenuOnStart = true;
 
 	/** Paint the GPS route on the road (chevrons). The route is always drawn on the maps. */
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Map")
@@ -99,7 +124,35 @@ protected:
 	UFUNCTION()
 	void HandleSiblingSwitched(int32 OldIndex, int32 NewIndex);
 
+	UFUNCTION()
+	void HandleSessionsFound(const TArray<FMishpachaSessionInfo>& Sessions, bool bSuccessful);
+
 private:
+	// ----- Menus -----
+	struct FMenuItem
+	{
+		FText Label;
+		FText Detail;
+		TFunction<void()> Action;
+		bool bEnabled = true;
+	};
+	EMishpachaMenuPage MenuPage = EMishpachaMenuPage::None;
+	int32 MenuSelected = 0;
+	bool bConfirmNewStory = false;
+	double MenuOpenedTime = 0.0;
+	TArray<FBox2D> MenuItemRects;
+	TArray<FText> FoundSessions;
+	bool bSearchingSessions = false;
+	bool bMenuFromPause = false;
+	FVector2D LastMenuMouse = FVector2D::ZeroVector;
+	FText MenuStatus;
+
+	void BuildMenuItems(TArray<FMenuItem>& OutItems);
+	void DrawMenu();
+	void CloseMenu();
+	void ApplyGraphicsLevel(int32 Level);
+	void ApplyFrameLimit(float Limit);
+
 	TWeakObjectPtr<AMishpachaPlayerState> BoundPlayerState;
 	TWeakObjectPtr<AMishpachaCharacter> BoundCharacter;
 	bool bBoundGameState = false;

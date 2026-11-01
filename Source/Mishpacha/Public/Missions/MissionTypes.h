@@ -38,4 +38,11 @@ struct FReplicatedMissionState
 
 	UPROPERTY(BlueprintReadOnly, Category = "Mission")
 	FVector GuideLocation = FVector::ZeroVector;
+
+	/** The current step's dialogue line (empty = none). */
+	UPROPERTY(BlueprintReadOnly, Category = "Mission")
+	FText ObjectiveSpeaker;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Mission")
+	FText ObjectiveDialogue;
 };

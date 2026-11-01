@@ -75,6 +75,75 @@ private:
 	int32 Required = 0;
 };
 
+/** Spawn a rival crew around a tagged place and take them all out. */
+UCLASS(meta = (DisplayName = "Rival Crew"))
+class MISHPACHA_API UObjective_RivalCrew : public UMissionObjective
+{
+	GENERATED_BODY()
+
+public:
+	UObjective_RivalCrew();
+
+	/** First actor with this tag is where the crew hangs out. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
+	FName LocationTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective", meta = (ClampMin = "1", ClampMax = "12"))
+	int32 Count = 3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
+	float SpreadRadius = 500.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
+	TSubclassOf<APawn> RivalClass;
+
+	virtual void Activate(UMissionSubsystem* InMissions, APlayerController* InPlayer) override;
+	virtual void TickObjective(float DeltaTime) override;
+	virtual bool GetGuideLocation(FVector& OutLocation) const override;
+
+private:
+	TArray<TWeakObjectPtr<APawn>> Crew;
+	FVector CrewSpot = FVector::ZeroVector;
+};
+
+/** Hand over to another sibling (the mission must have bAllowSwitching). */
+UCLASS(meta = (DisplayName = "Switch To Sibling"))
+class MISHPACHA_API UObjective_SwitchToSibling : public UMissionObjective
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
+	FName SiblingId;
+
+	virtual void TickObjective(float DeltaTime) override;
+};
+
+/** Stay near a tagged place for a while (a meeting, a pickup). */
+UCLASS(meta = (DisplayName = "Wait At"))
+class MISHPACHA_API UObjective_WaitAt : public UMissionObjective
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
+	FName LocationTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective", meta = (ClampMin = "0"))
+	float Seconds = 6.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective", meta = (ClampMin = "50"))
+	float Radius = 800.f;
+
+	virtual void Activate(UMissionSubsystem* InMissions, APlayerController* InPlayer) override;
+	virtual void TickObjective(float DeltaTime) override;
+	virtual bool GetGuideLocation(FVector& OutLocation) const override;
+
+private:
+	FVector Spot = FVector::ZeroVector;
+	float Waited = 0.f;
+};
+
 /** Lose the police (Heat back to 0). */
 UCLASS(meta = (DisplayName = "Lose The Heat"))
 class MISHPACHA_API UObjective_LoseHeat : public UMissionObjective

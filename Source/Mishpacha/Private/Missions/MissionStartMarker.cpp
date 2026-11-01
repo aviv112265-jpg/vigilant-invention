@@ -188,9 +188,14 @@ void AMissionStartMarker::HandleMissionEnded(FName MissionId, bool bSuccess)
 void AMissionStartMarker::RefreshAvailability()
 {
 	const UMissionSubsystem* Missions = GetWorld() ? GetWorld()->GetSubsystem<UMissionSubsystem>() : nullptr;
-	const bool bDone = Mission && Missions && !Mission->bRepeatable && Missions->IsMissionCompleted(Mission->MissionId);
-	SetActorHiddenInGame(bDone);
-	SetActorEnableCollision(!bDone);
+	bool bHide = Mission && Missions && !Mission->bRepeatable && Missions->IsMissionCompleted(Mission->MissionId);
+	// Story chains: the next job shows up (often on the same spot) once the previous one is done.
+	for (const FName& Prerequisite : Mission ? Mission->Prerequisites : TArray<FName>())
+	{
+		bHide |= Missions && !Missions->IsMissionCompleted(Prerequisite);
+	}
+	SetActorHiddenInGame(bHide);
+	SetActorEnableCollision(!bHide);
 }
 
 #undef LOCTEXT_NAMESPACE

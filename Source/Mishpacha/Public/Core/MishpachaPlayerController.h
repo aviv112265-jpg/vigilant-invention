@@ -43,6 +43,23 @@ public:
 	UFUNCTION(BlueprintPure, Category = "UI")
 	bool IsMapOpen() const { return bMapOpen; }
 
+	// ----- Dev console commands (single player / listen server host) -----
+	/** Start a job by id, e.g. "Mish_StartJob Rafi_02" (the usual sibling / prerequisite rules apply). */
+	UFUNCTION(Exec)
+	void Mish_StartJob(FName MissionId);
+
+	/** Mark a job done (unlocks the next one in its chain), e.g. "Mish_CompleteJob Rafi_01". */
+	UFUNCTION(Exec)
+	void Mish_CompleteJob(FName MissionId);
+
+	/** Complete the current job step. */
+	UFUNCTION(Exec)
+	void Mish_SkipStep();
+
+	/** Jump to an hour of the day, e.g. "Mish_Hour 21.5". */
+	UFUNCTION(Exec)
+	void Mish_Hour(float Hour);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;

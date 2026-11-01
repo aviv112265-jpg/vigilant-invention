@@ -1,6 +1,7 @@
 // MISHPACHA - built-in objective types.
 #include "Missions/MissionObjectives.h"
 #include "Characters/MishpachaCharacter.h"
+#include "Characters/MishpachaNPCCharacters.h"
 #include "Vehicles/MishpachaVehicle.h"
 #include "Core/MishpachaPlayerState.h"
 #include "Heat/HeatComponent.h"
@@ -151,6 +152,115 @@ bool UObjective_EliminateTargets::GetGuideLocation(FVector& OutLocation) const
 		}
 	}
 	return BestDistSq < TNumericLimits<double>::Max();
+}
+
+// ----- Rival Crew -----
+
+UObjective_RivalCrew::UObjective_RivalCrew()
+{
+	RivalClass = AMishpachaRival::StaticClass();
+}
+
+static FVector FindTaggedLocation(const UObject* WorldContext, FName Tag, const FVector& Fallback)
+{
+	TArray<AActor*> Found;
+	if (!Tag.IsNone())
+	{
+		UGameplayStatics::GetAllActorsWithTag(WorldContext, Tag, Found);
+	}
+	return Found.Num() > 0 ? Found[0]->GetActorLocation() : Fallback;
+}
+
+void UObjective_RivalCrew::Activate(UMissionSubsystem* InMissions, APlayerController* InPlayer)
+{
+	Super::Activate(InMissions, InPlayer);
+
+	Crew.Reset();
+	UWorld* World = GetWorld();
+	const APawn* Pawn = GetPlayerPawn();
+	CrewSpot = FindTaggedLocation(this, LocationTag, Pawn ? Pawn->GetActorLocation() + Pawn->GetActorForwardVector() * 3000.f : FVector::ZeroVector);
+	if (!World || !RivalClass)
+	{
+		MarkComplete();
+		return;
+	}
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	for (int32 Index = 0; Index < Count; ++Index)
+	{
+		const float Angle = 2.f * PI * Index / FMath::Max(1, Count);
+		const FVector Spot = CrewSpot + FVector(FMath::Cos(Angle), FMath::Sin(Angle), 0.f) * SpreadRadius + FVector(0.f, 0.f, 60.f);
+		const FRotator FacingOut(0.f, FMath::RadiansToDegrees(Angle), 0.f);
+		if (APawn* Rival = World->SpawnActor<APawn>(RivalClass, Spot, FacingOut, Params))
+		{
+			Crew.Add(Rival);
+		}
+	}
+	UE_LOG(LogMishpacha, Log, TEXT("RivalCrew: %d rivals at %s."), Crew.Num(), *CrewSpot.ToString());
+	if (Crew.Num() == 0)
+	{
+		MarkComplete();
+	}
+}
+
+void UObjective_RivalCrew::TickObjective(float DeltaTime)
+{
+	for (const TWeakObjectPtr<APawn>& Member : Crew)
+	{
+		const AMishpachaCharacter* AsCharacter = Cast<AMishpachaCharacter>(Member.Get());
+		if (IsValid(Member.Get()) && !(AsCharacter && AsCharacter->IsDead()))
+		{
+			return;
+		}
+	}
+	MarkComplete();
+}
+
+bool UObjective_RivalCrew::GetGuideLocation(FVector& OutLocation) const
+{
+	OutLocation = CrewSpot;
+	return true;
+}
+
+// ----- Switch To Sibling -----
+
+void UObjective_SwitchToSibling::TickObjective(float DeltaTime)
+{
+	const AMishpachaCharacter* AsCharacter = Cast<AMishpachaCharacter>(GetPlayerPawn());
+	if (AsCharacter && AsCharacter->GetSiblingId() == SiblingId)
+	{
+		MarkComplete();
+	}
+}
+
+// ----- Wait At -----
+
+void UObjective_WaitAt::Activate(UMissionSubsystem* InMissions, APlayerController* InPlayer)
+{
+	Super::Activate(InMissions, InPlayer);
+	const APawn* Pawn = GetPlayerPawn();
+	Spot = FindTaggedLocation(this, LocationTag, Pawn ? Pawn->GetActorLocation() : FVector::ZeroVector);
+	Waited = 0.f;
+}
+
+void UObjective_WaitAt::TickObjective(float DeltaTime)
+{
+	const APawn* Pawn = GetPlayerPawn();
+	if (Pawn && FVector::Dist2D(Pawn->GetActorLocation(), Spot) <= Radius)
+	{
+		Waited += DeltaTime;
+		if (Waited >= Seconds)
+		{
+			MarkComplete();
+		}
+	}
+}
+
+bool UObjective_WaitAt::GetGuideLocation(FVector& OutLocation) const
+{
+	OutLocation = Spot;
+	return true;
 }
 
 // ----- Lose Heat -----

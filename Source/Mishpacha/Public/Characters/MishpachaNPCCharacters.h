@@ -25,6 +25,17 @@ public:
 	AMishpachaCivilian();
 };
 
+/** Rival crew member: tagged "Enemy" (Omer's drone marks it) and "Rival", armed, guards its spot
+ *  and opens fire on any player who comes close (AMishpachaRivalAIController). */
+UCLASS()
+class MISHPACHA_API AMishpachaRival : public AMishpachaCharacter
+{
+	GENERATED_BODY()
+
+public:
+	AMishpachaRival();
+};
+
 /** Sela family soldier summoned by Rafi's ability. Follows Rafi (the ability issues the move orders). */
 UCLASS()
 class MISHPACHA_API AMishpachaFamilySoldier : public AMishpachaCharacter

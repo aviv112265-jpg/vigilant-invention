@@ -189,6 +189,7 @@ private:
 	void DrawMissionCard();
 	void DrawNotification();
 	void DrawBanner();
+	void DrawSubtitle();
 	void DrawControlsHint();
 	void DrawCrosshair();
 

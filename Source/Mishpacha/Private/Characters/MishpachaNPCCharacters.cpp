@@ -3,6 +3,7 @@
 #include "AI/MishpachaNPCAIController.h"
 #include "AI/MishpachaPoliceAIController.h"
 #include "AI/MishpachaCivilianAIController.h"
+#include "AI/MishpachaRivalAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AMishpachaPolicePawn::AMishpachaPolicePawn()
@@ -27,6 +28,17 @@ AMishpachaCivilian::AMishpachaCivilian()
 	JogSpeed = 160.f;
 	SprintSpeed = 520.f;
 	GetCharacterMovement()->MaxWalkSpeed = JogSpeed;
+}
+
+AMishpachaRival::AMishpachaRival()
+{
+	Tags.AddUnique(FName(TEXT("Enemy")));
+	Tags.AddUnique(FName(TEXT("Rival")));
+	AIControllerClass = AMishpachaRivalAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	PlaceholderColor = FLinearColor(0.5f, 0.06f, 0.06f, 1.f);
+	MaxHealth = 120.f;
+	Health = MaxHealth;
 }
 
 AMishpachaFamilySoldier::AMishpachaFamilySoldier()

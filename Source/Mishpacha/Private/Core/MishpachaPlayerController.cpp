@@ -5,6 +5,13 @@
 #include "Abilities/DronePawn.h"
 #include "Family/FamilySubsystem.h"
 #include "UI/MishpachaHUD.h"
+#include "Core/MishpachaGameInstance.h"
+#include "Missions/MissionDefinition.h"
+#include "Missions/MissionStartMarker.h"
+#include "Missions/MissionSubsystem.h"
+#include "Save/MishpachaSaveGame.h"
+#include "World/MishpachaDayNight.h"
+#include "EngineUtils.h"
 #include "Mishpacha.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -677,6 +684,55 @@ void AMishpachaPlayerController::HandleRadio()
 	if (AMishpachaVehicle* Vehicle = GetMishpachaVehicle())
 	{
 		Vehicle->NextRadioStation();
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Dev console commands
+// ---------------------------------------------------------------------------
+
+void AMishpachaPlayerController::Mish_StartJob(FName MissionId)
+{
+	UMissionSubsystem* Missions = GetWorld()->GetSubsystem<UMissionSubsystem>();
+	for (TActorIterator<AMissionStartMarker> It(GetWorld()); It && Missions && HasAuthority(); ++It)
+	{
+		if (UMissionDefinition* Mission = It->GetMission(); Mission && Mission->MissionId == MissionId)
+		{
+			if (!Missions->StartMission(Mission, this))
+			{
+				ClientShowNotification(FText::Format(LOCTEXT("DevCantStart", "Can't start {0} (wrong sibling, prerequisites, or a job is running)."), FText::FromName(MissionId)));
+			}
+			return;
+		}
+	}
+	ClientShowNotification(FText::Format(LOCTEXT("DevNoJob", "No job called {0}."), FText::FromName(MissionId)));
+}
+
+void AMishpachaPlayerController::Mish_CompleteJob(FName MissionId)
+{
+	UMishpachaGameInstance* GI = GetGameInstance<UMishpachaGameInstance>();
+	UMissionSubsystem* Missions = GetWorld()->GetSubsystem<UMissionSubsystem>();
+	if (!MissionId.IsNone() && HasAuthority() && GI && GI->GetSave() && Missions)
+	{
+		GI->GetSave()->CompletedMissions.Add(MissionId);
+		Missions->OnMissionEnded.Broadcast(MissionId, true); // markers refresh (next job in the chain appears)
+		ClientShowNotification(FText::Format(LOCTEXT("DevCompleted", "Marked {0} as done."), FText::FromName(MissionId)));
+	}
+}
+
+void AMishpachaPlayerController::Mish_SkipStep()
+{
+	if (UMissionSubsystem* Missions = HasAuthority() ? GetWorld()->GetSubsystem<UMissionSubsystem>() : nullptr)
+	{
+		Missions->SkipObjective();
+	}
+}
+
+void AMishpachaPlayerController::Mish_Hour(float Hour)
+{
+	if (AMishpachaDayNight* DayNight = HasAuthority() ? AMishpachaDayNight::Find(this) : nullptr)
+	{
+		DayNight->SetTimeOfDay(Hour);
 	}
 }
 

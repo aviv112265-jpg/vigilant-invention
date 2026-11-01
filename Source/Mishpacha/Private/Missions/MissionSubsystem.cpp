@@ -216,6 +216,14 @@ void UMissionSubsystem::FailMission(FText Reason)
 	EndMission(false);
 }
 
+void UMissionSubsystem::SkipObjective()
+{
+	if (ActiveMission)
+	{
+		AdvanceObjective();
+	}
+}
+
 void UMissionSubsystem::NotifyPlayerDied(AController* DeadController)
 {
 	if (ActiveMission && DeadController && DeadController == MissionPlayer.Get())
@@ -257,6 +265,8 @@ void UMissionSubsystem::PushReplicatedState()
 		if (ActiveObjectives.IsValidIndex(ObjectiveIndex) && ActiveObjectives[ObjectiveIndex])
 		{
 			State.ObjectiveText = ActiveObjectives[ObjectiveIndex]->Description;
+			State.ObjectiveSpeaker = ActiveObjectives[ObjectiveIndex]->Speaker;
+			State.ObjectiveDialogue = ActiveObjectives[ObjectiveIndex]->Dialogue;
 			State.bHasGuide = ActiveObjectives[ObjectiveIndex]->GetGuideLocation(State.GuideLocation);
 		}
 	}

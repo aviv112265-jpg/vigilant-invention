@@ -1013,61 +1013,153 @@ void ACityGreyboxGenerator::CreateDefaultMissions(const TMap<FName, FVector>& Ta
 		DefaultMissions.Add(Mission);
 		return Mission;
 	};
-	auto Reach = [](UMissionDefinition* Mission, FName Tag, const FText& Text)
+	// Step builders. Each returns the objective so a dialogue line can be attached with Say().
+	auto Add = [](UMissionDefinition* Mission, UMissionObjective* Objective, const FText& Text) -> UMissionObjective*
+	{
+		Objective->Description = Text;
+		Mission->Objectives.Add(Objective);
+		return Objective;
+	};
+	auto Reach = [&Add](UMissionDefinition* Mission, FName Tag, const FText& Text)
 	{
 		UObjective_ReachLocation* Objective = NewObject<UObjective_ReachLocation>(Mission);
 		Objective->TargetActorTag = Tag;
 		Objective->Radius = 700.f;
-		Objective->Description = Text;
-		Mission->Objectives.Add(Objective);
+		return Add(Mission, Objective, Text);
 	};
-	auto EnterCar = [bHasVehicles](UMissionDefinition* Mission, const FText& Text)
+	auto EnterCar = [&Add, bHasVehicles](UMissionDefinition* Mission, const FText& Text) -> UMissionObjective*
 	{
 		if (!bHasVehicles)
 		{
-			return; // no cars in the level yet (needs the Vehicle content pack) - skip this step
+			return nullptr; // no cars in the level yet (needs the Vehicle content pack) - skip this step
 		}
-		UObjective_EnterVehicle* Objective = NewObject<UObjective_EnterVehicle>(Mission);
-		Objective->Description = Text;
-		Mission->Objectives.Add(Objective);
+		return Add(Mission, NewObject<UObjective_EnterVehicle>(Mission), Text);
 	};
-	auto LoseHeat = [](UMissionDefinition* Mission, const FText& Text)
+	auto LoseHeat = [&Add](UMissionDefinition* Mission, const FText& Text)
 	{
-		UObjective_LoseHeat* Objective = NewObject<UObjective_LoseHeat>(Mission);
-		Objective->Description = Text;
-		Mission->Objectives.Add(Objective);
+		return Add(Mission, NewObject<UObjective_LoseHeat>(Mission), Text);
+	};
+	auto RivalCrew = [&Add](UMissionDefinition* Mission, FName Tag, int32 Count, const FText& Text)
+	{
+		UObjective_RivalCrew* Objective = NewObject<UObjective_RivalCrew>(Mission);
+		Objective->LocationTag = Tag;
+		Objective->Count = Count;
+		return Add(Mission, Objective, Text);
+	};
+	auto WaitAt = [&Add](UMissionDefinition* Mission, FName Tag, float Seconds, const FText& Text)
+	{
+		UObjective_WaitAt* Objective = NewObject<UObjective_WaitAt>(Mission);
+		Objective->LocationTag = Tag;
+		Objective->Seconds = Seconds;
+		return Add(Mission, Objective, Text);
+	};
+	auto SwitchTo = [&Add](UMissionDefinition* Mission, FName Sibling, const FText& Text)
+	{
+		UObjective_SwitchToSibling* Objective = NewObject<UObjective_SwitchToSibling>(Mission);
+		Objective->SiblingId = Sibling;
+		return Add(Mission, Objective, Text);
+	};
+	auto Say = [](UMissionObjective* Objective, FName Speaker, const FText& Line)
+	{
+		if (Objective)
+		{
+			Objective->Speaker = FText::FromName(Speaker);
+			Objective->Dialogue = Line;
+		}
 	};
 
+	// ----- Rafi -----
 	UMissionDefinition* RafiJob = MakeMission(FName(TEXT("Rafi_01")),
 		LOCTEXT("Rafi01Title", "Collection at the Market"),
 		LOCTEXT("Rafi01Desc", "A stall owner in the Old Yafeh market stopped paying. Remind him who runs this city."),
 		GreyboxNames::Rafi, 1500);
-	Reach(RafiJob, GreyboxNames::Market, LOCTEXT("Rafi01A", "Go to the market (yellow pillar near the beach)"));
+	Say(Reach(RafiJob, GreyboxNames::Market, LOCTEXT("Rafi01A", "Go to the market (yellow pillar near the beach)")),
+		GreyboxNames::Rafi, LOCTEXT("Rafi01ASay", "Three months Itzik hasn't paid. Today he pays for all three."));
 	LoseHeat(RafiJob, LOCTEXT("Rafi01B", "If the cops are on you, lose them"));
 
+	UMissionDefinition* RafiJob2 = MakeMission(FName(TEXT("Rafi_02")),
+		LOCTEXT("Rafi02Title", "Rival Crew"),
+		LOCTEXT("Rafi02Desc", "Some crew from out of town set up shop at Moshe's garage. On our street."),
+		GreyboxNames::Rafi, 3500);
+	RafiJob2->Prerequisites.Add(RafiJob->MissionId);
+	Say(Reach(RafiJob2, GreyboxNames::Garage, LOCTEXT("Rafi02A", "Drive to Moshe's garage")),
+		GreyboxNames::Rafi, LOCTEXT("Rafi02ASay", "Moshe called. Strangers in his garage, and they're not there for an oil change."));
+	Say(RivalCrew(RafiJob2, GreyboxNames::Garage, 4, LOCTEXT("Rafi02B", "Take out the rival crew (press Q to call the boys)")),
+		GreyboxNames::Rafi, LOCTEXT("Rafi02BSay", "Nobody does business in Tel Avir without asking the Sela family."));
+	LoseHeat(RafiJob2, LOCTEXT("Rafi02C", "Lose the police"));
+
+	// ----- Shira -----
 	UMissionDefinition* ShiraJob = MakeMission(FName(TEXT("Shira_01")),
 		LOCTEXT("Shira01Title", "Dad's Phone"),
 		LOCTEXT("Shira01Desc", "Dad's phone is sitting in the police evidence warehouse. Get it out before they unlock it."),
 		GreyboxNames::Shira, 2500);
-	Reach(ShiraJob, GreyboxNames::Warehouse, LOCTEXT("Shira01A", "Get to the evidence warehouse"));
+	Say(Reach(ShiraJob, GreyboxNames::Warehouse, LOCTEXT("Shira01A", "Get to the evidence warehouse")),
+		GreyboxNames::Shira, LOCTEXT("Shira01ASay", "If they read what's on that phone, all three of us go down. Me first."));
 	EnterCar(ShiraJob, LOCTEXT("Shira01B", "Grab a car"));
 	Reach(ShiraJob, GreyboxNames::Dropoff, LOCTEXT("Shira01C", "Bring the phone to the family drop-off"));
 
+	UMissionDefinition* ShiraJob2 = MakeMission(FName(TEXT("Shira_02")),
+		LOCTEXT("Shira02Title", "The Witness"),
+		LOCTEXT("Shira02Desc", "A witness against the family is at the hospital. Shira wants to talk to him before the prosecutor does."),
+		GreyboxNames::Shira, 3000);
+	ShiraJob2->Prerequisites.Add(ShiraJob->MissionId);
+	Say(Reach(ShiraJob2, GreyboxNames::Hospital, LOCTEXT("Shira02A", "Go to the hospital")),
+		GreyboxNames::Shira, LOCTEXT("Shira02ASay", "I'm his lawyer as of this morning. He just doesn't know it yet."));
+	Say(WaitAt(ShiraJob2, GreyboxNames::Hospital, 8.f, LOCTEXT("Shira02B", "Talk to the witness (stay close)")),
+		GreyboxNames::Shira, LOCTEXT("Shira02BSay", "Nobody's asking you to lie. Just to remember a little less."));
+	EnterCar(ShiraJob2, LOCTEXT("Shira02C", "Get a car"));
+	Say(Reach(ShiraJob2, GreyboxNames::Dropoff, LOCTEXT("Shira02D", "Take him somewhere quiet (the family drop-off)")),
+		GreyboxNames::Shira, LOCTEXT("Shira02DSay", "Seatbelt. You're no use to anyone dead."));
+
+	// ----- Omer -----
 	UMissionDefinition* OmerJob = MakeMission(FName(TEXT("Omer_01")),
 		LOCTEXT("Omer01Title", "Last Delivery"),
 		LOCTEXT("Omer01Desc", "One last package for the family before the big trip. What could go wrong?"),
 		GreyboxNames::Omer, 2000);
-	EnterCar(OmerJob, LOCTEXT("Omer01A", "Get a ride"));
+	Say(EnterCar(OmerJob, LOCTEXT("Omer01A", "Get a ride")),
+		GreyboxNames::Omer, LOCTEXT("Omer01ASay", "Rafi says it's just shoes. Nobody wraps shoes like this."));
 	Reach(OmerJob, GreyboxNames::Garage, LOCTEXT("Omer01B", "Deliver the package to Moshe's garage"));
 	LoseHeat(OmerJob, LOCTEXT("Omer01C", "Lose anyone following you"));
 
-	// Markers on the avenues around the central intersection.
+	UMissionDefinition* OmerJob2 = MakeMission(FName(TEXT("Omer_02")),
+		LOCTEXT("Omer02Title", "Eye in the Sky"),
+		LOCTEXT("Omer02Desc", "The warehouse has new guards, and they aren't police. Omer gets a look from above first."),
+		GreyboxNames::Omer, 3000);
+	OmerJob2->Prerequisites.Add(OmerJob->MissionId);
+	Say(Reach(OmerJob2, GreyboxNames::Warehouse, LOCTEXT("Omer02A", "Go to the evidence warehouse")),
+		GreyboxNames::Omer, LOCTEXT("Omer02ASay", "Two years in the drone unit. Finally useful for something."));
+	Say(RivalCrew(OmerJob2, GreyboxNames::Warehouse, 3, LOCTEXT("Omer02B", "Take out the guards (press Q: the drone marks them)")),
+		GreyboxNames::Omer, LOCTEXT("Omer02BSay", "Three on the ground. They haven't seen me. Yet."));
+	LoseHeat(OmerJob2, LOCTEXT("Omer02C", "Lose the police"));
+
+	// ----- Two siblings: Rafi starts, Shira finishes -----
+	UMissionDefinition* FamilyJob = MakeMission(FName(TEXT("Family_01")),
+		LOCTEXT("Family01Title", "The Handover"),
+		LOCTEXT("Family01Desc", "Rafi has the money. Shira has the judge. They need to meet without anyone seeing them together."),
+		GreyboxNames::Rafi, 5000);
+	FamilyJob->bAllowSwitching = true;
+	FamilyJob->Prerequisites.Add(RafiJob->MissionId);
+	FamilyJob->Prerequisites.Add(ShiraJob->MissionId);
+	Say(Reach(FamilyJob, GreyboxNames::Market, LOCTEXT("Family01A", "Rafi: leave the envelope at the market")),
+		GreyboxNames::Rafi, LOCTEXT("Family01ASay", "Shira, it's at the market. Under the pomegranates. Don't make that face."));
+	Say(SwitchTo(FamilyJob, GreyboxNames::Shira, LOCTEXT("Family01B", "Switch to Shira (press 2)")),
+		GreyboxNames::Shira, LOCTEXT("Family01BSay", "This is the last time, Rafi. I mean it this time."));
+	Reach(FamilyJob, GreyboxNames::Market, LOCTEXT("Family01C", "Shira: pick up the envelope at the market"));
+	Say(Reach(FamilyJob, GreyboxNames::Hospital, LOCTEXT("Family01D", "Deliver it to the judge's driver at the hospital")),
+		GreyboxNames::Shira, LOCTEXT("Family01DSay", "Hospital parking. Nobody remembers faces at a hospital."));
+
+	// Markers on the avenues around the central intersection. Each sibling's next job takes the
+	// same spot once the previous one is done (see AMissionStartMarker::RefreshAvailability).
 	const FVector Center = IntersectionLocal(BlocksX / 2, BlocksY / 2);
 	const float Off = (BlockSize + RoadWidth) * 0.4f;
 	const TPair<UMissionDefinition*, FVector> Placements[] = {
 		TPair<UMissionDefinition*, FVector>(RafiJob, Center + FVector(0.f, -Off, 0.f)),
+		TPair<UMissionDefinition*, FVector>(RafiJob2, Center + FVector(0.f, -Off, 0.f)),
 		TPair<UMissionDefinition*, FVector>(ShiraJob, Center + FVector(Off, 0.f, 0.f)),
+		TPair<UMissionDefinition*, FVector>(ShiraJob2, Center + FVector(Off, 0.f, 0.f)),
 		TPair<UMissionDefinition*, FVector>(OmerJob, Center + FVector(0.f, Off, 0.f)),
+		TPair<UMissionDefinition*, FVector>(OmerJob2, Center + FVector(0.f, Off, 0.f)),
+		TPair<UMissionDefinition*, FVector>(FamilyJob, Center + FVector(-Off, 0.f, 0.f)),
 	};
 	for (const TPair<UMissionDefinition*, FVector>& Placement : Placements)
 	{

@@ -108,6 +108,25 @@ void AMishpachaHUD::StartAutomatedCapture()
 	};
 	After(15.f, Command(TEXT("startfpschart")));
 	After(40.f, Command(TEXT("stopfpschart")));
+
+	// -MishpachaCaptureCmd=Mish_CompleteJob:Rafi_01+Mish_StartJob:Rafi_02 - console commands run at 38 s
+	// ('+' between commands, ':' instead of spaces, so the value survives shell quoting and FParse).
+	FString Commands;
+	if (FParse::Value(FCommandLine::Get(), TEXT("MishpachaCaptureCmd="), Commands))
+	{
+		After(38.f, FTimerDelegate::CreateWeakLambda(this, [this, Commands]()
+		{
+			TArray<FString> Lines;
+			Commands.ParseIntoArray(Lines, TEXT("+"));
+			for (const FString& Line : Lines)
+			{
+				if (APlayerController* PC = GetOwningPlayerController())
+				{
+					PC->ConsoleCommand(Line.Replace(TEXT(":"), TEXT(" ")));
+				}
+			}
+		}));
+	}
 	for (int32 Shot = 0; Shot < 4; ++Shot)
 	{
 		After(42.f + Shot * 3.f, FTimerDelegate::CreateWeakLambda(this, [this, Shot]()
@@ -1476,6 +1495,42 @@ void AMishpachaHUD::DrawBanner()
 	DrawLabel(BannerSubtitle, Canvas->ClipX * 0.5f, CY + S(22.f), Font(14.f), WithAlpha(MishpachaHUDStyle::TextMain, Alpha), 0.5f);
 }
 
+void AMishpachaHUD::DrawSubtitle()
+{
+	const AMishpachaGameState* GameStateActor = GetWorld()->GetGameState<AMishpachaGameState>();
+	if (!GameStateActor || !GameStateActor->GetMissionState().bActive || GameStateActor->GetMissionState().ObjectiveDialogue.IsEmpty())
+	{
+		return;
+	}
+	const FReplicatedMissionState& Mission = GameStateActor->GetMissionState();
+	const double Age = GetWorld()->GetRealTimeSeconds() - ObjectiveChangedTime;
+	const double Duration = 7.0;
+	if (Age < 0.4 || Age > Duration)
+	{
+		return; // a short beat after the objective flash, then the line
+	}
+	const float Alpha = FMath::Min(FMath::Clamp(float(Age - 0.4) / 0.25f, 0.f, 1.f), FMath::Clamp(float(Duration - Age) / 0.6f, 0.f, 1.f));
+	using MishpachaHUDStyle::WithAlpha;
+
+	const FText Who = FText::FromString(Mission.ObjectiveSpeaker.ToString().ToUpper());
+	const FSlateFontInfo WhoFont = Font(12.f, true);
+	const FSlateFontInfo LineFont = Font(15.f);
+	const float WhoW = Who.IsEmpty() ? 0.f : MeasureText(Who, WhoFont).X + S(14.f);
+	const FVector2D LineSize = MeasureText(Mission.ObjectiveDialogue, LineFont);
+	const float W = WhoW + LineSize.X + S(44.f);
+	const float H = S(44.f);
+	const float X = (Canvas->ClipX - W) * 0.5f;
+	const float Y = Canvas->ClipY - S(150.f);
+	const FLinearColor SpeakerColor = GetSiblingColor(FName(*Mission.ObjectiveSpeaker.ToString()), MishpachaHUDStyle::Gold) * 1.4f;
+
+	FillRect(X, Y, W, H, WithAlpha(FLinearColor(0.f, 0.f, 0.f, 0.62f), Alpha));
+	if (!Who.IsEmpty())
+	{
+		DrawLabel(Who, X + S(22.f), Y + (H - MeasureText(Who, WhoFont).Y) * 0.5f, WhoFont, WithAlpha(SpeakerColor, Alpha));
+	}
+	DrawLabel(Mission.ObjectiveDialogue, X + S(22.f) + WhoW, Y + (H - LineSize.Y) * 0.5f, LineFont, WithAlpha(MishpachaHUDStyle::TextMain, Alpha));
+}
+
 void AMishpachaHUD::DrawKeyChip(float& X, float Y, const FText& Key, const FText& Label)
 {
 	const FSlateFontInfo KeyFont = Font(9.f, true);
@@ -1566,6 +1621,7 @@ void AMishpachaHUD::DrawHUD()
 	}
 	DrawMissionCard();
 	DrawBanner();
+	DrawSubtitle();
 	DrawNotification();
 	DrawControlsHint();
 	DrawCrosshair();

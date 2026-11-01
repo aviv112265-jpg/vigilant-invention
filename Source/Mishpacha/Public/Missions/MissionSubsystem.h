@@ -45,6 +45,9 @@ public:
 
 	void NotifyPlayerDied(AController* DeadController);
 
+	/** Dev: complete the current step (Mish_SkipStep). */
+	void SkipObjective();
+
 	UPROPERTY(BlueprintAssignable, Category = "Mission")
 	FOnMishpachaMissionEnded OnMissionEnded;
 

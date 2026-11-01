@@ -23,6 +23,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective")
 	FText Description;
 
+	/** Optional line said when this step starts (a phone call, the radio), shown as a subtitle. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective|Dialogue")
+	FText Speaker;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Objective|Dialogue", meta = (MultiLine = "true"))
+	FText Dialogue;
+
 	virtual void Activate(UMissionSubsystem* InMissions, APlayerController* InPlayer);
 	virtual void TickObjective(float DeltaTime) {}
 	virtual void Deactivate() {}

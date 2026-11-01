@@ -6,6 +6,8 @@
 #include "ChaosWheeledVehicleMovementComponent.h"
 #include "Mishpacha.h"
 #include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "MaterialTypes.h"
 #include "Engine/BlueprintGeneratedClass.h"
 #include "Engine/SCS_Node.h"
 #include "Engine/SimpleConstructionScript.h"
@@ -145,6 +147,7 @@ void AMishpachaVehicle::ApplyTemplate(const AWheeledVehiclePawn* Template)
 	{
 		Target->RecreatePhysicsState();
 	}
+	OnRep_PaintColor(); // a class default paint (police white) applies to the copied body
 }
 
 void AMishpachaVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -152,6 +155,48 @@ void AMishpachaVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AMishpachaVehicle, Driver);
 	DOREPLIFETIME(AMishpachaVehicle, RadioStation);
+	DOREPLIFETIME(AMishpachaVehicle, PaintColor);
+}
+
+void AMishpachaVehicle::SetPaintColor(const FLinearColor& NewColor)
+{
+	if (HasAuthority())
+	{
+		PaintColor = NewColor;
+		OnRep_PaintColor();
+	}
+}
+
+void AMishpachaVehicle::OnRep_PaintColor()
+{
+	if (PaintColor.A <= 0.f)
+	{
+		return;
+	}
+	static const FName PaintParam(TEXT("Paint Tint"));
+	TArray<UPrimitiveComponent*> Parts;
+	GetComponents<UPrimitiveComponent>(Parts);
+	for (UPrimitiveComponent* Part : Parts)
+	{
+		for (int32 Slot = 0; Slot < Part->GetNumMaterials(); ++Slot)
+		{
+			UMaterialInterface* Material = Part->GetMaterial(Slot);
+			FLinearColor Existing;
+			if (!Material || !Material->GetVectorParameterValue(FHashedMaterialParameterInfo(PaintParam), Existing))
+			{
+				continue;
+			}
+			UMaterialInstanceDynamic* MID = Cast<UMaterialInstanceDynamic>(Material);
+			if (!MID)
+			{
+				MID = Part->CreateDynamicMaterialInstance(Slot, Material);
+			}
+			if (MID)
+			{
+				MID->SetVectorParameterValue(PaintParam, PaintColor);
+			}
+		}
+	}
 }
 
 void AMishpachaVehicle::Tick(float DeltaSeconds)

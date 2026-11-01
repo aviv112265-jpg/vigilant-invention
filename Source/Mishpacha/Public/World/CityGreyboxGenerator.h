@@ -55,6 +55,9 @@ public:
 	/** Shortest path along the street grid (world points, on the road surface). False if there's no grid. */
 	bool FindRoadRoute(const FVector& From, const FVector& To, TArray<FVector>& OutPoints) const;
 
+	/** Center of the intersection closest to a world point (road surface). */
+	FVector GetNearestIntersection(const FVector& WorldLocation) const;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

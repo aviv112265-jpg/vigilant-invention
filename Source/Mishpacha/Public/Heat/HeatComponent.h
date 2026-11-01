@@ -36,6 +36,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Heat")
 	void ClearHeat();
 
+	/** Dev (Mish_Heat): jump straight to a heat level, as if just spotted where the player stands. */
+	void DebugSetHeatLevel(int32 Level, const FVector& SeenAt);
+
 	UFUNCTION(BlueprintPure, Category = "Heat")
 	int32 GetHeatLevel() const { return HeatLevel; }
 

@@ -37,12 +37,24 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Police")
 	void DespawnAllUnits();
 
+	/** Track a unit spawned by someone else (officers getting out of a patrol car). */
+	void RegisterUnit(APawn* UnitPawn, APawn* Target);
+
+	/** Heat level from which patrol cars set up roadblocks ahead of a player who's driving. */
+	int32 RoadblockFromHeatLevel = 4;
+
+	/** Seconds between roadblocks. */
+	float RoadblockInterval = 25.f;
+
 protected:
 	virtual bool DoesSupportWorldType(const EWorldType::Type WorldType) const override;
 
 private:
 	TArray<FPoliceUnitRecord> Units;
 	FTimerHandle RefreshTimer;
+	double LastRoadblockTime = -1000.0;
+
+	void TryRoadblock(APawn* Target);
 
 	void Refresh();
 	const UPoliceDispatchConfig* GetConfig() const;

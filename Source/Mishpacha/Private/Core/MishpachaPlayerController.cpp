@@ -6,6 +6,8 @@
 #include "Family/FamilySubsystem.h"
 #include "UI/MishpachaHUD.h"
 #include "Core/MishpachaGameInstance.h"
+#include "Core/MishpachaPlayerState.h"
+#include "Heat/HeatComponent.h"
 #include "Missions/MissionDefinition.h"
 #include "Missions/MissionStartMarker.h"
 #include "Missions/MissionSubsystem.h"
@@ -717,6 +719,38 @@ void AMishpachaPlayerController::Mish_CompleteJob(FName MissionId)
 		GI->GetSave()->CompletedMissions.Add(MissionId);
 		Missions->OnMissionEnded.Broadcast(MissionId, true); // markers refresh (next job in the chain appears)
 		ClientShowNotification(FText::Format(LOCTEXT("DevCompleted", "Marked {0} as done."), FText::FromName(MissionId)));
+	}
+}
+
+void AMishpachaPlayerController::Mish_Heat(int32 Level)
+{
+	AMishpachaPlayerState* PS = GetPlayerState<AMishpachaPlayerState>();
+	UHeatComponent* Heat = PS ? PS->GetHeatComponent() : nullptr;
+	if (HasAuthority() && Heat && GetPawn())
+	{
+		Heat->DebugSetHeatLevel(Level, GetPawn()->GetActorLocation());
+	}
+}
+
+void AMishpachaPlayerController::Mish_EnterNearestCar()
+{
+	AMishpachaCharacter* MyCharacter = GetMishpachaCharacter();
+	if (!HasAuthority() || !MyCharacter)
+	{
+		return;
+	}
+	AMishpachaVehicle* Nearest = nullptr;
+	for (TActorIterator<AMishpachaVehicle> It(GetWorld()); It; ++It)
+	{
+		if (!It->HasDriver() && !It->ActorHasTag(FName(TEXT("Police")))
+			&& (!Nearest || FVector::DistSquared(It->GetActorLocation(), MyCharacter->GetActorLocation()) < FVector::DistSquared(Nearest->GetActorLocation(), MyCharacter->GetActorLocation())))
+		{
+			Nearest = *It;
+		}
+	}
+	if (Nearest)
+	{
+		Nearest->EnterVehicle(MyCharacter);
 	}
 }
 

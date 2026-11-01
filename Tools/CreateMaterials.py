@@ -276,4 +276,14 @@ make_material("M_Sidewalk", SIDEWALK, ["WP", "N"] + LAMP_INPUTS, scalars=LAMP_DE
 make_material("M_Sand", SAND, ["WP"])
 make_material("M_Sea", SEA, ["WP", "Time"])
 make_material("M_LampGlow", LAMP_GLOW, ["Night"], emissive=True)
+
+# Police light bar half: flashes Color twice a second, Phase 0.5 = the other half's beat.
+SIREN = """
+Roughness = 0.3;
+Metallic = 0.0;
+float flash = step(0.5, frac(Time * 2.5 + Phase));
+Emissive = Color.rgb * (0.3 + 40.0 * flash);
+return Color.rgb * 0.4;
+"""
+make_material("M_Siren", SIREN, ["Color", "Phase", "Time"], unreal.LinearColor(1, 0.05, 0.02, 1), emissive=True)
 unreal.log("[Mishpacha] materials done")

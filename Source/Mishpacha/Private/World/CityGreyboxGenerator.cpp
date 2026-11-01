@@ -217,6 +217,16 @@ FVector ACityGreyboxGenerator::SnapToRoad(const FVector& WorldLocation) const
 	return ToWorld(FVector(Snap.Point.X, Snap.Point.Y, 2.f));
 }
 
+FVector ACityGreyboxGenerator::GetNearestIntersection(const FVector& WorldLocation) const
+{
+	const FVector Local = GetActorTransform().InverseTransformPosition(WorldLocation);
+	const float Step = BlockSize + RoadWidth;
+	const FVector First = IntersectionLocal(0, 0);
+	const int32 I = FMath::Clamp(FMath::RoundToInt((Local.X - First.X) / Step), 0, BlocksX);
+	const int32 J = FMath::Clamp(FMath::RoundToInt((Local.Y - First.Y) / Step), 0, BlocksY);
+	return ToWorld(IntersectionLocal(I, J) + FVector(0.f, 0.f, 2.f));
+}
+
 bool ACityGreyboxGenerator::FindRoadRoute(const FVector& From, const FVector& To, TArray<FVector>& OutPoints) const
 {
 	OutPoints.Reset();
@@ -977,6 +987,12 @@ void ACityGreyboxGenerator::SpawnParkedCars()
 	};
 	Spots.Insert(HomeSpots, 0);
 
+	// A Tel Aviv street: mostly white, silver, gray and black, a few colors.
+	const FLinearColor Paints[] = {
+		FLinearColor(0.85f, 0.85f, 0.85f), FLinearColor(0.85f, 0.85f, 0.85f), FLinearColor(0.45f, 0.46f, 0.48f),
+		FLinearColor(0.2f, 0.21f, 0.22f), FLinearColor(0.02f, 0.02f, 0.025f), FLinearColor(0.03f, 0.07f, 0.25f),
+		FLinearColor(0.45f, 0.02f, 0.02f), FLinearColor(0.6f, 0.55f, 0.42f), FLinearColor(1.f, 0.1f, 0.f) };
+
 	int32 Spawned = 0;
 	const int32 Wanted = NumParkedCars + HomeSpots.Num();
 	for (int32 Index = 0; Index < Spots.Num() && Spawned < Wanted; ++Index)
@@ -984,8 +1000,9 @@ void ACityGreyboxGenerator::SpawnParkedCars()
 		const FTransform CarTransform(FRotator(0.f, GetActorRotation().Yaw + Spots[Index].Yaw, 0.f), ToWorld(Spots[Index].Location + FVector(0.f, 0.f, 40.f)));
 		FActorSpawnParameters Params;
 		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		if (World->SpawnActor<AMishpachaVehicle>(ParkedCarClass, CarTransform, Params))
+		if (AMishpachaVehicle* Car = World->SpawnActor<AMishpachaVehicle>(ParkedCarClass, CarTransform, Params))
 		{
+			Car->SetPaintColor(Paints[Stream.RandRange(0, UE_ARRAY_COUNT(Paints) - 1)]);
 			++Spawned;
 		}
 	}

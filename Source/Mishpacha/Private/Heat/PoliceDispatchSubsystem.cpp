@@ -6,6 +6,9 @@
 #include "Core/MishpachaGameModeBase.h"
 #include "AIController.h"
 #include "AI/MishpachaPoliceAIController.h"
+#include "Vehicles/MishpachaPoliceCar.h"
+#include "World/CityGreyboxGenerator.h"
+#include "EngineUtils.h"
 #include "NavigationSystem.h"
 #include "Engine/World.h"
 #include "GameFramework/GameStateBase.h"
@@ -119,6 +122,11 @@ void UPoliceDispatchSubsystem::Refresh()
 			}
 		}
 
+		if (Heat->GetHeatLevel() >= RoadblockFromHeatLevel && Units.Num() + 4 <= Config->MaxTotalUnits)
+		{
+			TryRoadblock(Target);
+		}
+
 		const FPoliceHeatResponse* Response = Config->GetResponse(Heat->GetHeatLevel());
 		if (Response && Response->UnitClasses.Num() > 0 && AssignedCount < Response->MaxUnits && Units.Num() < Config->MaxTotalUnits)
 		{
@@ -138,11 +146,25 @@ bool UPoliceDispatchSubsystem::TrySpawnUnit(const UPoliceDispatchConfig& Config,
 		return false;
 	}
 
-	const FRotator Facing = (Target->GetActorLocation() - SpawnLocation).Rotation();
+	float Yaw = (Target->GetActorLocation() - SpawnLocation).Rotation().Yaw;
+	FVector SpawnOffset(0.f, 0.f, 120.f);
+	if (UnitClass->IsChildOf(AMishpachaVehicle::StaticClass()))
+	{
+		// Patrol cars start on a road, lined up with it, heading the suspect's way.
+		TActorIterator<ACityGreyboxGenerator> Grid(World);
+		if (Grid)
+		{
+			SpawnLocation = Grid->SnapToRoad(SpawnLocation);
+			const FVector ToTarget = Target->GetActorLocation() - SpawnLocation;
+			Yaw = FMath::Abs(ToTarget.X) > FMath::Abs(ToTarget.Y) ? (ToTarget.X > 0.f ? 0.f : 180.f) : (ToTarget.Y > 0.f ? 90.f : -90.f);
+		}
+		SpawnOffset = FVector(0.f, 0.f, 60.f);
+	}
+
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	APawn* UnitPawn = World->SpawnActor<APawn>(UnitClass, SpawnLocation + FVector(0.f, 0.f, 120.f), FRotator(0.f, Facing.Yaw, 0.f), Params);
+	APawn* UnitPawn = World->SpawnActor<APawn>(UnitClass, SpawnLocation + SpawnOffset, FRotator(0.f, Yaw, 0.f), Params);
 	if (!UnitPawn)
 	{
 		return false;
@@ -227,6 +249,60 @@ void UPoliceDispatchSubsystem::DespawnUnit(const FPoliceUnitRecord& Unit)
 			UnitController->Destroy();
 		}
 		UnitPawn->Destroy();
+	}
+}
+
+void UPoliceDispatchSubsystem::RegisterUnit(APawn* UnitPawn, APawn* Target)
+{
+	if (UnitPawn)
+	{
+		UnitPawn->Tags.AddUnique(FName(TEXT("Police")));
+		FPoliceUnitRecord Record;
+		Record.Pawn = UnitPawn;
+		Record.Target = Target;
+		Units.Add(Record);
+	}
+}
+
+void UPoliceDispatchSubsystem::TryRoadblock(APawn* Target)
+{
+	UWorld* World = GetWorld();
+	const double Now = World->GetTimeSeconds();
+	// Only against someone driving, only on the street grid, not too often.
+	if (!Cast<AMishpachaVehicle>(Target) || Now - LastRoadblockTime < RoadblockInterval)
+	{
+		return;
+	}
+	TActorIterator<ACityGreyboxGenerator> Grid(World);
+	const FVector Velocity = Target->GetVelocity();
+	if (!Grid || Velocity.Size2D() < 500.f)
+	{
+		return;
+	}
+
+	// The intersection ~60 m ahead of where the suspect is heading.
+	const FVector Ahead = Target->GetActorLocation() + Velocity.GetSafeNormal2D() * 6000.f;
+	const FVector Junction = Grid->GetNearestIntersection(Ahead);
+	const FVector ToJunction = (Junction - Target->GetActorLocation()) * FVector(1.f, 1.f, 0.f);
+	if (ToJunction.Size() < 3500.f || FVector::DotProduct(ToJunction.GetSafeNormal(), Velocity.GetSafeNormal2D()) < 0.5f)
+	{
+		return; // too close to be fair, or not actually ahead
+	}
+	LastRoadblockTime = Now;
+
+	// Two cars broadside across the approach.
+	const FVector Approach = ToJunction.GetSafeNormal();
+	const FVector Across(-Approach.Y, Approach.X, 0.f);
+	for (const float Side : { -1.f, 1.f })
+	{
+		const FTransform CarTransform(FRotator(0.f, Across.Rotation().Yaw + (Side > 0.f ? 15.f : -15.f), 0.f), Junction + Across * (Side * 290.f) + FVector(0.f, 0.f, 60.f));
+		AMishpachaPoliceCar* Car = World->SpawnActorDeferred<AMishpachaPoliceCar>(AMishpachaPoliceCar::StaticClass(), CarTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
+		if (Car)
+		{
+			Car->bRoadblock = true;
+			Car->FinishSpawning(CarTransform);
+			RegisterUnit(Car, Target);
+		}
 	}
 }
 

@@ -12,6 +12,7 @@
 #include "Heat/PoliceDispatchConfig.h"
 #include "World/CityGreyboxGenerator.h"
 #include "World/MishpachaDayNight.h"
+#include "Vehicles/MishpachaPoliceCar.h"
 #include "Mishpacha.h"
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
@@ -36,20 +37,28 @@ void AMishpachaGameModeBase::InitGame(const FString& MapName, const FString& Opt
 	if (!PoliceConfig && bAutoPolice)
 	{
 		// Built-in response: more officers per heat level; they shoot from level 3 (see AMishpachaPoliceAIController).
+		// From level 2 patrol cars join (each drops 2 officers off); from level 4 they also set roadblocks.
+		// A patrol car only works with a car the game can build (Vehicle content pack) - otherwise officers on foot.
 		UPoliceDispatchConfig* DefaultConfig = NewObject<UPoliceDispatchConfig>(this, TEXT("DefaultPoliceConfig"));
-		const int32 UnitsPerLevel[] = { 1, 2, 3, 5, 7 };
-		for (const int32 Units : UnitsPerLevel)
+		const bool bCars = GetDefault<AMishpachaPoliceCar>()->HasVehicleSetup();
+		const int32 UnitsPerLevel[] = { 1, 3, 5, 7, 9 };
+		const int32 CarsPerLevel[] = { 0, 1, 2, 2, 3 }; // entries in the random pick list, next to one foot officer
+		for (int32 Level = 0; Level < 5; ++Level)
 		{
 			FPoliceHeatResponse Response;
 			Response.UnitClasses.Add(AMishpachaPolicePawn::StaticClass());
-			Response.MaxUnits = Units;
+			for (int32 Car = 0; bCars && Car < CarsPerLevel[Level]; ++Car)
+			{
+				Response.UnitClasses.Add(AMishpachaPoliceCar::StaticClass());
+			}
+			Response.MaxUnits = UnitsPerLevel[Level];
 			DefaultConfig->ResponseByLevel.Add(Response);
 		}
 		DefaultConfig->MinSpawnDistance = 3500.f;
 		DefaultConfig->MaxSpawnDistance = 6500.f;
 		DefaultConfig->DespawnDistance = 16000.f;
 		DefaultConfig->SightDistance = 4500.f;
-		DefaultConfig->MaxTotalUnits = 16;
+		DefaultConfig->MaxTotalUnits = 18;
 		PoliceConfig = DefaultConfig;
 	}
 }

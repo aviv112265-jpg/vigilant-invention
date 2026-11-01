@@ -58,6 +58,10 @@ public:
 	/** True if this car has a mesh of its own, or the template vehicle (see TemplateVehicleClass) exists. */
 	bool HasVehicleSetup() const;
 
+	/** Server: repaint the body (any material with a "Paint Tint" parameter). Replicated. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Vehicle")
+	void SetPaintColor(const FLinearColor& NewColor);
+
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
@@ -69,6 +73,13 @@ protected:
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Vehicle|Auto Setup")
 	TSoftClassPtr<AWheeledVehiclePawn> TemplateVehicleClass;
+
+	/** Body paint (alpha 0 = keep the material's own color). */
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_PaintColor, Category = "Vehicle")
+	FLinearColor PaintColor = FLinearColor(0.f, 0.f, 0.f, 0.f);
+
+	UFUNCTION()
+	void OnRep_PaintColor();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<USpringArmComponent> CameraBoom;

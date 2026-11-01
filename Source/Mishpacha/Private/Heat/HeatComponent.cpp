@@ -113,6 +113,19 @@ void UHeatComponent::ClearHeat()
 	SetHeatLevel(0);
 }
 
+void UHeatComponent::DebugSetHeatLevel(int32 Level, const FVector& SeenAt)
+{
+	if (!IsServer())
+	{
+		return;
+	}
+	Level = FMath::Clamp(Level, 0, MaxHeatLevel);
+	HeatPoints = (Level > 0 && LevelThresholds.IsValidIndex(Level - 1)) ? LevelThresholds[Level - 1] : 0.f;
+	TimeSinceSpotted = 0.f;
+	LastKnownLocation = SeenAt;
+	SetHeatLevel(Level);
+}
+
 float UHeatComponent::GetSearchDuration() const
 {
 	return BaseSearchDuration + SearchDurationPerLevel * static_cast<float>(FMath::Max(0, HeatLevel - 1));

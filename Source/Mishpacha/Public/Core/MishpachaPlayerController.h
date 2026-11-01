@@ -52,6 +52,14 @@ public:
 	UFUNCTION(Exec)
 	void Mish_CompleteJob(FName MissionId);
 
+	/** Set your wanted level (0-5), e.g. "Mish_Heat 4". */
+	UFUNCTION(Exec)
+	void Mish_Heat(int32 Level);
+
+	/** Get into the nearest car (handy for testing chases). */
+	UFUNCTION(Exec)
+	void Mish_EnterNearestCar();
+
 	/** Complete the current job step. */
 	UFUNCTION(Exec)
 	void Mish_SkipStep();

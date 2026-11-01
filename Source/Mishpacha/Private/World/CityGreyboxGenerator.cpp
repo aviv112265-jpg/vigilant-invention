@@ -15,6 +15,7 @@
 #include "Engine/SkyLight.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/TargetPoint.h"
+#include "GameFramework/PlayerStart.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/GameStateBase.h"
@@ -44,7 +45,9 @@ static UInstancedStaticMeshComponent* MakeISM(AActor* Owner, USceneComponent* Pa
 {
 	UInstancedStaticMeshComponent* ISM = Owner->CreateDefaultSubobject<UInstancedStaticMeshComponent>(Name);
 	ISM->SetupAttachment(Parent);
-	ISM->SetMobility(EComponentMobility::Static);
+	// Not Static: clients build the city after play has begun, and Static components refuse
+	// SetStaticMesh at that point. (All lighting is dynamic, so this costs nothing.)
+	ISM->SetMobility(EComponentMobility::Stationary);
 	return ISM;
 }
 
@@ -886,6 +889,18 @@ void ACityGreyboxGenerator::SpawnGameplayActors()
 		{
 			Point->SiblingId = Home.Id;
 			Point->FinishSpawning(SpawnTransform);
+		}
+	}
+
+	// --- Player starts for online free roam, on a ring around the family's intersection ---
+	// (the level's own PlayerStart usually ends up under the runtime city).
+	for (int32 Index = 0; Index < 8; ++Index)
+	{
+		const float Angle = 2.f * PI * (Index + 0.5f) / 8.f;
+		const FVector Spot = Center + FVector(FMath::Cos(Angle), FMath::Sin(Angle), 0.f) * 650.f + FVector(0.f, 0.f, 120.f);
+		if (APlayerStart* Start = World->SpawnActor<APlayerStart>(ToWorld(Spot), FRotator(0.f, FMath::RadiansToDegrees(Angle), 0.f), Params))
+		{
+			Start->Tags.AddUnique(FName(TEXT("Greybox")));
 		}
 	}
 

@@ -19,7 +19,13 @@ public:
 
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
+	/** Prefers the gray-box city's starts (tag "Greybox"), handing them out in turn. */
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Online", meta = (ClampMin = "0"))
 	int32 StartingMoney = 2500;
+
+private:
+	int32 NextStartIndex = 0;
 };

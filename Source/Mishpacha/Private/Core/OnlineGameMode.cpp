@@ -3,6 +3,8 @@
 #include "Core/MishpachaPlayerController.h"
 #include "Core/MishpachaPlayerState.h"
 #include "GameFramework/GameSession.h"
+#include "GameFramework/PlayerStart.h"
+#include "EngineUtils.h"
 #include "GameFramework/GameStateBase.h"
 
 #define LOCTEXT_NAMESPACE "MishpachaOnlineGameMode"
@@ -35,6 +37,25 @@ void AOnlineGameMode::PostLogin(APlayerController* NewPlayer)
 		MPC->ClientShowNotification(FText::Format(LOCTEXT("WelcomeOnline", "Welcome to Tel Avir. Players: {0}/{1}"),
 			FText::AsNumber(NumPlayers), FText::AsNumber(Capacity)));
 	}
+}
+
+AActor* AOnlineGameMode::ChoosePlayerStart_Implementation(AController* Player)
+{
+	EnsureAutoContent(); // the city (and its starts) must exist before the first player spawns
+
+	TArray<APlayerStart*> CityStarts;
+	for (TActorIterator<APlayerStart> It(GetWorld()); It; ++It)
+	{
+		if (It->ActorHasTag(FName(TEXT("Greybox"))))
+		{
+			CityStarts.Add(*It);
+		}
+	}
+	if (CityStarts.Num() > 0)
+	{
+		return CityStarts[NextStartIndex++ % CityStarts.Num()];
+	}
+	return Super::ChoosePlayerStart_Implementation(Player);
 }
 
 #undef LOCTEXT_NAMESPACE

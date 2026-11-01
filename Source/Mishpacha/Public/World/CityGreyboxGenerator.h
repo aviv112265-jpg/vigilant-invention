@@ -12,6 +12,7 @@ class UMaterialInterface;
 class UStaticMesh;
 class UMissionDefinition;
 class APawn;
+class AMishpachaVehicle;
 
 /**
  * Builds a block grid (roads, sidewalks, Bauhaus-white low-rises, a glass-tower corner,
@@ -90,6 +91,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Greybox|Gameplay")
 	bool bSpawnLightingIfMissing = true;
 
+	/** Cars parked along the curbs (server). Needs a car the game can build - see AMishpachaVehicle auto setup. */
+	UPROPERTY(EditAnywhere, Category = "Greybox|Vehicles", meta = (ClampMin = "0", ClampMax = "150"))
+	int32 NumParkedCars = 26;
+
+	UPROPERTY(EditAnywhere, Category = "Greybox|Vehicles")
+	TSubclassOf<AMishpachaVehicle> ParkedCarClass;
+
 	UPROPERTY(EditAnywhere, Category = "Greybox|Civilians", meta = (ClampMin = "0", ClampMax = "200"))
 	int32 MaxCivilians = 30;
 
@@ -159,6 +167,7 @@ private:
 	void BuildGeometry();
 	void SpawnLightingIfMissing();
 	void SpawnGameplayActors();
+	void SpawnParkedCars();
 	void CreateDefaultMissions(const TMap<FName, FVector>& Targets);
 	void MaintainCivilians();
 

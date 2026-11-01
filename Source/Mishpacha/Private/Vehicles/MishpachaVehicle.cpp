@@ -3,6 +3,8 @@
 #include "Characters/MishpachaCharacter.h"
 #include "Heat/CrimeLibrary.h"
 #include "ChaosVehicleMovementComponent.h"
+#include "ChaosWheeledVehicleMovementComponent.h"
+#include "Mishpacha.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -37,6 +39,77 @@ AMishpachaVehicle::AMishpachaVehicle()
 	Camera->bUsePawnControlRotation = false;
 
 	LookPitch = DefaultCameraPitch;
+
+	TemplateVehicleClass = TSoftClassPtr<AWheeledVehiclePawn>(FSoftObjectPath(TEXT("/Game/VehicleTemplate/Blueprints/SportsCar/BP_VehicleAdvSportsCar.BP_VehicleAdvSportsCar_C")));
+}
+
+bool AMishpachaVehicle::HasVehicleSetup() const
+{
+	if (GetMesh() && GetMesh()->GetSkeletalMeshAsset())
+	{
+		return true;
+	}
+	return !TemplateVehicleClass.IsNull() && TemplateVehicleClass.LoadSynchronous() != nullptr;
+}
+
+void AMishpachaVehicle::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	// Runs on every machine (server and clients), so all of them build the same car.
+	if (GetMesh() && !GetMesh()->GetSkeletalMeshAsset() && !TemplateVehicleClass.IsNull())
+	{
+		if (const UClass* TemplateClass = TemplateVehicleClass.LoadSynchronous())
+		{
+			ApplyTemplate(TemplateClass->GetDefaultObject<AWheeledVehiclePawn>());
+		}
+		else
+		{
+			UE_LOG(LogMishpacha, Warning, TEXT("%s has no mesh and the template vehicle '%s' is missing (add the Vehicle content pack)."),
+				*GetName(), *TemplateVehicleClass.ToString());
+		}
+	}
+}
+
+void AMishpachaVehicle::ApplyTemplate(const AWheeledVehiclePawn* Template)
+{
+	USkeletalMeshComponent* SourceMesh = Template ? Template->GetMesh() : nullptr;
+	USkeletalMeshComponent* MyMesh = GetMesh();
+	if (!SourceMesh || !SourceMesh->GetSkeletalMeshAsset() || !MyMesh)
+	{
+		return;
+	}
+
+	// Look: mesh (brings its physics asset), animation blueprint (wheel bones), material overrides.
+	MyMesh->SetSkeletalMeshAsset(SourceMesh->GetSkeletalMeshAsset());
+	MyMesh->SetAnimInstanceClass(SourceMesh->AnimClass);
+	for (int32 Index = 0; Index < SourceMesh->OverrideMaterials.Num(); ++Index)
+	{
+		if (UMaterialInterface* Material = SourceMesh->OverrideMaterials[Index])
+		{
+			MyMesh->SetMaterial(Index, Material);
+		}
+	}
+
+	// Handling: every editable vehicle-movement setting (wheels, engine, gearbox, steering, mass ...).
+	UChaosWheeledVehicleMovementComponent* Source = Cast<UChaosWheeledVehicleMovementComponent>(Template->GetVehicleMovementComponent());
+	UChaosWheeledVehicleMovementComponent* Target = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent());
+	if (Source && Target)
+	{
+		for (TFieldIterator<FProperty> It(UChaosWheeledVehicleMovementComponent::StaticClass()); It; ++It)
+		{
+			const FProperty* Property = *It;
+			const UClass* OwnerClass = Property->GetOwnerClass();
+			if (!OwnerClass || !OwnerClass->IsChildOf(UChaosVehicleMovementComponent::StaticClass())
+				|| !Property->HasAnyPropertyFlags(CPF_Edit) || Property->HasAnyPropertyFlags(CPF_Transient))
+			{
+				continue;
+			}
+			Property->CopyCompleteValue_InContainer(Target, Source);
+		}
+		// Rebuild the physics vehicle with the new wheels.
+		Target->RecreatePhysicsState();
+	}
 }
 
 void AMishpachaVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -55,8 +55,20 @@ public:
 
 	FName GetDriverSocketName() const { return DriverSocketName; }
 
+	/** True if this car has a mesh of its own, or the template vehicle (see TemplateVehicleClass) exists. */
+	bool HasVehicleSetup() const;
+
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PostInitializeComponents() override;
+
+	/**
+	 * Auto setup: a car with no skeletal mesh (the plain C++ class, e.g. the gray-box city's parked cars)
+	 * copies its mesh, animation and handling from this vehicle Blueprint.
+	 * Default: the sports car from the Vehicle content pack.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Vehicle|Auto Setup")
+	TSoftClassPtr<AWheeledVehiclePawn> TemplateVehicleClass;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<USpringArmComponent> CameraBoom;
@@ -121,4 +133,5 @@ private:
 	float TimeSinceLookInput = 100.f;
 
 	FVector FindExitLocation(const AMishpachaCharacter* Character) const;
+	void ApplyTemplate(const AWheeledVehiclePawn* Template);
 };

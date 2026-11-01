@@ -70,6 +70,7 @@ ACityGreyboxGenerator::ACityGreyboxGenerator()
 	BeaconsISM = MakeISM(this, Root, TEXT("Beacons"));
 
 	CivilianClass = AMishpachaCivilian::StaticClass();
+	ParkedCarClass = AMishpachaVehicle::StaticClass();
 }
 
 void ACityGreyboxGenerator::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -680,12 +681,90 @@ void ACityGreyboxGenerator::SpawnGameplayActors()
 	AddPlace(GreyboxNames::Dropoff, 1, BlocksY - 2);            // family drop-off
 	AddPlace(GreyboxNames::Hospital, 1, BlocksY - 1);           // hospital (respawn point)
 
+	// --- Parked cars (before the missions: "get a car" steps only exist when there are cars) ---
+	SpawnParkedCars();
+
 	// --- Default missions, unless the level already has its own markers ---
 	const bool bHasMarkers = static_cast<bool>(TActorIterator<AMissionStartMarker>(World));
 	if (!bHasMarkers)
 	{
 		CreateDefaultMissions(Targets);
 	}
+}
+
+void ACityGreyboxGenerator::SpawnParkedCars()
+{
+	UWorld* World = GetWorld();
+	const AMishpachaVehicle* CarDefaults = ParkedCarClass ? ParkedCarClass->GetDefaultObject<AMishpachaVehicle>() : nullptr;
+	if (!World || NumParkedCars <= 0 || !CarDefaults)
+	{
+		return;
+	}
+	if (!CarDefaults->HasVehicleSetup())
+	{
+		UE_LOG(LogMishpacha, Log, TEXT("CityGreyboxGenerator: no parked cars - add the Vehicle content pack (or set Parked Car Class to your BP_Car)."));
+		return;
+	}
+
+	const float ExtentX = BlocksX * BlockSize + (BlocksX + 1) * RoadWidth;
+	const float ExtentY = BlocksY * BlockSize + (BlocksY + 1) * RoadWidth;
+	const float MinX = -ExtentX * 0.5f;
+	const float MinY = -ExtentY * 0.5f;
+	const float Step = BlockSize + RoadWidth;
+	const float CurbOffset = RoadWidth * 0.5f - 240.f; // car center, just off the curb
+	const FVector HomeCenter = IntersectionLocal(BlocksX / 2, BlocksY / 2);
+
+	// Every curb spot: two per side of every block-long stretch of road, kept away from the intersections.
+	struct FSpot { FVector Location; float Yaw; };
+	TArray<FSpot> Spots;
+	for (int32 I = 0; I <= BlocksX; ++I)
+	{
+		const float RoadX = MinX + RoadWidth * 0.5f + I * Step;
+		for (int32 BY = 0; BY < BlocksY; ++BY)
+		{
+			const float Y0 = MinY + RoadWidth + BY * Step;
+			for (const float T : { 0.3f, 0.7f })
+			{
+				// Right-hand traffic: the car on the +X curb faces +Y, the one on the -X curb faces -Y.
+				Spots.Add({ FVector(RoadX + CurbOffset, Y0 + BlockSize * T, 0.f), 90.f });
+				Spots.Add({ FVector(RoadX - CurbOffset, Y0 + BlockSize * T, 0.f), -90.f });
+			}
+		}
+	}
+	for (int32 J = 0; J <= BlocksY; ++J)
+	{
+		const float RoadY = MinY + RoadWidth * 0.5f + J * Step;
+		for (int32 BX = 0; BX < BlocksX; ++BX)
+		{
+			const float X0 = MinX + RoadWidth + BX * Step;
+			for (const float T : { 0.3f, 0.7f })
+			{
+				Spots.Add({ FVector(X0 + BlockSize * T, RoadY - CurbOffset, 0.f), 0.f });
+				Spots.Add({ FVector(X0 + BlockSize * T, RoadY + CurbOffset, 0.f), 180.f });
+			}
+		}
+	}
+
+	// Leave the family's corner clear (spawn points and job markers), then pick spots at random (same seed = same street).
+	Spots.RemoveAll([&](const FSpot& Spot) { return FVector::Dist2D(Spot.Location, HomeCenter) < 4500.f; });
+	FRandomStream Stream(Seed + 7);
+	for (int32 Index = Spots.Num() - 1; Index > 0; --Index)
+	{
+		Spots.Swap(Index, Stream.RandRange(0, Index));
+	}
+
+	int32 Spawned = 0;
+	for (int32 Index = 0; Index < Spots.Num() && Spawned < NumParkedCars; ++Index)
+	{
+		const FTransform CarTransform(FRotator(0.f, GetActorRotation().Yaw + Spots[Index].Yaw, 0.f), ToWorld(Spots[Index].Location + FVector(0.f, 0.f, 40.f)));
+		FActorSpawnParameters Params;
+		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		if (World->SpawnActor<AMishpachaVehicle>(ParkedCarClass, CarTransform, Params))
+		{
+			++Spawned;
+		}
+	}
+	UE_LOG(LogMishpacha, Log, TEXT("CityGreyboxGenerator: parked %d cars."), Spawned);
 }
 
 void ACityGreyboxGenerator::CreateDefaultMissions(const TMap<FName, FVector>& Targets)

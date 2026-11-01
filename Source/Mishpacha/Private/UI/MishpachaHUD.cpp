@@ -917,6 +917,36 @@ void AMishpachaHUD::DrawMapContents(const FMapView& View, bool bFullMap)
 		}
 	}
 
+	// Cars nobody is driving: small rectangles pointing the way the car faces.
+	{
+		TArray<FCanvasUVTri> CarTris;
+		const float HalfLength = FMath::Max(S(bFullMap ? 4.f : 5.f), 225.f / View.WorldSize.X * View.ScreenSize.X);
+		const float HalfWidth = HalfLength * 0.48f;
+		const FLinearColor CarColor(0.78f, 0.8f, 0.86f, 0.95f);
+		for (TActorIterator<AMishpachaVehicle> It(World); It; ++It)
+		{
+			if (*It == PlayerPawn || It->HasDriver())
+			{
+				continue;
+			}
+			const FVector2D P = View.ToScreen(It->GetActorLocation());
+			if (!View.Contains(P, HalfLength))
+			{
+				continue;
+			}
+			const float Rad = FMath::DegreesToRadians(It->GetActorRotation().Yaw);
+			const FVector2D Fwd = FVector2D(FMath::Cos(Rad), FMath::Sin(Rad));
+			const FVector2D Side(-Fwd.Y, Fwd.X);
+			const FVector2D F = Fwd * HalfLength;
+			const FVector2D R = Side * HalfWidth;
+			const FVector2D FO = Fwd * (HalfLength + 1.5f); // outline, ~1.5 px wider
+			const FVector2D RO = Side * (HalfWidth + 1.5f);
+			AddQuad(CarTris, P - FO - RO, P + FO - RO, P + FO + RO, P - FO + RO, MishpachaHUDStyle::Outline);
+			AddQuad(CarTris, P - F - R, P + F - R, P + F + R, P - F + R, CarColor);
+		}
+		DrawTris(CarTris);
+	}
+
 	// People: the other siblings, family soldiers, police.
 	for (TActorIterator<APawn> It(World); It; ++It)
 	{
@@ -1094,7 +1124,7 @@ void AMishpachaHUD::DrawFullMap()
 	// Legend.
 	const float LX = MapX + Side + Gap;
 	float LY = MapY;
-	FillRect(LX, LY, LegendW, S(300.f), MishpachaHUDStyle::Panel);
+	FillRect(LX, LY, LegendW, S(340.f), MishpachaHUDStyle::Panel);
 	FillRect(LX, LY, LegendW, S(3.f), MishpachaHUDStyle::Gold);
 	DrawLabel(LOCTEXT("Legend", "LEGEND"), LX + S(18.f), LY + S(16.f), Font(11.f, true), MishpachaHUDStyle::TextDim);
 	LY += S(50.f);
@@ -1109,6 +1139,7 @@ void AMishpachaHUD::DrawFullMap()
 	Row(LOCTEXT("LegendObjective", "Objective"), [&](const FVector2D& P) { DrawDisc(P, S(8.f), MishpachaHUDStyle::Outline); DrawDisc(P, S(6.5f), MishpachaHUDStyle::Gold); });
 	Row(LOCTEXT("LegendWaypoint", "Waypoint"), [&](const FVector2D& P) { DrawDiamond(P, S(9.f), MishpachaHUDStyle::Outline); DrawDiamond(P, S(7.f), MishpachaHUDStyle::WaypointPurple); });
 	Row(LOCTEXT("LegendFamily", "Sibling"), [&](const FVector2D& P) { DrawDisc(P, S(7.f), MishpachaHUDStyle::Outline); DrawDisc(P, S(5.5f), FLinearColor(0.05f, 0.45f, 0.45f)); });
+	Row(LOCTEXT("LegendCar", "Car"), [&](const FVector2D& P) { FillRect(P.X - S(8.f), P.Y - S(4.5f), S(16.f), S(9.f), MishpachaHUDStyle::Outline); FillRect(P.X - S(7.f), P.Y - S(3.5f), S(14.f), S(7.f), FLinearColor(0.78f, 0.8f, 0.86f, 0.95f)); });
 	Row(LOCTEXT("LegendPolice", "Police"), [&](const FVector2D& P) { DrawDisc(P, S(6.f), MishpachaHUDStyle::Outline); DrawDisc(P, S(4.5f), MishpachaHUDStyle::PoliceBlue); });
 	Row(LOCTEXT("LegendRoute", "GPS route"), [&](const FVector2D& P) { DrawThickLine(P - FVector2D(S(12.f), 0.f), P + FVector2D(S(12.f), 0.f), S(4.f), MishpachaHUDStyle::Gold); });
 

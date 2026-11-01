@@ -80,18 +80,8 @@ void AMishpachaVehicle::ApplyTemplate(const AWheeledVehiclePawn* Template)
 		return;
 	}
 
-	// Look: mesh (brings its physics asset), animation blueprint (wheel bones), material overrides.
-	MyMesh->SetSkeletalMeshAsset(SourceMesh->GetSkeletalMeshAsset());
-	MyMesh->SetAnimInstanceClass(SourceMesh->AnimClass);
-	for (int32 Index = 0; Index < SourceMesh->OverrideMaterials.Num(); ++Index)
-	{
-		if (UMaterialInterface* Material = SourceMesh->OverrideMaterials[Index])
-		{
-			MyMesh->SetMaterial(Index, Material);
-		}
-	}
-
-	// Handling: every editable vehicle-movement setting (wheels, engine, gearbox, steering, mass ...).
+	// Handling first (wheels, engine, gearbox, steering, mass ...), so the physics vehicle that
+	// the new mesh builds already has them.
 	UChaosWheeledVehicleMovementComponent* Source = Cast<UChaosWheeledVehicleMovementComponent>(Template->GetVehicleMovementComponent());
 	UChaosWheeledVehicleMovementComponent* Target = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent());
 	if (Source && Target)
@@ -107,7 +97,22 @@ void AMishpachaVehicle::ApplyTemplate(const AWheeledVehiclePawn* Template)
 			}
 			Property->CopyCompleteValue_InContainer(Target, Source);
 		}
-		// Rebuild the physics vehicle with the new wheels.
+	}
+
+	// Look: mesh (brings its physics asset), animation blueprint (wheel bones), material overrides.
+	MyMesh->SetSkeletalMeshAsset(SourceMesh->GetSkeletalMeshAsset());
+	MyMesh->SetAnimInstanceClass(SourceMesh->AnimClass);
+	for (int32 Index = 0; Index < SourceMesh->OverrideMaterials.Num(); ++Index)
+	{
+		if (UMaterialInterface* Material = SourceMesh->OverrideMaterials[Index])
+		{
+			MyMesh->SetMaterial(Index, Material);
+		}
+	}
+
+	// Rebuild the physics vehicle with the new wheels.
+	if (Target)
+	{
 		Target->RecreatePhysicsState();
 	}
 }

@@ -91,9 +91,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Greybox|Gameplay")
 	bool bSpawnLightingIfMissing = true;
 
-	/** Cars parked along the curbs (server). Needs a car the game can build - see AMishpachaVehicle auto setup. */
+	/** Cars parked along the curbs (server), plus 3 next to the family's corner. Needs a car the game can build - see AMishpachaVehicle auto setup. */
 	UPROPERTY(EditAnywhere, Category = "Greybox|Vehicles", meta = (ClampMin = "0", ClampMax = "150"))
-	int32 NumParkedCars = 26;
+	int32 NumParkedCars = 36;
 
 	UPROPERTY(EditAnywhere, Category = "Greybox|Vehicles")
 	TSubclassOf<AMishpachaVehicle> ParkedCarClass;

@@ -753,8 +753,17 @@ void ACityGreyboxGenerator::SpawnParkedCars()
 		Spots.Swap(Index, Stream.RandRange(0, Index));
 	}
 
+	// A few cars in sight of the family's corner (clear of the job markers on the avenues' center lines).
+	const TArray<FSpot> HomeSpots = {
+		{ HomeCenter + FVector(-1900.f, -CurbOffset, 0.f), 0.f },
+		{ HomeCenter + FVector(1900.f, CurbOffset, 0.f), 180.f },
+		{ HomeCenter + FVector(-CurbOffset, 1900.f, 0.f), -90.f },
+	};
+	Spots.Insert(HomeSpots, 0);
+
 	int32 Spawned = 0;
-	for (int32 Index = 0; Index < Spots.Num() && Spawned < NumParkedCars; ++Index)
+	const int32 Wanted = NumParkedCars + HomeSpots.Num();
+	for (int32 Index = 0; Index < Spots.Num() && Spawned < Wanted; ++Index)
 	{
 		const FTransform CarTransform(FRotator(0.f, GetActorRotation().Yaw + Spots[Index].Yaw, 0.f), ToWorld(Spots[Index].Location + FVector(0.f, 0.f, 40.f)));
 		FActorSpawnParameters Params;

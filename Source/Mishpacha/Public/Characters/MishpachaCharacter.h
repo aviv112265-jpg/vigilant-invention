@@ -10,6 +10,8 @@ class USpringArmComponent;
 class AMishpachaWeapon;
 class AMishpachaVehicle;
 class USiblingAbilityComponent;
+class UStaticMeshComponent;
+class UMaterialInstanceDynamic;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMishpachaHealthChanged, float, NewHealth, float, MaxHealth);
 
@@ -48,7 +50,11 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Family")
 	FName GetSiblingId() const { return SiblingId; }
 
-	void SetSiblingId(FName NewSiblingId) { SiblingId = NewSiblingId; }
+	void SetSiblingId(FName NewSiblingId);
+
+	/** Placeholder body color used when no skeletal mesh is available (sibling accent, police blue...). */
+	UFUNCTION(BlueprintPure, Category = "Visuals")
+	FLinearColor GetPlaceholderColor() const;
 
 	UFUNCTION(BlueprintPure, Category = "Abilities")
 	USiblingAbilityComponent* GetAbility() const;
@@ -121,8 +127,37 @@ protected:
 	FName WeaponSocketName = TEXT("hand_r");
 
 	/** "Rafi", "Shira", "Omer" for the siblings; None for online players / NPCs. */
-	UPROPERTY(EditAnywhere, Replicated, BlueprintReadOnly, Category = "Family")
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_SiblingId, BlueprintReadOnly, Category = "Family")
 	FName SiblingId;
+
+	// ----- Zero-setup visuals -----
+
+	/** If the Blueprint assigns no skeletal mesh, try the Third Person template mannequin, else draw a colored placeholder body. */
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
+	bool bAutoVisuals = true;
+
+	/** Placeholder color when SiblingId doesn't pick one (online players, NPCs). Alpha 0 = auto. */
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
+	FLinearColor PlaceholderColor = FLinearColor(0.f, 0.f, 0.f, 0.f);
+
+	UPROPERTY(Transient)
+	TObjectPtr<UStaticMeshComponent> PlaceholderBody;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UStaticMeshComponent> PlaceholderHead;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UMaterialInstanceDynamic> PlaceholderMaterial;
+
+	UFUNCTION()
+	void OnRep_SiblingId();
+
+	void SetupAutoVisuals();
+	void RefreshPlaceholderColor();
+	class USkeletalMesh* LoadMannequinMesh() const;
+
+	/** True when SetupAutoVisuals assigned the template mannequin (so it may swap Manny/Quinn later). */
+	bool bUsingAutoMannequin = false;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Health)
 	float Health = 200.f;

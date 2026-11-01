@@ -11,6 +11,8 @@
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "TimerManager.h"
+#include "Engine/StaticMesh.h"
+#include "UObject/ConstructorHelpers.h"
 
 ADronePawn::ADronePawn()
 {
@@ -27,6 +29,14 @@ ADronePawn::ADronePawn()
 	DroneMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DroneMesh"));
 	DroneMesh->SetupAttachment(Collision);
 	DroneMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// Gray-box look until a real drone mesh is assigned in a Blueprint: a flat box.
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMesh(TEXT("/Engine/BasicShapes/Cube.Cube"));
+	if (CubeMesh.Succeeded())
+	{
+		DroneMesh->SetStaticMesh(CubeMesh.Object);
+		DroneMesh->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.12f));
+	}
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(Collision);

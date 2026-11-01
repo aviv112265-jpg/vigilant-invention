@@ -1,5 +1,7 @@
 // MISHPACHA - simple server-authoritative hitscan weapon.
 #include "Characters/MishpachaWeapon.h"
+#include "World/MishpachaWorldEvents.h"
+#include "DrawDebugHelpers.h"
 #include "Heat/CrimeLibrary.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/DamageType.h"
@@ -117,6 +119,7 @@ void AMishpachaWeapon::ServerFire_Implementation(FVector_NetQuantize TraceStart,
 	}
 
 	MulticastFireEffects(bHit ? FVector(Hit.ImpactPoint) : TraceEnd);
+	FMishpachaWorldEvents::OnGunshot().Broadcast(GetWorld(), OwnerPawn->GetActorLocation());
 
 	// Gunshots attract heat (throttled so automatic fire doesn't spam witness checks).
 	if (Now - LastCrimeReportTime > 2.0)
@@ -146,6 +149,16 @@ void AMishpachaWeapon::MulticastFireEffects_Implementation(FVector_NetQuantize I
 		return;
 	}
 	BP_OnFired(ImpactPoint);
+
+#if ENABLE_DRAW_DEBUG
+	// Gray-box tracer so shots are visible before weapon meshes / VFX exist.
+	if (bDrawDebugTracer)
+	{
+		const AActor* OwnerActor = GetOwner();
+		const FVector Muzzle = OwnerActor ? OwnerActor->GetActorLocation() + FVector(0.f, 0.f, 40.f) : GetActorLocation();
+		DrawDebugLine(GetWorld(), Muzzle, ImpactPoint, FColor(255, 220, 120), false, 0.08f, 0, 1.5f);
+	}
+#endif
 }
 
 void AMishpachaWeapon::OnRep_Ammo()

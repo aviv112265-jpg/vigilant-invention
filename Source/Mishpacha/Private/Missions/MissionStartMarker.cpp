@@ -8,6 +8,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
+#include "Engine/StaticMesh.h"
+#include "UObject/ConstructorHelpers.h"
 
 #define LOCTEXT_NAMESPACE "MishpachaMissions"
 
@@ -23,6 +25,27 @@ AMissionStartMarker::AMissionStartMarker()
 	Visual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Visual"));
 	Visual->SetupAttachment(Trigger);
 	Visual->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// Default look: a flat disc on the ground (engine content, always available). Blueprints can replace it.
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> CylinderMesh(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+	if (CylinderMesh.Succeeded())
+	{
+		Visual->SetStaticMesh(CylinderMesh.Object);
+		Visual->SetRelativeLocation(FVector(0.f, 0.f, -90.f));
+		Visual->SetRelativeScale3D(FVector(3.f, 3.f, 0.05f));
+	}
+
+	// Replicate so clients see markers spawned at runtime by the server.
+	bReplicates = true;
+}
+
+void AMissionStartMarker::SetMission(UMissionDefinition* InMission)
+{
+	Mission = InMission;
+	if (HasActorBegunPlay())
+	{
+		RefreshAvailability();
+	}
 }
 
 void AMissionStartMarker::BeginPlay()

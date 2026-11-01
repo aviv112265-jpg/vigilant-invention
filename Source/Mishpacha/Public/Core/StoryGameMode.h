@@ -37,6 +37,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Story")
 	bool bAutosaveOnSwitch = true;
 
+	/** If FamilyDefinitions is empty, build Rafi / Shira / Omer in code (no Data Assets needed). */
+	UPROPERTY(EditDefaultsOnly, Category = "Story")
+	bool bAutoFamily = true;
+
+	void CreateDefaultFamily();
+
 	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 	virtual void RespawnPlayer(AController* DeadController, const FVector& DeathLocation) override;
 

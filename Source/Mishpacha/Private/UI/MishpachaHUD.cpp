@@ -6,6 +6,8 @@
 #include "Characters/MishpachaCharacter.h"
 #include "Family/FamilySubsystem.h"
 #include "Heat/HeatComponent.h"
+#include "Abilities/SiblingAbilityComponent.h"
+#include "Engine/Canvas.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
@@ -212,7 +214,24 @@ void AMishpachaHUD::DrawHUD()
 	if (const AMishpachaCharacter* PawnCharacter = PC ? Cast<AMishpachaCharacter>(PC->GetPawn()) : nullptr)
 	{
 		const FString Who = PawnCharacter->GetSiblingId().IsNone() ? TEXT("Player") : PawnCharacter->GetSiblingId().ToString();
-		Line(FString::Printf(TEXT("%s  HP %.0f / %.0f"), *Who, PawnCharacter->GetHealth(), PawnCharacter->GetMaxHealth()), FLinearColor::White);
+		Line(FString::Printf(TEXT("%s  HP %.0f / %.0f"), *Who, PawnCharacter->GetHealth(), PawnCharacter->GetMaxHealth()), PawnCharacter->GetPlaceholderColor());
+
+		if (const USiblingAbilityComponent* Ability = PawnCharacter->GetAbility())
+		{
+			const float Cooldown = Ability->GetCooldownRemaining();
+			FString AbilityLine = FString::Printf(TEXT("[Q] %s: "), *Ability->GetAbilityName().ToString());
+			AbilityLine += Ability->IsAbilityActive() ? TEXT("ACTIVE") : (Cooldown > 0.f ? FString::Printf(TEXT("%.0fs"), Cooldown) : FString(TEXT("ready")));
+			Line(AbilityLine, FLinearColor(0.8f, 0.8f, 1.f));
+		}
+
+		// Simple crosshair while on foot.
+		if (Canvas && !PawnCharacter->GetCurrentVehicle() && !PawnCharacter->IsDead())
+		{
+			const float CX = Canvas->ClipX * 0.5f;
+			const float CY = Canvas->ClipY * 0.5f;
+			DrawLine(CX - 8.f, CY, CX + 8.f, CY, FLinearColor::White, 1.5f);
+			DrawLine(CX, CY - 8.f, CX, CY + 8.f, FLinearColor::White, 1.5f);
+		}
 	}
 
 	if (const AMishpachaGameState* GameStateActor = GetWorld() ? GetWorld()->GetGameState<AMishpachaGameState>() : nullptr)

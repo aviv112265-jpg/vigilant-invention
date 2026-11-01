@@ -17,6 +17,11 @@ class MISHPACHA_API AMissionStartMarker : public AActor
 public:
 	AMissionStartMarker();
 
+	/** For markers spawned from code (e.g. the gray-box generator). Call before FinishSpawning when possible. */
+	void SetMission(UMissionDefinition* InMission);
+
+	UMissionDefinition* GetMission() const { return Mission; }
+
 protected:
 	virtual void BeginPlay() override;
 

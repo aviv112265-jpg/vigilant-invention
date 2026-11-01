@@ -1,6 +1,7 @@
 // MISHPACHA - Rafi's ability: "Call the boys".
 #include "Abilities/RafiBackupAbility.h"
 #include "AIController.h"
+#include "Characters/MishpachaNPCCharacters.h"
 #include "NavigationSystem.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
@@ -13,6 +14,8 @@ URafiBackupAbility::URafiBackupAbility()
 	AbilityName = LOCTEXT("RafiAbilityName", "Call the Boys");
 	Cooldown = 90.f;
 	Duration = 60.f;
+	// Works out of the box; replace with your own soldier Blueprint later.
+	BackupPawnClass = AMishpachaFamilySoldier::StaticClass();
 }
 
 bool URafiBackupAbility::CanActivate(FText& OutReason) const

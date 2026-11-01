@@ -5,6 +5,7 @@
 #include "Heat/CrimeLibrary.h"
 #include "Core/MishpachaGameModeBase.h"
 #include "AIController.h"
+#include "AI/MishpachaPoliceAIController.h"
 #include "NavigationSystem.h"
 #include "Engine/World.h"
 #include "GameFramework/GameStateBase.h"
@@ -107,7 +108,12 @@ void UPoliceDispatchSubsystem::Refresh()
 				Heat->NotifySpottedByPolice(Target->GetActorLocation());
 			}
 
-			if (AAIController* AI = Cast<AAIController>(UnitPawn->GetController()))
+			if (AMishpachaPoliceAIController* PoliceAI = Cast<AMishpachaPoliceAIController>(UnitPawn->GetController()))
+			{
+				// Built-in officers run their own chase/shoot logic; just tell them who to hunt.
+				PoliceAI->SetTarget(Target);
+			}
+			else if (AAIController* AI = Cast<AAIController>(UnitPawn->GetController()))
 			{
 				AI->MoveToLocation(Heat->GetLastKnownLocation(), 300.f);
 			}
@@ -164,27 +170,28 @@ bool UPoliceDispatchSubsystem::FindSpawnLocation(const UPoliceDispatchConfig& Co
 	}
 
 	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(World);
-	for (int32 Attempt = 0; Attempt < 8; ++Attempt)
+	for (int32 Attempt = 0; Attempt < 12; ++Attempt)
 	{
 		const float Angle = FMath::FRandRange(0.f, UE_TWO_PI);
 		const float RingDistance = FMath::FRandRange(Config.MinSpawnDistance, Config.MaxSpawnDistance);
 		const FVector Candidate = Origin + FVector(FMath::Cos(Angle) * RingDistance, FMath::Sin(Angle) * RingDistance, 0.f);
 
-		if (NavSys)
+		// Prefer the navmesh when the level has one...
+		FNavLocation NavLocation;
+		if (NavSys && NavSys->ProjectPointToNavigation(Candidate, NavLocation, FVector(2000.f, 2000.f, 5000.f)))
 		{
-			FNavLocation NavLocation;
-			if (NavSys->ProjectPointToNavigation(Candidate, NavLocation, FVector(2000.f, 2000.f, 5000.f)))
-			{
-				OutLocation = NavLocation.Location;
-				return true;
-			}
+			OutLocation = NavLocation.Location;
+			return true;
 		}
-		else
+
+		// ...otherwise (gray-box levels without a NavMeshBoundsVolume) find open ground with a trace.
+		FHitResult Hit;
+		const FVector TraceStart = Candidate + FVector(0.f, 0.f, 5000.f);
+		const FVector TraceEnd = Candidate - FVector(0.f, 0.f, 5000.f);
+		if (World->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility) && Hit.ImpactNormal.Z > 0.9f)
 		{
-			FHitResult Hit;
-			const FVector TraceStart = Candidate + FVector(0.f, 0.f, 5000.f);
-			const FVector TraceEnd = Candidate - FVector(0.f, 0.f, 5000.f);
-			if (World->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility))
+			// Skip rooftops: the spot must be close to the target's height.
+			if (FMath::Abs(Hit.ImpactPoint.Z - Origin.Z) < 300.f)
 			{
 				OutLocation = Hit.ImpactPoint;
 				return true;

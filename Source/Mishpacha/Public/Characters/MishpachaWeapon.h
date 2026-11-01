@@ -63,6 +63,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<UDamageType> DamageTypeClass;
 
+	/** Draw a short debug line per shot (development builds only) - handy before VFX exist. */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	bool bDrawDebugTracer = true;
+
 	UPROPERTY(ReplicatedUsing = OnRep_Ammo)
 	int32 Ammo = 0;
 

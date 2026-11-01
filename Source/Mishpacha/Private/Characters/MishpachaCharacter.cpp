@@ -16,6 +16,13 @@
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "Net/UnrealNetwork.h"
+#include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInterface.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Engine/StaticMesh.h"
+#include "Engine/SkeletalMesh.h"
+#include "Animation/AnimInstance.h"
+#include <initializer_list>
 
 #define LOCTEXT_NAMESPACE "MishpachaCharacter"
 
@@ -52,11 +59,16 @@ AMishpachaCharacter::AMishpachaCharacter()
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -96.f), FRotator(0.f, -90.f, 0.f));
 
 	Health = MaxHealth;
+
+	// Everyone carries a basic pistol until Blueprints assign real weapons.
+	DefaultWeaponClass = AMishpachaWeapon::StaticClass();
 }
 
 void AMishpachaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SetupAutoVisuals();
 
 	if (HasAuthority())
 	{
@@ -314,8 +326,21 @@ void AMishpachaCharacter::OnRep_Dead()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// Simple ragdoll (requires a Physics Asset on the mesh).
-	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
-	GetMesh()->SetSimulatePhysics(true);
+	if (GetMesh()->GetSkeletalMeshAsset())
+	{
+		GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+		GetMesh()->SetSimulatePhysics(true);
+	}
+
+	// Placeholder body: just fall over.
+	if (PlaceholderBody)
+	{
+		PlaceholderBody->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -70.f), FRotator(90.f, 0.f, 0.f));
+	}
+	if (PlaceholderHead)
+	{
+		PlaceholderHead->SetRelativeLocation(FVector(90.f, 0.f, -70.f));
+	}
 
 	BP_OnDied();
 }
@@ -462,6 +487,167 @@ void AMishpachaCharacter::UseAbility()
 	else if (AMishpachaPlayerController* PC = Cast<AMishpachaPlayerController>(GetController()))
 	{
 		PC->ClientShowNotification(LOCTEXT("NoAbility", "This character has no special ability."));
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Zero-setup visuals
+// ---------------------------------------------------------------------------
+
+namespace MishpachaVisuals
+{
+	template <typename T>
+	static T* LoadFirst(std::initializer_list<const TCHAR*> Paths)
+	{
+		for (const TCHAR* Path : Paths)
+		{
+			if (T* Found = LoadObject<T>(nullptr, Path, nullptr, LOAD_Quiet | LOAD_NoWarn))
+			{
+				return Found;
+			}
+		}
+		return nullptr;
+	}
+
+	static UClass* LoadFirstClass(std::initializer_list<const TCHAR*> Paths)
+	{
+		for (const TCHAR* Path : Paths)
+		{
+			if (UClass* Found = LoadClass<UAnimInstance>(nullptr, Path, nullptr, LOAD_Quiet | LOAD_NoWarn))
+			{
+				return Found;
+			}
+		}
+		return nullptr;
+	}
+}
+
+USkeletalMesh* AMishpachaCharacter::LoadMannequinMesh() const
+{
+	static const FName Shira(TEXT("Shira"));
+	if (SiblingId == Shira)
+	{
+		return MishpachaVisuals::LoadFirst<USkeletalMesh>({
+			TEXT("/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple"),
+			TEXT("/Game/Characters/Mannequins/Meshes/SKM_Quinn.SKM_Quinn") });
+	}
+	return MishpachaVisuals::LoadFirst<USkeletalMesh>({
+		TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple"),
+		TEXT("/Game/Characters/Mannequins/Meshes/SKM_Manny.SKM_Manny") });
+}
+
+void AMishpachaCharacter::SetSiblingId(FName NewSiblingId)
+{
+	SiblingId = NewSiblingId;
+	OnRep_SiblingId();
+}
+
+void AMishpachaCharacter::OnRep_SiblingId()
+{
+	RefreshPlaceholderColor();
+
+	// Siblings get their id right after spawning (after BeginPlay): swap Manny/Quinn if needed.
+	if (bUsingAutoMannequin)
+	{
+		USkeletalMesh* Wanted = LoadMannequinMesh();
+		if (Wanted && Wanted != GetMesh()->GetSkeletalMeshAsset())
+		{
+			GetMesh()->SetSkeletalMeshAsset(Wanted);
+		}
+	}
+}
+
+FLinearColor AMishpachaCharacter::GetPlaceholderColor() const
+{
+	static const FName Rafi(TEXT("Rafi"));
+	static const FName Shira(TEXT("Shira"));
+	static const FName Omer(TEXT("Omer"));
+
+	if (SiblingId == Rafi)
+	{
+		return FLinearColor(0.85f, 0.35f, 0.08f); // burnt orange
+	}
+	if (SiblingId == Shira)
+	{
+		return FLinearColor(0.05f, 0.45f, 0.45f); // deep teal
+	}
+	if (SiblingId == Omer)
+	{
+		return FLinearColor(0.35f, 0.42f, 0.12f); // olive
+	}
+	if (PlaceholderColor.A > 0.f)
+	{
+		return FLinearColor(PlaceholderColor.R, PlaceholderColor.G, PlaceholderColor.B, 1.f);
+	}
+	return FLinearColor(0.6f, 0.6f, 0.65f);
+}
+
+void AMishpachaCharacter::SetupAutoVisuals()
+{
+	if (!bAutoVisuals || GetMesh()->GetSkeletalMeshAsset() || PlaceholderBody)
+	{
+		return;
+	}
+
+	// 1) Third Person template mannequin (Add Feature or Content Pack > Third Person). Paths differ between engine versions.
+	USkeletalMesh* Mannequin = LoadMannequinMesh();
+	UClass* AnimClass = MishpachaVisuals::LoadFirstClass({
+		TEXT("/Game/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed.ABP_Unarmed_C"),
+		TEXT("/Game/Characters/Mannequins/Animations/ABP_Manny.ABP_Manny_C") });
+
+	if (Mannequin && AnimClass)
+	{
+		GetMesh()->SetSkeletalMeshAsset(Mannequin);
+		GetMesh()->SetAnimInstanceClass(AnimClass);
+		bUsingAutoMannequin = true;
+		AttachWeapon();
+		return;
+	}
+
+	// 2) Colored placeholder (engine basic shapes always exist).
+	UStaticMesh* Cylinder = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"), nullptr, LOAD_Quiet | LOAD_NoWarn);
+	UStaticMesh* Sphere = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere"), nullptr, LOAD_Quiet | LOAD_NoWarn);
+	UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"), nullptr, LOAD_Quiet | LOAD_NoWarn);
+	if (!Cylinder || !Sphere)
+	{
+		return;
+	}
+
+	if (BaseMaterial)
+	{
+		PlaceholderMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+	}
+
+	PlaceholderBody = NewObject<UStaticMeshComponent>(this, TEXT("PlaceholderBody"));
+	PlaceholderBody->SetStaticMesh(Cylinder);
+	PlaceholderBody->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PlaceholderBody->SetupAttachment(GetCapsuleComponent());
+	// Basic cylinder: 100 cm diameter, 100 cm tall, pivot at center.
+	PlaceholderBody->SetRelativeLocation(FVector(0.f, 0.f, -18.f));
+	PlaceholderBody->SetRelativeScale3D(FVector(0.7f, 0.7f, 1.55f));
+	PlaceholderBody->RegisterComponent();
+
+	PlaceholderHead = NewObject<UStaticMeshComponent>(this, TEXT("PlaceholderHead"));
+	PlaceholderHead->SetStaticMesh(Sphere);
+	PlaceholderHead->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PlaceholderHead->SetupAttachment(GetCapsuleComponent());
+	PlaceholderHead->SetRelativeLocation(FVector(0.f, 0.f, 78.f));
+	PlaceholderHead->SetRelativeScale3D(FVector(0.32f));
+	PlaceholderHead->RegisterComponent();
+
+	if (PlaceholderMaterial)
+	{
+		PlaceholderBody->SetMaterial(0, PlaceholderMaterial);
+		PlaceholderHead->SetMaterial(0, PlaceholderMaterial);
+	}
+	RefreshPlaceholderColor();
+}
+
+void AMishpachaCharacter::RefreshPlaceholderColor()
+{
+	if (PlaceholderMaterial)
+	{
+		PlaceholderMaterial->SetVectorParameterValue(FName(TEXT("Color")), GetPlaceholderColor());
 	}
 }
 

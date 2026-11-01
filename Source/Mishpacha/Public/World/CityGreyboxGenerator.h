@@ -93,13 +93,13 @@ protected:
 
 	/** Cars parked along the curbs (server), plus 3 next to the family's corner. Needs a car the game can build - see AMishpachaVehicle auto setup. */
 	UPROPERTY(EditAnywhere, Category = "Greybox|Vehicles", meta = (ClampMin = "0", ClampMax = "150"))
-	int32 NumParkedCars = 36;
+	int32 NumParkedCars = 18;
 
 	UPROPERTY(EditAnywhere, Category = "Greybox|Vehicles")
 	TSubclassOf<AMishpachaVehicle> ParkedCarClass;
 
 	UPROPERTY(EditAnywhere, Category = "Greybox|Civilians", meta = (ClampMin = "0", ClampMax = "200"))
-	int32 MaxCivilians = 30;
+	int32 MaxCivilians = 12;
 
 	UPROPERTY(EditAnywhere, Category = "Greybox|Civilians")
 	float CivilianSpawnRadius = 6000.f;

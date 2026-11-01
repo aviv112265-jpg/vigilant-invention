@@ -607,7 +607,8 @@ void ACityGreyboxGenerator::SpawnLightingIfMissing()
 		if (USkyLightComponent* SkyComponent = Sky->GetLightComponent())
 		{
 			SkyComponent->SetMobility(EComponentMobility::Movable);
-			SkyComponent->bRealTimeCapture = true;
+			// One capture of the static sky; real-time capture re-renders it every frame.
+			SkyComponent->bRealTimeCapture = false;
 			SkyComponent->RecaptureSky();
 		}
 	}

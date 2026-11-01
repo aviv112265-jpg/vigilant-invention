@@ -5,6 +5,10 @@
 #include "ChaosVehicleMovementComponent.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
 #include "Mishpacha.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/BlueprintGeneratedClass.h"
+#include "Engine/SCS_Node.h"
+#include "Engine/SimpleConstructionScript.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -99,14 +103,40 @@ void AMishpachaVehicle::ApplyTemplate(const AWheeledVehiclePawn* Template)
 		}
 	}
 
-	// Look: mesh (brings its physics asset), animation blueprint (wheel bones), material overrides.
+	// Rig: skeletal mesh (brings its physics asset), animation blueprint (wheel bones), material overrides.
 	MyMesh->SetSkeletalMeshAsset(SourceMesh->GetSkeletalMeshAsset());
 	MyMesh->SetAnimInstanceClass(SourceMesh->AnimClass);
+	MyMesh->VisibilityBasedAnimTickOption = SourceMesh->VisibilityBasedAnimTickOption;
+	MyMesh->SetVisibility(SourceMesh->IsVisible());
 	for (int32 Index = 0; Index < SourceMesh->OverrideMaterials.Num(); ++Index)
 	{
 		if (UMaterialInterface* Material = SourceMesh->OverrideMaterials[Index])
 		{
 			MyMesh->SetMaterial(Index, Material);
+		}
+	}
+
+	// Look: vehicle templates often hide the skeletal mesh and show static parts (body, glass,
+	// wheels) attached to its bones. Copy those from the Blueprint's construction script.
+	for (const UBlueprintGeneratedClass* BPClass = Cast<UBlueprintGeneratedClass>(Template->GetClass()); BPClass;
+		BPClass = Cast<UBlueprintGeneratedClass>(BPClass->GetSuperClass()))
+	{
+		if (!BPClass->SimpleConstructionScript)
+		{
+			continue;
+		}
+		for (const USCS_Node* Node : BPClass->SimpleConstructionScript->GetAllNodes())
+		{
+			const UStaticMeshComponent* Part = Node ? Cast<UStaticMeshComponent>(Node->ComponentTemplate) : nullptr;
+			if (!Part || !Part->GetStaticMesh() || !Part->IsVisible())
+			{
+				continue;
+			}
+			UStaticMeshComponent* Copy = NewObject<UStaticMeshComponent>(this, Node->GetVariableName(), RF_Transient, const_cast<UStaticMeshComponent*>(Part));
+			Copy->SetCollisionEnabled(ECollisionEnabled::NoCollision); // the physics asset is the car's collision
+			Copy->SetupAttachment(MyMesh, Node->AttachToName);
+			Copy->RegisterComponent();
+			AddInstanceComponent(Copy);
 		}
 	}
 

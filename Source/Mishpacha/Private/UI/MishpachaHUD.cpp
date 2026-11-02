@@ -14,6 +14,7 @@
 #include "World/MishpachaDayNight.h"
 #include "Characters/MishpachaWeapon.h"
 #include "World/MishpachaSounds.h"
+#include "UI/MishpachaText.h"
 #include "Sound/SoundBase.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
@@ -71,6 +72,7 @@ void AMishpachaHUD::BeginPlay()
 	Super::BeginPlay();
 
 	UIFont = LoadObject<UFont>(nullptr, TEXT("/Engine/EngineFonts/Roboto.Roboto"), nullptr, LOAD_Quiet | LOAD_NoWarn);
+	MishpachaText::ApplySavedLanguage();
 
 	if (HUDWidgetClass)
 	{
@@ -738,7 +740,8 @@ FVector2D AMishpachaHUD::FMapView::ClampToEdge(const FVector2D& Screen, float In
 
 FSlateFontInfo AMishpachaHUD::Font(float Size, bool bBold) const
 {
-	return FSlateFontInfo(UIFont.Get(), FMath::Max(1, FMath::RoundToInt(Size * UIScale)), bBold ? FName(TEXT("Bold")) : FName(TEXT("Regular")));
+	// Roboto + Noto Sans Hebrew when the Hebrew faces are in the project.
+	return MishpachaText::MakeFont(UIFont.Get(), FMath::Max(1, FMath::RoundToInt(Size * UIScale)), bBold);
 }
 
 FVector2D AMishpachaHUD::MeasureText(const FText& Text, const FSlateFontInfo& FontInfo) const
@@ -753,12 +756,15 @@ FVector2D AMishpachaHUD::MeasureText(const FText& Text, const FSlateFontInfo& Fo
 	return FVector2D(Text.ToString().Len() * FontInfo.Size * 0.62f, FontInfo.Size * 1.35f);
 }
 
-void AMishpachaHUD::DrawLabel(const FText& Text, float X, float Y, const FSlateFontInfo& FontInfo, const FLinearColor& Color, float HAlign, bool bShadow)
+void AMishpachaHUD::DrawLabel(const FText& InText, float X, float Y, const FSlateFontInfo& FontInfo, const FLinearColor& Color, float HAlign, bool bShadow)
 {
-	if (!Canvas || Text.IsEmpty() || !UIFont)
+	if (!Canvas || InText.IsEmpty() || !UIFont)
 	{
 		return;
 	}
+	// The canvas draws left to right: Hebrew lines go in visual order.
+	const FString Source = InText.ToString();
+	const FText Text = MishpachaText::HasHebrew(Source) ? FText::FromString(MishpachaText::ToVisualOrder(Source)) : InText;
 	FVector2D Position(X, Y);
 	if (HAlign > 0.f)
 	{
@@ -1741,6 +1747,10 @@ void AMishpachaHUD::BuildMenuItems(TArray<FMenuItem>& Items)
 		{
 			ApplyFrameLimit(Limit <= 0.f ? 30.f : (Limit < 45.f ? 60.f : 0.f));
 		});
+		const bool bHebrew = MishpachaText::GetLanguage() == TEXT("he");
+		Item(FText::Format(LOCTEXT("MenuLanguage", "LANGUAGE: {0}"), bHebrew ? FText::FromString(TEXT("עברית")) : FText::FromString(TEXT("ENGLISH"))),
+			MishpachaText::HasHebrewFont() ? LOCTEXT("MenuLanguageDetail", "English / Hebrew") : LOCTEXT("MenuLanguageNoFont", "Hebrew needs the Hebrew font (Tools/ImportFonts.py)"),
+			[bHebrew]() { MishpachaText::SetLanguage(bHebrew ? TEXT("en") : TEXT("he")); }, MishpachaText::HasHebrewFont());
 		Item(LOCTEXT("MenuBack", "BACK"), FText::GetEmpty(), [this]() { MenuBack(); });
 		break;
 	}

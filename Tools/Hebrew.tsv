@@ -1,0 +1,206 @@
+MishpachaAbility,OmerAbilityName	רחפן
+MishpachaAbility,DroneNoPlayer	רק שחקן יכול להטיס את הרחפן.
+MishpachaAbility,DroneInVehicle	צא מהרכב כדי להטיס את הרחפן.
+MishpachaAbility,DroneNoClass	לא הוגדר רחפן ליכולת של עומר.
+MishpachaAbility,RafiAbilityName	תקרא לחבר'ה
+MishpachaAbility,RafiNoClass	לא הוגדרו חיילים ליכולת של רפי.
+MishpachaAbility,RafiCalled	רפי עשה טלפון. החבר'ה בדרך.
+MishpachaAbility,ShiraNoHeat	אף אחד לא מחפש אותך. תשמרי את הטובה.
+MishpachaAbility,ShiraTooHot	חם מדי. אף אחד לא עונה לטלפון עכשיו.
+MishpachaAbility,ShiraCalled	שירה עשתה טלפון. הניידות מפנות מסלול.
+MishpachaAbility,ShiraAbilityName	קשרים
+MishpachaAbility,AbilityCooldown	{0} מוכן בעוד {1} שניות.
+MishpachaAbility,DefaultAbilityName	יכולת
+MishpachaAbility,AbilityDead	לא כשאתה על הרצפה.
+MishpachaCharacter,NoAbility	לדמות הזו אין יכולת מיוחדת.
+MishpachaWeapon,Pistol	אקדח
+MishpachaWeapon,SMG	תת-מקלע
+MishpachaWeapon,Shotgun	רובה ציד
+MishpachaWeapon,Rifle	רובה סער
+MishpachaGameMode,HospitalBill	פונית לבית החולים. חשבון: {0} ₪
+MishpachaPlayerController,SwitchStoryOnly	החלפת דמויות זמינה רק במצב סיפור.
+MishpachaPlayerController,SwitchHeat	תתחמק מהמשטרה לפני שמחליפים.
+MishpachaPlayerController,SwitchMission	אי אפשר להחליף באמצע העבודה הזו.
+MishpachaPlayerController,SwitchBusy	אי אפשר להחליף עכשיו (צא קודם מהרכב / מהרחפן).
+MishpachaPlayerController,DevCantStart	אי אפשר להתחיל את {0} (אח לא נכון, משימה קודמת, או שכבר יש עבודה פעילה).
+MishpachaPlayerController,DevNoJob	אין עבודה בשם {0}.
+MishpachaPlayerController,DevCompleted	{0} סומנה כגמורה.
+MishpachaOnlineGameMode,WelcomeOnline	ברוך הבא לתל אויר. שחקנים: {0}/{1}
+MishpachaFamily,RafiName	רפי
+MishpachaFamily,RafiTag	האח הגדול. מנהל את העסק.
+MishpachaFamily,ShiraName	שירה
+MishpachaFamily,ShiraTag	עורכת הדין. רוצה לצאת.
+MishpachaFamily,OmerName	עומר
+MishpachaFamily,OmerTag	הצעיר. רק השתחרר מהצבא.
+MishpachaMissions,AnyoneJob	עבודה
+MishpachaMissions,WrongSiblingKey	העבודה הזו של {0}. לחץ {1} כדי להחליף.
+MishpachaMissions,WrongSibling	העבודה הזו של {0}.
+MishpachaMissions,MissionStarted	JOB: {0}
+MishpachaMissions,ObjectiveFailed	היעד נכשל.
+MishpachaMissions,MissionPassed	JOB DONE: {0}  +{1} ₪
+MishpachaMissions,MissionFailed	JOB FAILED: {0}
+MishpachaMissions,FailedDied	נפלת.
+MishpachaHUD,North	צ
+MishpachaHUD,MapKeyHint	M  מפה
+MishpachaHUD,MapTitle	תל אויר
+MishpachaHUD,MapSubtitle	חוף הזהב
+MishpachaHUD,HoverDistance	{0} מ'
+MishpachaHUD,Legend	מקרא
+MishpachaHUD,LegendYou	אתה
+MishpachaHUD,LegendJob	עבודה (בצבע האח)
+MishpachaHUD,LegendObjective	יעד
+MishpachaHUD,LegendWaypoint	נקודת ציון
+MishpachaHUD,LegendFamily	אח
+MishpachaHUD,LegendCar	רכב
+MishpachaHUD,LegendPolice	משטרה
+MishpachaHUD,LegendRoute	מסלול GPS
+MishpachaHUD,WaypointDistance	נקודת ציון: {0} מ'
+MishpachaHUD,NoWaypoint	לחץ על המפה כדי לסמן נקודת ציון
+MishpachaHUD,HintSet	סימון / מחיקה
+MishpachaHUD,HintClear	מחיקת נקודה
+MishpachaHUD,HintZoom	זום
+MishpachaHUD,HintPan	הזזת המפה
+MishpachaHUD,HintClose	סגירה
+MishpachaHUD,PlayerName	שחקן
+MishpachaHUD,MoneyFmt	{0} ₪
+MishpachaHUD,AbilityActive	פעיל
+MishpachaHUD,AbilityCooldown	{0} שנ'
+MishpachaHUD,AbilityReady	מוכן
+MishpachaHUD,WaypointCard	נקודת ציון  {0} מ'
+MishpachaHUD,DistanceKm	{0} ק"מ
+MishpachaHUD,DistanceM	{0} מ'
+MishpachaHUD,CurrentJob	העבודה הנוכחית
+MishpachaHUD,StepFmt	שלב {0} / {1}
+MishpachaHUD,SessionsFailed	החיפוש נכשל.
+MishpachaHUD,SessionsFound	נמצאו {0} משחקים.
+MishpachaHUD,MenuContinue	המשך
+MishpachaHUD,MenuStart	התחל סיפור
+MishpachaHUD,MenuJobsDone	{0} עבודות הושלמו
+MishpachaHUD,MenuStartDetail	רפי, שירה ועומר. תל אויר מחכה.
+MishpachaHUD,MenuNew	סיפור חדש
+MishpachaHUD,MenuNewConfirm	סיפור חדש - בטוח?
+MishpachaHUD,MenuNewConfirmDetail	בחר שוב כדי למחוק את כל ההתקדמות
+MishpachaHUD,MenuNewDetail	להתחיל מהעבודה הראשונה
+MishpachaHUD,MenuMultiplayer	מולטיפלייר
+MishpachaHUD,MenuMultiplayerDetail	לשחק עם חברים ברשת הביתית
+MishpachaHUD,MenuSettings	הגדרות
+MishpachaHUD,MenuSettingsDetail	איכות גרפיקה, קצב פריימים, שפה
+MishpachaHUD,MenuQuit	יציאה
+MishpachaHUD,MenuResume	המשך משחק
+MishpachaHUD,MenuMainMenu	תפריט ראשי
+MishpachaHUD,MenuHost	פתח משחק (LAN)
+MishpachaHUD,MenuHostDetail	חברים באותה רשת מצטרפים אליך
+MishpachaHUD,MenuHostFailed	לא ניתן לפתוח משחק (אין שירות רשת).
+MishpachaHUD,MenuHosting	פותח את המשחק...
+MishpachaHUD,MenuFind	חפש משחקים (LAN)
+MishpachaHUD,MenuFindDetail	חיפוש משחקים ברשת שלך
+MishpachaHUD,MenuSearchFailed	לא ניתן לחפש (אין שירות רשת).
+MishpachaHUD,MenuSearching	מחפש...
+MishpachaHUD,MenuBack	חזרה
+MishpachaHUD,MenuJoinDetail	הצטרפות
+MishpachaHUD,MenuJoinFailed	לא ניתן להצטרף.
+MishpachaHUD,MenuJoining	מצטרף...
+MishpachaHUD,MenuNoGames	לא נמצאו משחקים
+MishpachaHUD,MenuSearchingItem	מחפש...
+MishpachaHUD,MenuRefresh	חפש שוב
+MishpachaHUD,QualityEpic	אפית
+MishpachaHUD,QualityHigh	גבוהה
+MishpachaHUD,QualityLow	נמוכה
+MishpachaHUD,QualityMedium	בינונית
+MishpachaHUD,QualityCustom	מותאמת
+MishpachaHUD,MenuGraphics	גרפיקה: {0}
+MishpachaHUD,MenuGraphicsDetail	בינונית מתאימה לנייד עם GTX 1650
+MishpachaHUD,FpsUnlimited	ללא הגבלה
+MishpachaHUD,MenuFps	הגבלת פריימים: {0}
+MishpachaHUD,MenuFpsDetail	הגבלה שומרת על הנייד קריר יותר
+MishpachaHUD,MenuTitle	משפחה
+MishpachaHUD,MenuTagline	משפחת סלע   /   תל אויר
+MishpachaHUD,PagePaused	משחק מושהה
+MishpachaHUD,PageMultiplayer	מולטיפלייר
+MishpachaHUD,PageSessions	משחקים ברשת שלך
+MishpachaHUD,PageSettings	הגדרות
+MishpachaHUD,HintSelect	בחירה
+MishpachaHUD,HintMove	מעבר
+MishpachaHUD,HintBack	חזרה
+MishpachaHUD,HintMap	מפה
+MishpachaHUD,HintExit	יציאה מהרכב
+MishpachaHUD,HintHandbrake	בלם יד
+MishpachaHUD,HintRadio	רדיו
+MishpachaHUD,HintWeapons	נשקים
+MishpachaHUD,HintSwitch	החלפה
+MishpachaHUD,HintAbility	יכולת
+MishpachaHUD,HintCar	רכב
+MishpachaHUD,HintSprint	ריצה
+MishpachaHUD,Reloading	טוען
+MishpachaHUD,Unarmed	ידיים
+MishpachaHUD,UnarmedUpper	ידיים
+MishpachaHUD,StatDamage	נזק
+MishpachaHUD,StatRate	קצב אש
+MishpachaHUD,StatRange	טווח
+MishpachaHUD,StatMag	מחסנית {0}
+MishpachaHUD,WheelHint	שחרר TAB כדי לבחור
+MishpachaHUD,BannerPassed	העבודה בוצעה
+MishpachaHUD,BannerFailed	העבודה נכשלה
+MishpachaHUD,BannerStarted	עבודה חדשה
+MishpachaHUD,WaypointReached	הגעת לנקודת הציון.
+MishpachaRadio,Mizrahi	רדיו: גל מזרחי
+MishpachaRadio,Off	רדיו כבוי
+MishpachaRadio,TelAvirFM	רדיו: תל אויר FM
+MishpachaGreybox,Rafi01Title	גבייה בשוק
+MishpachaGreybox,Rafi01Desc	בעל דוכן בשוק יפה העתיקה הפסיק לשלם. תזכיר לו מי מנהל את העיר.
+MishpachaGreybox,Rafi01A	לך לשוק (העמוד הצהוב ליד החוף)
+MishpachaGreybox,Rafi01ASay	שלושה חודשים איציק לא שילם. היום הוא משלם על שלושתם.
+MishpachaGreybox,Rafi01B	אם השוטרים עליך, תתחמק מהם
+MishpachaGreybox,Rafi02Title	כנופיה יריבה
+MishpachaGreybox,Rafi02Desc	איזה צוות מחוץ לעיר התמקם במוסך של משה. ברחוב שלנו.
+MishpachaGreybox,Rafi02A	סע למוסך של משה
+MishpachaGreybox,Rafi02ASay	משה התקשר. זרים במוסך שלו, והם לא באו להחליף שמן.
+MishpachaGreybox,Rafi02B	חסל את הכנופיה (Q כדי לקרוא לחבר'ה)
+MishpachaGreybox,Rafi02BSay	אף אחד לא עושה עסקים בתל אויר בלי לשאול את משפחת סלע.
+MishpachaGreybox,Rafi02C	תתחמק מהמשטרה
+MishpachaGreybox,Shira01Title	הטלפון של אבא
+MishpachaGreybox,Shira01Desc	הטלפון של אבא נמצא במחסן המוצגים של המשטרה. צריך להוציא אותו לפני שיפרצו אותו.
+MishpachaGreybox,Shira01A	הגיעי למחסן המוצגים
+MishpachaGreybox,Shira01ASay	אם יקראו מה יש בטלפון הזה, שלושתנו נופלים. אני ראשונה.
+MishpachaGreybox,Shira01B	תשיגי רכב
+MishpachaGreybox,Shira01C	הביאי את הטלפון לנקודת האיסוף של המשפחה
+MishpachaGreybox,Shira02Title	העד
+MishpachaGreybox,Shira02Desc	עד נגד המשפחה שוכב בבית החולים. שירה רוצה לדבר איתו לפני הפרקליטות.
+MishpachaGreybox,Shira02A	סעי לבית החולים
+MishpachaGreybox,Shira02ASay	מהבוקר אני עורכת הדין שלו. הוא פשוט עוד לא יודע.
+MishpachaGreybox,Shira02B	דברי עם העד (הישארי קרוב)
+MishpachaGreybox,Shira02BSay	אף אחד לא מבקש ממך לשקר. רק לזכור קצת פחות.
+MishpachaGreybox,Shira02C	תשיגי רכב
+MishpachaGreybox,Shira02D	קחי אותו למקום שקט (נקודת האיסוף)
+MishpachaGreybox,Shira02DSay	חגורה. מת אתה לא שווה כלום לאף אחד.
+MishpachaGreybox,Omer01Title	משלוח אחרון
+MishpachaGreybox,Omer01Desc	חבילה אחרונה למשפחה לפני הטיול הגדול. מה כבר יכול להשתבש?
+MishpachaGreybox,Omer01A	תשיג טרמפ
+MishpachaGreybox,Omer01ASay	רפי אומר שזה סתם נעליים. אף אחד לא עוטף נעליים ככה.
+MishpachaGreybox,Omer01B	תמסור את החבילה במוסך של משה
+MishpachaGreybox,Omer01C	תתחמק ממי שעוקב אחריך
+MishpachaGreybox,Omer02Title	עין בשמיים
+MishpachaGreybox,Omer02Desc	במחסן יש שומרים חדשים, והם לא שוטרים. עומר מסתכל מלמעלה קודם.
+MishpachaGreybox,Omer02A	סע למחסן המוצגים
+MishpachaGreybox,Omer02ASay	שנתיים ביחידת הרחפנים. סוף סוף זה שווה משהו.
+MishpachaGreybox,Omer02B	חסל את השומרים (Q: הרחפן מסמן אותם)
+MishpachaGreybox,Omer02BSay	שלושה על הקרקע. הם לא ראו אותי. עדיין.
+MishpachaGreybox,Omer02C	תתחמק מהמשטרה
+MishpachaGreybox,Family01Title	ההעברה
+MishpachaGreybox,Family01Desc	לרפי יש את הכסף. לשירה יש את השופט. הם צריכים להיפגש בלי שאף אחד יראה אותם יחד.
+MishpachaGreybox,Family01A	רפי: תשאיר את המעטפה בשוק
+MishpachaGreybox,Family01ASay	שירה, זה בשוק. מתחת לרימונים. אל תעשי את הפרצוף הזה.
+MishpachaGreybox,Family01B	החלף לשירה (לחץ 2)
+MishpachaGreybox,Family01BSay	זו הפעם האחרונה, רפי. הפעם אני רצינית.
+MishpachaGreybox,Family01C	שירה: אספי את המעטפה בשוק
+MishpachaGreybox,Family01D	מסרי אותה לנהג של השופט בבית החולים
+MishpachaGreybox,Family01DSay	החניה של בית החולים. אף אחד לא זוכר פרצופים בבית חולים.
+MishpachaGreybox,PlaceMarket	שוק יפה העתיקה
+MishpachaGreybox,PlaceWarehouse	מחסן המוצגים
+MishpachaGreybox,PlaceGarage	המוסך של משה
+MishpachaGreybox,PlaceDropoff	נקודת האיסוף
+MishpachaGreybox,PlaceHospital	בית החולים
+MishpachaGreybox,PlaceHome	משפחת סלע
+MishpachaHUD,MenuLanguage	שפה: {0}
+MishpachaHUD,MenuLanguageDetail	אנגלית / עברית
+MishpachaHUD,MenuLanguageNoFont	עברית צריכה את הגופן העברי (Tools/ImportFonts.py)

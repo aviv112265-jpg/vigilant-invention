@@ -63,6 +63,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "HUD|Map")
 	bool HasWaypoint() const { return bHasWaypoint; }
 
+	// ----- Weapon wheel (hold Tab): the cursor's direction from the screen center picks a slot -----
+	void OpenWeaponWheel();
+	/** Returns the picked loadout slot (INDEX_NONE = unarmed). */
+	int32 CloseWeaponWheel();
+	bool IsWeaponWheelOpen() const { return bWheelOpen; }
+
 	// ----- Menus (main menu at start, pause menu on P / Esc); input comes from the player controller -----
 	void SetMenuPage(EMishpachaMenuPage Page);
 	EMishpachaMenuPage GetMenuPage() const { return MenuPage; }
@@ -128,6 +134,13 @@ protected:
 	void HandleSessionsFound(const TArray<FMishpachaSessionInfo>& Sessions, bool bSuccessful);
 
 private:
+	// ----- Weapon wheel -----
+	bool bWheelOpen = false;
+	int32 WheelSelected = 0;   // index into the wheel's segments (0 = unarmed)
+	double WheelOpenedTime = 0.0;
+	void DrawWeaponWheel();
+	void DrawWeaponIcon(const FVector2D& Center, int32 LoadoutSlot, float Size, const FLinearColor& Color);
+
 	// ----- Menus -----
 	struct FMenuItem
 	{

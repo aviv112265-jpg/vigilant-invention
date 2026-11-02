@@ -14,6 +14,8 @@
 #include "Save/MishpachaSaveGame.h"
 #include "World/MishpachaDayNight.h"
 #include "EngineUtils.h"
+#include "Kismet/GameplayStatics.h"
+#include "Characters/MishpachaNPCCharacters.h"
 #include "Mishpacha.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -169,10 +171,13 @@ void AMishpachaPlayerController::BuildMapInput()
 	MapClearAction = MakeAction(TEXT("IA_MapClear"), EInputActionValueType::Boolean);
 	MapPanAction = MakeAction(TEXT("IA_MapPan"), EInputActionValueType::Axis2D);
 	MapZoomAction = MakeAction(TEXT("IA_MapZoom"), EInputActionValueType::Axis1D);
+	WheelAction = MakeAction(TEXT("IA_WeaponWheel"), EInputActionValueType::Boolean);
+	WheelAction->bTriggerWhenPaused = true;
 
 	// Always on top of the pawn context: open / close the map.
 	UIContext = NewObject<UInputMappingContext>(this, TEXT("IMC_UI_Default"));
-	Map(UIContext, MapToggleAction, EKeys::Tab);
+	Map(UIContext, WheelAction, EKeys::Tab);
+	Map(UIContext, WheelAction, EKeys::Gamepad_LeftShoulder);
 	Map(UIContext, MapToggleAction, EKeys::M);
 	Map(UIContext, MapToggleAction, EKeys::Gamepad_Special_Left);
 
@@ -274,6 +279,8 @@ void AMishpachaPlayerController::SetupInputComponent()
 	EIC->BindAction(MapClearAction, ETriggerEvent::Started, this, &ThisClass::HandleMapClear);
 	EIC->BindAction(MapPanAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMapPan);
 	EIC->BindAction(MapZoomAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMapZoom);
+	EIC->BindAction(WheelAction, ETriggerEvent::Started, this, &ThisClass::HandleWheelStarted);
+	EIC->BindAction(WheelAction, ETriggerEvent::Completed, this, &ThisClass::HandleWheelCompleted);
 	EIC->BindAction(MenuToggleAction, ETriggerEvent::Started, this, &ThisClass::HandleMenuToggle);
 	EIC->BindAction(MenuSelectAction, ETriggerEvent::Started, this, &ThisClass::HandleMenuSelect);
 	EIC->BindAction(MenuClickAction, ETriggerEvent::Started, this, &ThisClass::HandleMenuClick);
@@ -323,9 +330,56 @@ void AMishpachaPlayerController::ApplyContextForPawn(APawn* InPawn)
 	}
 }
 
+void AMishpachaPlayerController::HandleWheelStarted()
+{
+	AMishpachaCharacter* MyCharacter = GetMishpachaCharacter();
+	AMishpachaHUD* MishpachaHUD = GetHUD<AMishpachaHUD>();
+	if (bMapOpen || bMenuOpen || bWheelOpen || !MyCharacter || MyCharacter->IsDead() || !MishpachaHUD)
+	{
+		return;
+	}
+	bWheelOpen = true;
+	MyCharacter->StopFire();
+	MyCharacter->SetAiming(false);
+	MishpachaHUD->OpenWeaponWheel();
+	ApplyCursorMode();
+
+	// Cursor to the center: its direction from there picks the weapon.
+	int32 SizeX = 0;
+	int32 SizeY = 0;
+	GetViewportSize(SizeX, SizeY);
+	SetMouseLocation(SizeX / 2, SizeY / 2);
+
+	// Slow motion while choosing (single player only).
+	if (GetNetMode() == NM_Standalone)
+	{
+		UGameplayStatics::SetGlobalTimeDilation(this, 0.25f);
+	}
+}
+
+void AMishpachaPlayerController::HandleWheelCompleted()
+{
+	if (!bWheelOpen)
+	{
+		return;
+	}
+	bWheelOpen = false;
+	ApplyCursorMode();
+	if (GetNetMode() == NM_Standalone)
+	{
+		UGameplayStatics::SetGlobalTimeDilation(this, 1.f);
+	}
+	AMishpachaHUD* MishpachaHUD = GetHUD<AMishpachaHUD>();
+	const int32 Slot = MishpachaHUD ? MishpachaHUD->CloseWeaponWheel() : INDEX_NONE;
+	if (AMishpachaCharacter* MyCharacter = GetMishpachaCharacter())
+	{
+		MyCharacter->RequestEquipSlot(Slot);
+	}
+}
+
 void AMishpachaPlayerController::ApplyCursorMode()
 {
-	const bool bCursor = bMapOpen || bMenuOpen;
+	const bool bCursor = bMapOpen || bMenuOpen || bWheelOpen;
 	bShowMouseCursor = bCursor;
 	if (bCursor)
 	{
@@ -508,7 +562,7 @@ void AMishpachaPlayerController::ClientShowNotification_Implementation(const FTe
 
 void AMishpachaPlayerController::HandleMove(const FInputActionValue& Value)
 {
-	if (bMapOpen || bMenuOpen)
+	if (bMapOpen || bMenuOpen || bWheelOpen)
 	{
 		return;
 	}
@@ -525,7 +579,7 @@ void AMishpachaPlayerController::HandleMove(const FInputActionValue& Value)
 
 void AMishpachaPlayerController::HandleLook(const FInputActionValue& Value)
 {
-	if (bMapOpen || bMenuOpen)
+	if (bMapOpen || bMenuOpen || bWheelOpen)
 	{
 		return;
 	}
@@ -546,7 +600,7 @@ void AMishpachaPlayerController::HandleLook(const FInputActionValue& Value)
 
 void AMishpachaPlayerController::HandleJumpStarted()
 {
-	if (bMapOpen || bMenuOpen)
+	if (bMapOpen || bMenuOpen || bWheelOpen)
 	{
 		return;
 	}
@@ -598,7 +652,7 @@ void AMishpachaPlayerController::HandleSprintCompleted()
 
 void AMishpachaPlayerController::HandleInteract()
 {
-	if (bMapOpen || bMenuOpen)
+	if (bMapOpen || bMenuOpen || bWheelOpen)
 	{
 		return;
 	}
@@ -614,7 +668,7 @@ void AMishpachaPlayerController::HandleInteract()
 
 void AMishpachaPlayerController::HandleFireStarted()
 {
-	if (bMapOpen || bMenuOpen)
+	if (bMapOpen || bMenuOpen || bWheelOpen)
 	{
 		return;
 	}
@@ -634,7 +688,7 @@ void AMishpachaPlayerController::HandleFireCompleted()
 
 void AMishpachaPlayerController::HandleAimStarted()
 {
-	if (bMapOpen || bMenuOpen)
+	if (bMapOpen || bMenuOpen || bWheelOpen)
 	{
 		return;
 	}
@@ -654,7 +708,7 @@ void AMishpachaPlayerController::HandleAimCompleted()
 
 void AMishpachaPlayerController::HandleAbility()
 {
-	if (bMapOpen || bMenuOpen)
+	if (bMapOpen || bMenuOpen || bWheelOpen)
 	{
 		return;
 	}
@@ -695,7 +749,7 @@ void AMishpachaPlayerController::HandleSwitch3()
 
 void AMishpachaPlayerController::HandleThrottle(const FInputActionValue& Value)
 {
-	if (bMapOpen || bMenuOpen)
+	if (bMapOpen || bMenuOpen || bWheelOpen)
 	{
 		return;
 	}
@@ -715,7 +769,7 @@ void AMishpachaPlayerController::HandleThrottleReleased()
 
 void AMishpachaPlayerController::HandleBrake(const FInputActionValue& Value)
 {
-	if (bMapOpen || bMenuOpen)
+	if (bMapOpen || bMenuOpen || bWheelOpen)
 	{
 		return;
 	}
@@ -735,7 +789,7 @@ void AMishpachaPlayerController::HandleBrakeReleased()
 
 void AMishpachaPlayerController::HandleSteer(const FInputActionValue& Value)
 {
-	if (bMapOpen || bMenuOpen)
+	if (bMapOpen || bMenuOpen || bWheelOpen)
 	{
 		return;
 	}
@@ -840,6 +894,70 @@ void AMishpachaPlayerController::Mish_EnterNearestCar()
 	{
 		Nearest->EnterVehicle(MyCharacter);
 	}
+}
+
+void AMishpachaPlayerController::Mish_Equip(int32 Slot)
+{
+	if (AMishpachaCharacter* MyCharacter = GetMishpachaCharacter())
+	{
+		MyCharacter->RequestEquipSlot(Slot);
+	}
+}
+
+void AMishpachaPlayerController::Mish_Wheel(int32 bOpen)
+{
+	if (bOpen != 0)
+	{
+		HandleWheelStarted();
+	}
+	else
+	{
+		HandleWheelCompleted();
+	}
+}
+
+void AMishpachaPlayerController::Mish_SpawnRivals(int32 Count)
+{
+	APawn* MyPawn = GetPawn();
+	if (!HasAuthority() || !MyPawn)
+	{
+		return;
+	}
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	const FVector Forward = FRotator(0.f, GetControlRotation().Yaw, 0.f).Vector();
+	for (int32 Index = 0; Index < FMath::Clamp(Count, 1, 8); ++Index)
+	{
+		const FVector Spot = MyPawn->GetActorLocation() + Forward * 1500.f + FVector(Forward.Y, -Forward.X, 0.f) * ((Index - (Count - 1) * 0.5f) * 250.f);
+		GetWorld()->SpawnActor<AMishpachaRival>(AMishpachaRival::StaticClass(), Spot + FVector(0.f, 0.f, 50.f), (-Forward).Rotation(), Params);
+	}
+}
+
+void AMishpachaPlayerController::Mish_AutoDrive(float Throttle)
+{
+	AutoDriveThrottle = Throttle;
+	GetWorldTimerManager().ClearTimer(AutoDriveTimer);
+	if (Throttle != 0.f)
+	{
+		GetWorldTimerManager().SetTimer(AutoDriveTimer, FTimerDelegate::CreateWeakLambda(this, [this]()
+		{
+			if (AMishpachaVehicle* Vehicle = GetMishpachaVehicle())
+			{
+				Vehicle->SetHandbrake(false);
+				Vehicle->SetThrottle(AutoDriveThrottle);
+				Vehicle->SetSteering(0.f);
+			}
+		}), 0.1f, true);
+	}
+	else if (AMishpachaVehicle* Vehicle = GetMishpachaVehicle())
+	{
+		Vehicle->SetThrottle(0.f);
+	}
+}
+
+void AMishpachaPlayerController::Mish_Switch(int32 Index)
+{
+	RequestSwitchSibling(Index);
 }
 
 void AMishpachaPlayerController::Mish_Menu()

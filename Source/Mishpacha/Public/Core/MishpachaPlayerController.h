@@ -67,6 +67,26 @@ public:
 	UFUNCTION(Exec)
 	void Mish_EnterNearestCar();
 
+	/** Equip loadout slot N (-1 = unarmed): 0 pistol, 1 SMG, 2 shotgun, 3 rifle. */
+	UFUNCTION(Exec)
+	void Mish_Equip(int32 Slot);
+
+	/** Open (1) / close-and-equip (0) the weapon wheel, as if Tab were held / released. */
+	UFUNCTION(Exec)
+	void Mish_Wheel(int32 bOpen);
+
+	/** Spawn N rival gunmen ~15 m in front of you. */
+	UFUNCTION(Exec)
+	void Mish_SpawnRivals(int32 Count);
+
+	/** In a car: hold the throttle at this value (0 = stop) - for testing chases. */
+	UFUNCTION(Exec)
+	void Mish_AutoDrive(float Throttle);
+
+	/** Switch to sibling 0/1/2. */
+	UFUNCTION(Exec)
+	void Mish_Switch(int32 Index);
+
 	/** Open the main menu. */
 	UFUNCTION(Exec)
 	void Mish_Menu();
@@ -167,6 +187,10 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> MapZoomAction;
 
+	/** Hold Tab / LB: weapon wheel. */
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> WheelAction;
+
 	UPROPERTY(Transient)
 	TObjectPtr<UInputMappingContext> MenuContext;
 
@@ -189,6 +213,9 @@ private:
 	bool bSwitchMenuOpen = false;
 	bool bMapOpen = false;
 	bool bMenuOpen = false;
+	bool bWheelOpen = false;
+	float AutoDriveThrottle = 0.f;
+	FTimerHandle AutoDriveTimer;
 
 	void BuildMapInput();
 
@@ -235,6 +262,8 @@ private:
 	void HandleMapClear();
 	void HandleMapPan(const FInputActionValue& Value);
 	void HandleMapZoom(const FInputActionValue& Value);
+	void HandleWheelStarted();
+	void HandleWheelCompleted();
 	void HandleMenuToggle();
 	void HandleMenuSelect();
 	void HandleMenuClick();

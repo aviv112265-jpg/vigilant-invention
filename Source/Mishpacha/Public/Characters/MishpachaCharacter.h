@@ -62,6 +62,16 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Combat")
 	AMishpachaWeapon* GetWeapon() const { return CurrentWeapon; }
 
+	/** Weapon wheel slots (index into the loadout; INDEX_NONE = unarmed). */
+	const TArray<TSubclassOf<AMishpachaWeapon>>& GetLoadout() const { return Loadout; }
+	int32 GetEquippedSlot() const { return EquippedSlot; }
+
+	/** Owning client or server: switch weapon (INDEX_NONE holsters). */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void RequestEquipSlot(int32 Slot);
+
+	bool IsAiming() const { return bAiming; }
+
 	UFUNCTION(BlueprintPure, Category = "Vehicle")
 	AMishpachaVehicle* GetCurrentVehicle() const { return CurrentVehicle; }
 
@@ -121,6 +131,22 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	TSubclassOf<AMishpachaWeapon> DefaultWeaponClass;
+
+	/** Weapons on the wheel (players). NPCs keep just DefaultWeaponClass. */
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	TArray<TSubclassOf<AMishpachaWeapon>> Loadout;
+
+	UPROPERTY(Replicated)
+	int32 EquippedSlot = 0;
+
+	UFUNCTION(Server, Reliable)
+	void ServerEquipSlot(int32 Slot);
+
+	void EquipSlot(int32 Slot);
+
+	/** Shooting from the hip still turns you toward the crosshair for a moment. */
+	bool bFacingAim = false;
+	FTimerHandle FacingAimTimer;
 
 	/** Bone or socket the weapon attaches to (UE5 Manny/Quinn: "hand_r"). */
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")

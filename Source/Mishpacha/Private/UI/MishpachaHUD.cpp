@@ -12,6 +12,7 @@
 #include "World/CityGreyboxGenerator.h"
 #include "World/MishpachaRouteGuide.h"
 #include "World/MishpachaDayNight.h"
+#include "Characters/MishpachaWeapon.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "Engine/Texture2D.h"
@@ -137,18 +138,27 @@ void AMishpachaHUD::StartAutomatedCapture()
 	FString Commands;
 	if (FParse::Value(FCommandLine::Get(), TEXT("MishpachaCaptureCmd="), Commands))
 	{
-		After(38.f, FTimerDelegate::CreateWeakLambda(this, [this, Commands]()
+		// "Wait:N" tokens delay the commands after them by N seconds.
+		TArray<FString> Lines;
+		Commands.ParseIntoArray(Lines, TEXT("+"));
+		float Delay = 38.f;
+		for (const FString& Line : Lines)
 		{
-			TArray<FString> Lines;
-			Commands.ParseIntoArray(Lines, TEXT("+"));
-			for (const FString& Line : Lines)
+			if (Line.StartsWith(TEXT("Wait:")))
 			{
+				Delay += FCString::Atof(*Line.RightChop(5));
+				continue;
+			}
+			const FString ConsoleLine = Line.Replace(TEXT(":"), TEXT(" "));
+			After(Delay, FTimerDelegate::CreateWeakLambda(this, [this, ConsoleLine]()
+			{
+				UE_LOG(LogTemp, Log, TEXT("[Capture] > %s"), *ConsoleLine);
 				if (APlayerController* PC = GetOwningPlayerController())
 				{
-					PC->ConsoleCommand(Line.Replace(TEXT(":"), TEXT(" ")));
+					PC->ConsoleCommand(ConsoleLine);
 				}
-			}
-		}));
+			}));
+		}
 	}
 	for (int32 Shot = 0; Shot < 4; ++Shot)
 	{
@@ -1161,7 +1171,7 @@ void AMishpachaHUD::DrawMinimap()
 		const FText Clock = FText::FromString(FString::Printf(TEXT("%02d:%02d"), (Minutes / 60) % 24, Minutes % 60));
 		DrawLabel(Clock, X + S(8.f), Y + S(3.f), Font(10.f, true), FLinearColor(1.f, 1.f, 1.f, 0.85f));
 	}
-	DrawLabel(LOCTEXT("MapKeyHint", "TAB  MAP"), X + Size - S(8.f), Y + Size - S(20.f), Font(8.5f, true), FLinearColor(1.f, 1.f, 1.f, 0.55f), 1.f);
+	DrawLabel(LOCTEXT("MapKeyHint", "M  MAP"), X + Size - S(8.f), Y + Size - S(20.f), Font(8.5f, true), FLinearColor(1.f, 1.f, 1.f, 0.55f), 1.f);
 
 	if (!HUDWidget && bDrawDebugOverlay)
 	{
@@ -1256,7 +1266,7 @@ void AMishpachaHUD::DrawFullMap()
 	DrawKeyChip(HintX, HintY, LOCTEXT("KeyRMB", "RMB"), LOCTEXT("HintClear", "Clear waypoint"));
 	DrawKeyChip(HintX, HintY, LOCTEXT("KeyWheel", "WHEEL"), LOCTEXT("HintZoom", "Zoom"));
 	DrawKeyChip(HintX, HintY, LOCTEXT("KeyWASD", "WASD"), LOCTEXT("HintPan", "Move map"));
-	DrawKeyChip(HintX, HintY, LOCTEXT("KeyTab", "TAB"), LOCTEXT("HintClose", "Close"));
+	DrawKeyChip(HintX, HintY, LOCTEXT("KeyMClose", "M"), LOCTEXT("HintClose", "Close"));
 }
 
 // ---------------------------------------------------------------------------
@@ -1915,13 +1925,14 @@ void AMishpachaHUD::DrawControlsHint()
 	const APlayerController* PC = GetOwningPlayerController();
 	if (PC && Cast<AMishpachaVehicle>(PC->GetPawn()))
 	{
-		DrawKeyChip(X, Y, LOCTEXT("KeyTabMap", "TAB"), LOCTEXT("HintMap", "Map"));
+		DrawKeyChip(X, Y, LOCTEXT("KeyMMap", "M"), LOCTEXT("HintMap", "Map"));
 		DrawKeyChip(X, Y, LOCTEXT("KeyF", "F"), LOCTEXT("HintExit", "Exit car"));
 		DrawKeyChip(X, Y, LOCTEXT("KeySpace", "SPACE"), LOCTEXT("HintHandbrake", "Handbrake"));
 		DrawKeyChip(X, Y, LOCTEXT("KeyR", "R"), LOCTEXT("HintRadio", "Radio"));
 		return;
 	}
-	DrawKeyChip(X, Y, LOCTEXT("KeyTabMap", "TAB"), LOCTEXT("HintMap", "Map"));
+	DrawKeyChip(X, Y, LOCTEXT("KeyTabWeapons", "TAB"), LOCTEXT("HintWeapons", "Weapons"));
+	DrawKeyChip(X, Y, LOCTEXT("KeyMMap", "M"), LOCTEXT("HintMap", "Map"));
 	DrawKeyChip(X, Y, LOCTEXT("Key123", "1 2 3"), LOCTEXT("HintSwitch", "Switch"));
 	DrawKeyChip(X, Y, LOCTEXT("KeyQ", "Q"), LOCTEXT("HintAbility", "Ability"));
 	DrawKeyChip(X, Y, LOCTEXT("KeyF", "F"), LOCTEXT("HintCar", "Car"));
@@ -1932,24 +1943,229 @@ void AMishpachaHUD::DrawCrosshair()
 {
 	const APlayerController* PC = GetOwningPlayerController();
 	const AMishpachaCharacter* PlayerCharacter = PC ? Cast<AMishpachaCharacter>(PC->GetPawn()) : nullptr;
-	if (!PlayerCharacter || PlayerCharacter->GetCurrentVehicle() || PlayerCharacter->IsDead())
+	const AMishpachaWeapon* Weapon = PlayerCharacter ? PlayerCharacter->GetWeapon() : nullptr;
+	if (!Weapon || PlayerCharacter->GetCurrentVehicle() || PlayerCharacter->IsDead() || !PC->PlayerCameraManager)
+	{
+		return; // no gun in hand -> no crosshair
+	}
+
+	const double Now = GetWorld()->GetTimeSeconds();
+	const FVector2D C(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
+
+	// Gap = the weapon's real spread cone on screen, plus bloom from moving and from the last shot.
+	const float FOV = FMath::Max(PC->PlayerCameraManager->GetFOVAngle(), 10.f);
+	const float HalfSpread = FMath::DegreesToRadians(Weapon->GetSpreadDegrees() * 0.5f);
+	float Gap = FMath::Tan(HalfSpread) / FMath::Tan(FMath::DegreesToRadians(FOV * 0.5f)) * (Canvas->ClipX * 0.5f);
+	const float Speed = PlayerCharacter->GetVelocity().Size2D();
+	const float Kick = FMath::Clamp(1.f - float(Now - Weapon->GetLastShotTime()) / 0.15f, 0.f, 1.f);
+	Gap = Gap * (PlayerCharacter->IsAiming() ? 0.8f : 1.f) + S(3.f) + Speed / 700.f * S(6.f) + Kick * S(7.f);
+
+	// What's under the crosshair: police / rivals red, bystanders orange.
+	FLinearColor Color(1.f, 1.f, 1.f, 0.95f);
+	FVector ViewLocation;
+	FRotator ViewRotation;
+	PC->GetPlayerViewPoint(ViewLocation, ViewRotation);
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(CrosshairTarget), false, PlayerCharacter);
+	FHitResult Hit;
+	if (GetWorld()->LineTraceSingleByChannel(Hit, ViewLocation, ViewLocation + ViewRotation.Vector() * Weapon->GetRange(), ECC_Pawn, Params))
+	{
+		const AMishpachaCharacter* Target = Cast<AMishpachaCharacter>(Hit.GetActor());
+		if (Target && !Target->IsDead())
+		{
+			const bool bHostile = Target->ActorHasTag(FName(TEXT("Police"))) || Target->ActorHasTag(FName(TEXT("Enemy")));
+			Color = bHostile ? FLinearColor(1.f, 0.18f, 0.15f, 1.f) : FLinearColor(1.f, 0.65f, 0.2f, 1.f);
+		}
+	}
+
+	const FLinearColor Shadow(0.f, 0.f, 0.f, 0.55f);
+	const float T = FMath::Max(1.5f, S(2.f));
+	if (Weapon->GetPelletsPerShot() > 1)
+	{
+		// Shotgun: a ring showing the pellet spread.
+		const float Radius = FMath::Max(Gap, S(14.f));
+		DrawRing(C, Radius + 1.f, T + 2.f, Shadow, 40);
+		DrawRing(C, Radius, T, Color, 40);
+	}
+	else
+	{
+		const float Len = S(Weapon->IsAutomatic() ? 9.f : 7.f);
+		auto Ticks = [&](float Thickness, const FLinearColor& TickColor, float Extra)
+		{
+			FillRect(C.X - Gap - Len - Extra, C.Y - Thickness * 0.5f, Len + Extra * 2.f, Thickness, TickColor);
+			FillRect(C.X + Gap - Extra, C.Y - Thickness * 0.5f, Len + Extra * 2.f, Thickness, TickColor);
+			FillRect(C.X - Thickness * 0.5f, C.Y - Gap - Len - Extra, Thickness, Len + Extra * 2.f, TickColor);
+			FillRect(C.X - Thickness * 0.5f, C.Y + Gap - Extra, Thickness, Len + Extra * 2.f, TickColor);
+		};
+		Ticks(T + 2.f, Shadow, 1.f);
+		Ticks(T, Color, 0.f);
+	}
+	DrawDisc(C, S(2.6f), Shadow, 10);
+	DrawDisc(C, S(1.7f), Color, 10);
+
+	// Hit marker: an X when the server confirms a hit (red on a kill).
+	const float HitAge = float(Now - Weapon->GetLastHitTime());
+	if (HitAge < 0.25f)
+	{
+		const float A = 1.f - HitAge / 0.25f;
+		const FLinearColor MarkColor = Weapon->WasLastHitKill() ? FLinearColor(1.f, 0.15f, 0.1f, A) : FLinearColor(1.f, 1.f, 1.f, A);
+		const float In = Gap + S(4.f);
+		const float Out = In + S(9.f);
+		for (const FVector2D& D : { FVector2D(1, 1), FVector2D(1, -1), FVector2D(-1, 1), FVector2D(-1, -1) })
+		{
+			const FVector2D Dir = D.GetSafeNormal();
+			DrawThickLine(C + Dir * In, C + Dir * Out, S(2.5f), MarkColor);
+		}
+	}
+
+	// Ammo next to the crosshair.
+	const FText AmmoText = Weapon->IsReloading()
+		? LOCTEXT("Reloading", "RELOADING")
+		: FText::Format(LOCTEXT("AmmoFmt", "{0} / {1}"), FText::AsNumber(Weapon->GetAmmo()), FText::AsNumber(Weapon->GetMagazineSize()));
+	const bool bLow = !Weapon->IsReloading() && Weapon->GetAmmo() <= FMath::Max(1, Weapon->GetMagazineSize() / 5);
+	const float AmmoOffset = FMath::Max(Gap + S(16.f), S(30.f)) * 0.75f; // just outside the reticle, down-right
+	DrawLabel(AmmoText, C.X + AmmoOffset + S(6.f), C.Y + AmmoOffset, Font(10.f, true), bLow || Weapon->IsReloading() ? MishpachaHUDStyle::Gold : FLinearColor(1.f, 1.f, 1.f, 0.8f));
+}
+
+// ---------------------------------------------------------------------------
+// Weapon wheel
+// ---------------------------------------------------------------------------
+
+void AMishpachaHUD::OpenWeaponWheel()
+{
+	const APlayerController* PC = GetOwningPlayerController();
+	const AMishpachaCharacter* PlayerCharacter = PC ? Cast<AMishpachaCharacter>(PC->GetPawn()) : nullptr;
+	bWheelOpen = true;
+	WheelOpenedTime = GetWorld()->GetRealTimeSeconds();
+	WheelSelected = PlayerCharacter ? PlayerCharacter->GetEquippedSlot() + 1 : 0; // segment 0 = unarmed
+}
+
+int32 AMishpachaHUD::CloseWeaponWheel()
+{
+	bWheelOpen = false;
+	return WheelSelected - 1;
+}
+
+void AMishpachaHUD::DrawWeaponIcon(const FVector2D& Center, int32 LoadoutSlot, float Size, const FLinearColor& Color)
+{
+	const APlayerController* PC = GetOwningPlayerController();
+	const AMishpachaCharacter* PlayerCharacter = PC ? Cast<AMishpachaCharacter>(PC->GetPawn()) : nullptr;
+	const UClass* WeaponClass = (PlayerCharacter && PlayerCharacter->GetLoadout().IsValidIndex(LoadoutSlot)) ? PlayerCharacter->GetLoadout()[LoadoutSlot].Get() : nullptr;
+	if (!WeaponClass)
+	{
+		// Fist.
+		DrawDisc(Center, Size * 0.42f, Color, 20);
+		FillRect(Center.X - Size * 0.42f, Center.Y - Size * 0.1f, Size * 0.84f, Size * 0.08f, FLinearColor(0.f, 0.f, 0.f, 0.5f));
+		return;
+	}
+	// Side-view silhouettes from boxes: barrel/body length and grip differ per type.
+	float BodyLength = 0.7f;
+	float BodyHeight = 0.26f;
+	float BarrelLength = 0.25f;
+	bool bStock = false;
+	bool bMagazine = false;
+	if (WeaponClass->IsChildOf(AMishpachaSMG::StaticClass())) { BodyLength = 0.85f; BarrelLength = 0.2f; bMagazine = true; }
+	else if (WeaponClass->IsChildOf(AMishpachaShotgun::StaticClass())) { BodyLength = 1.3f; BodyHeight = 0.2f; BarrelLength = 0.45f; bStock = true; }
+	else if (WeaponClass->IsChildOf(AMishpachaRifle::StaticClass())) { BodyLength = 1.25f; BarrelLength = 0.4f; bStock = true; bMagazine = true; }
+	const float W = Size * BodyLength;
+	const float H = Size * BodyHeight;
+	const float X = Center.X - W * 0.5f;
+	const float Y = Center.Y - H;
+	FillRect(X, Y, W, H, Color);                                                   // receiver
+	FillRect(X + W, Y + H * 0.15f, Size * BarrelLength, H * 0.4f, Color);           // barrel
+	FillRect(X + W * (bStock ? 0.22f : 0.1f), Y + H, W * 0.16f, Size * 0.32f, Color); // grip
+	if (bMagazine)
+	{
+		FillRect(X + W * 0.48f, Y + H, W * 0.12f, Size * 0.36f, Color);
+	}
+	if (bStock)
+	{
+		FillRect(X - Size * 0.32f, Y + H * 0.1f, Size * 0.32f, H * 1.1f, Color);
+	}
+}
+
+void AMishpachaHUD::DrawWeaponWheel()
+{
+	const APlayerController* PC = GetOwningPlayerController();
+	const AMishpachaCharacter* PlayerCharacter = PC ? Cast<AMishpachaCharacter>(PC->GetPawn()) : nullptr;
+	if (!PlayerCharacter)
 	{
 		return;
 	}
+	const TArray<TSubclassOf<AMishpachaWeapon>>& Loadout = PlayerCharacter->GetLoadout();
+	const int32 Count = Loadout.Num() + 1; // + unarmed
 	const FVector2D C(Canvas->ClipX * 0.5f, Canvas->ClipY * 0.5f);
-	const float Gap = S(5.f);
-	const float Len = S(7.f);
-	const float T = FMath::Max(1.f, S(2.f));
-	auto Ticks = [&](float Thickness, const FLinearColor& Color, float Extra)
+	const float Inner = S(95.f);
+	const float Outer = S(235.f);
+	const float Appear = FMath::Clamp(float(GetWorld()->GetRealTimeSeconds() - WheelOpenedTime) / 0.12f, 0.f, 1.f);
+	using MishpachaHUDStyle::WithAlpha;
+
+	// Pick the segment the cursor points at (ignore tiny movements around the center).
+	float MouseX = 0.f;
+	float MouseY = 0.f;
+	if (PC->GetMousePosition(MouseX, MouseY))
 	{
-		FillRect(C.X - Gap - Len - Extra, C.Y - Thickness * 0.5f, Len + Extra * 2.f, Thickness, Color);
-		FillRect(C.X + Gap - Extra, C.Y - Thickness * 0.5f, Len + Extra * 2.f, Thickness, Color);
-		FillRect(C.X - Thickness * 0.5f, C.Y - Gap - Len - Extra, Thickness, Len + Extra * 2.f, Color);
-		FillRect(C.X - Thickness * 0.5f, C.Y + Gap - Extra, Thickness, Len + Extra * 2.f, Color);
-	};
-	Ticks(T + 2.f, FLinearColor(0.f, 0.f, 0.f, 0.5f), 1.f);
-	Ticks(T, FLinearColor(1.f, 1.f, 1.f, 0.9f), 0.f);
-	DrawDisc(C, S(1.6f), FLinearColor(1.f, 1.f, 1.f, 0.9f), 8);
+		const FVector2D Delta = FVector2D(MouseX, MouseY) - C;
+		if (Delta.Size() > S(40.f))
+		{
+			// Segment 0 is centered at the top; angles go clockwise on screen.
+			float Angle = FMath::RadiansToDegrees(FMath::Atan2(Delta.Y, Delta.X)) + 90.f;
+			Angle = FMath::Fmod(Angle + 360.f + 180.f / Count, 360.f);
+			WheelSelected = FMath::Clamp(FMath::FloorToInt(Angle / (360.f / Count)), 0, Count - 1);
+		}
+	}
+
+	FillRect(0.f, 0.f, Canvas->ClipX, Canvas->ClipY, FLinearColor(0.f, 0.f, 0.f, 0.35f * Appear));
+
+	const float Span = 360.f / Count;
+	const float GapDeg = 2.5f;
+	for (int32 Segment = 0; Segment < Count; ++Segment)
+	{
+		const bool bSelected = Segment == WheelSelected;
+		const float MidDeg = -90.f + Segment * Span;
+		const float R1 = Inner;
+		const float R2 = (Outer + (bSelected ? S(14.f) : 0.f)) * (0.85f + 0.15f * Appear);
+		TArray<FCanvasUVTri> Tris;
+		const int32 Steps = 16;
+		for (int32 Step = 0; Step < Steps; ++Step)
+		{
+			const float A0 = FMath::DegreesToRadians(MidDeg - Span * 0.5f + GapDeg + (Span - 2.f * GapDeg) * Step / Steps);
+			const float A1 = FMath::DegreesToRadians(MidDeg - Span * 0.5f + GapDeg + (Span - 2.f * GapDeg) * (Step + 1) / Steps);
+			const FVector2D D0(FMath::Cos(A0), FMath::Sin(A0));
+			const FVector2D D1(FMath::Cos(A1), FMath::Sin(A1));
+			AddQuad(Tris, C + D0 * R1, C + D0 * R2, C + D1 * R2, C + D1 * R1,
+				bSelected ? WithAlpha(FLinearColor(0.95f, 0.72f, 0.15f, 0.88f), Appear) : WithAlpha(FLinearColor(0.02f, 0.025f, 0.035f, 0.78f), Appear));
+		}
+		DrawTris(Tris);
+
+		// Icon + name in the middle of the segment.
+		const FVector2D Dir(FMath::Cos(FMath::DegreesToRadians(MidDeg)), FMath::Sin(FMath::DegreesToRadians(MidDeg)));
+		const FVector2D Mid = C + Dir * ((R1 + R2) * 0.5f);
+		const FLinearColor IconColor = bSelected ? FLinearColor(0.03f, 0.03f, 0.03f, Appear) : WithAlpha(MishpachaHUDStyle::TextMain, Appear);
+		DrawWeaponIcon(Mid - FVector2D(0.f, S(8.f)), Segment - 1, S(46.f), IconColor);
+		const AMishpachaWeapon* Defaults = Segment > 0 && Loadout[Segment - 1] ? Loadout[Segment - 1]->GetDefaultObject<AMishpachaWeapon>() : nullptr;
+		const FText Name = Defaults ? Defaults->GetDisplayName() : LOCTEXT("Unarmed", "Unarmed");
+		DrawLabel(FText::FromString(Name.ToString().ToUpper()), Mid.X, Mid.Y + S(22.f), Font(9.f, true), IconColor, 0.5f, !bSelected);
+	}
+
+	// Center: the picked weapon's stats.
+	DrawDisc(C, Inner - S(8.f), WithAlpha(FLinearColor(0.01f, 0.012f, 0.02f, 0.85f), Appear), 40);
+	const AMishpachaWeapon* Picked = WheelSelected > 0 && Loadout.IsValidIndex(WheelSelected - 1) && Loadout[WheelSelected - 1] ? Loadout[WheelSelected - 1]->GetDefaultObject<AMishpachaWeapon>() : nullptr;
+	DrawLabel(Picked ? FText::FromString(Picked->GetDisplayName().ToString().ToUpper()) : LOCTEXT("UnarmedUpper", "UNARMED"),
+		C.X, C.Y - S(48.f), Font(12.f, true), WithAlpha(MishpachaHUDStyle::Gold, Appear), 0.5f);
+	if (Picked)
+	{
+		auto Stat = [&](const FText& Label, float Value, float Y)
+		{
+			DrawLabel(Label, C.X - S(58.f), Y - S(6.f), Font(7.5f, true), WithAlpha(MishpachaHUDStyle::TextDim, Appear));
+			FillRect(C.X - S(8.f), Y, S(64.f), S(4.f), WithAlpha(FLinearColor(1.f, 1.f, 1.f, 0.15f), Appear));
+			FillRect(C.X - S(8.f), Y, S(64.f) * FMath::Clamp(Value, 0.05f, 1.f), S(4.f), WithAlpha(MishpachaHUDStyle::TextMain, Appear));
+		};
+		Stat(LOCTEXT("StatDamage", "DAMAGE"), Picked->GetDamage() / 120.f, C.Y - S(16.f));
+		Stat(LOCTEXT("StatRate", "FIRE RATE"), Picked->GetFireRate() / 12.f, C.Y + S(2.f));
+		Stat(LOCTEXT("StatRange", "RANGE"), Picked->GetRange() / 15000.f, C.Y + S(20.f));
+		DrawLabel(FText::Format(LOCTEXT("StatMag", "MAG {0}"), FText::AsNumber(Picked->GetMagazineSize())), C.X, C.Y + S(34.f), Font(8.f, true), WithAlpha(MishpachaHUDStyle::TextDim, Appear), 0.5f);
+	}
+	DrawLabel(LOCTEXT("WheelHint", "Release TAB to equip"), C.X, C.Y + Outer + S(30.f), Font(10.f, true), WithAlpha(FLinearColor(1.f, 1.f, 1.f, 0.7f), Appear), 0.5f);
 }
 
 void AMishpachaHUD::DrawHUD()
@@ -1992,7 +2208,14 @@ void AMishpachaHUD::DrawHUD()
 	DrawSubtitle();
 	DrawNotification();
 	DrawControlsHint();
-	DrawCrosshair();
+	if (bWheelOpen)
+	{
+		DrawWeaponWheel();
+	}
+	else
+	{
+		DrawCrosshair();
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

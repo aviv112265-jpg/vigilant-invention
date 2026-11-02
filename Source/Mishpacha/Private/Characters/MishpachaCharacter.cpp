@@ -1,6 +1,7 @@
 // MISHPACHA - base playable / NPC human character.
 #include "Characters/MishpachaCharacter.h"
 #include "Characters/MishpachaWeapon.h"
+#include "Mishpacha.h"
 #include "Vehicles/MishpachaVehicle.h"
 #include "Abilities/SiblingAbilityComponent.h"
 #include "Core/MishpachaGameModeBase.h"
@@ -62,6 +63,7 @@ AMishpachaCharacter::AMishpachaCharacter()
 
 	// Everyone carries a basic pistol until Blueprints assign real weapons.
 	DefaultWeaponClass = AMishpachaWeapon::StaticClass();
+	Loadout = { AMishpachaWeapon::StaticClass(), AMishpachaSMG::StaticClass(), AMishpachaShotgun::StaticClass(), AMishpachaRifle::StaticClass() };
 }
 
 void AMishpachaCharacter::BeginPlay()
@@ -91,6 +93,7 @@ void AMishpachaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME_CONDITION(AMishpachaCharacter, bSprinting, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AMishpachaCharacter, bAiming, COND_SkipOwner);
 	DOREPLIFETIME(AMishpachaCharacter, CurrentWeapon);
+	DOREPLIFETIME(AMishpachaCharacter, EquippedSlot);
 	DOREPLIFETIME(AMishpachaCharacter, CurrentVehicle);
 }
 
@@ -171,9 +174,10 @@ void AMishpachaCharacter::UpdateMovementSpeed()
 
 void AMishpachaCharacter::UpdateAimState()
 {
-	// Aiming: strafe and face the camera direction; otherwise turn toward movement.
-	GetCharacterMovement()->bOrientRotationToMovement = !bAiming;
-	bUseControllerRotationYaw = bAiming;
+	// Aiming (or just fired): strafe and face the camera direction; otherwise turn toward movement.
+	const bool bFaceCamera = bAiming || bFacingAim;
+	GetCharacterMovement()->bOrientRotationToMovement = !bFaceCamera;
+	bUseControllerRotationYaw = bFaceCamera;
 	if (CameraBoom)
 	{
 		CameraBoom->TargetArmLength = bAiming ? AimArmLength : DefaultArmLength;
@@ -191,7 +195,54 @@ void AMishpachaCharacter::StartFire()
 	{
 		return;
 	}
+	// Hip fire: turn to face the crosshair, and stay that way a moment after the last shot.
+	bFacingAim = true;
+	UpdateAimState();
+	GetWorldTimerManager().ClearTimer(FacingAimTimer);
 	CurrentWeapon->StartFire();
+}
+
+void AMishpachaCharacter::RequestEquipSlot(int32 Slot)
+{
+	if (Slot == EquippedSlot && (Slot == INDEX_NONE || CurrentWeapon))
+	{
+		return;
+	}
+	StopFire();
+	if (HasAuthority())
+	{
+		EquipSlot(Slot);
+	}
+	else
+	{
+		ServerEquipSlot(Slot);
+	}
+}
+
+void AMishpachaCharacter::ServerEquipSlot_Implementation(int32 Slot)
+{
+	EquipSlot(Slot);
+}
+
+void AMishpachaCharacter::EquipSlot(int32 Slot)
+{
+	if (!HasAuthority() || bDead)
+	{
+		return;
+	}
+	if (Slot == INDEX_NONE || !Loadout.IsValidIndex(Slot) || !Loadout[Slot])
+	{
+		// Holster: hands free.
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->Destroy();
+			CurrentWeapon = nullptr;
+		}
+		EquippedSlot = INDEX_NONE;
+		return;
+	}
+	EquippedSlot = Slot;
+	EquipWeaponClass(Loadout[Slot]);
 }
 
 void AMishpachaCharacter::StopFire()
@@ -199,6 +250,14 @@ void AMishpachaCharacter::StopFire()
 	if (CurrentWeapon)
 	{
 		CurrentWeapon->StopFire();
+	}
+	if (bFacingAim)
+	{
+		GetWorldTimerManager().SetTimer(FacingAimTimer, FTimerDelegate::CreateWeakLambda(this, [this]()
+		{
+			bFacingAim = false;
+			UpdateAimState();
+		}), 1.2f, false);
 	}
 }
 
@@ -277,6 +336,7 @@ void AMishpachaCharacter::Die(AController* Killer)
 	{
 		return;
 	}
+	UE_LOG(LogMishpacha, Log, TEXT("Died: %s (killed by %s)"), *GetName(), *GetNameSafe(Killer ? Killer->GetPawn() : nullptr));
 
 	// Bring the player back from remote-controlled things (Omer's drone) so the death flow sees the right controller.
 	if (USiblingAbilityComponent* Ability = GetAbility())

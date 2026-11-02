@@ -200,7 +200,9 @@ FTransform AMishpachaGameModeBase::FindHospitalTransform(const FVector& NearLoca
 	FTransform Result(NearLocation + FVector(0.f, 0.f, 200.f));
 	if (Best)
 	{
+		// Beside the hospital marker, not inside its beacon pillar.
 		Result = Best->GetActorTransform();
+		Result.AddToTranslation(Best->GetActorRotation().RotateVector(FVector(0.f, 450.f, 0.f)));
 	}
 	else if (AActor* PlayerStartActor = FindPlayerStart(ForController))
 	{

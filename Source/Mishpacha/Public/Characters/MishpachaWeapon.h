@@ -6,6 +6,7 @@
 #include "MishpachaWeapon.generated.h"
 
 class USkeletalMeshComponent;
+class UStaticMeshComponent;
 class UDamageType;
 
 /**
@@ -30,6 +31,20 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Weapon")
 	int32 GetMagazineSize() const { return MagazineSize; }
 
+	// ----- For the HUD (crosshair, weapon wheel) -----
+	const FText& GetDisplayName() const { return DisplayName; }
+	float GetSpreadDegrees() const { return SpreadDegrees; }
+	float GetDamage() const { return Damage * PelletsPerShot; }
+	float GetFireRate() const { return FireRate; }
+	float GetRange() const { return Range; }
+	int32 GetPelletsPerShot() const { return PelletsPerShot; }
+	bool IsAutomatic() const { return bAutomatic; }
+	bool IsReloading() const { return bReloading; }
+	/** Owning client: world time of the last shot fired / last hit the server confirmed (crosshair kick, hit marker). */
+	double GetLastShotTime() const { return LastLocalShotTime; }
+	double GetLastHitTime() const { return LastConfirmedHitTime; }
+	bool WasLastHitKill() const { return bLastHitWasKill; }
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -37,8 +52,25 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<USkeletalMeshComponent> Mesh;
 
+	/** Gray-box gun shape in the hand (until a real weapon mesh is assigned). */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TObjectPtr<UStaticMeshComponent> Body;
+
+	/** Name on the weapon wheel. */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FText DisplayName;
+
+	/** Damage per pellet. */
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	float Damage = 25.f;
+
+	/** Shotguns fire several pellets per shot, each with its own spread. */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon", meta = (ClampMin = "1", ClampMax = "16"))
+	int32 PelletsPerShot = 1;
+
+	/** Size (cm) of the gray-box gun shape. */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FVector BodySize = FVector(22.f, 4.f, 12.f);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	float Range = 10000.f;
@@ -60,6 +92,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	float SpreadDegrees = 1.5f;
 
+	/** Extra spread (degrees) when an AI pulls the trigger (police, rivals). */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float AIExtraSpreadDegrees = 7.f;
+
+	/** AI damage multiplier and minimum seconds between AI shots (gunfights last long enough to react). */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float AIDamageScale = 0.4f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float AIMinShotInterval = 0.5f;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<UDamageType> DamageTypeClass;
 
@@ -76,6 +119,10 @@ protected:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastFireEffects(FVector_NetQuantize ImpactPoint);
 
+	/** Server -> shooter: one of your pellets hit someone (crosshair hit marker). */
+	UFUNCTION(Client, Unreliable)
+	void ClientConfirmHit(bool bKilled);
+
 	UFUNCTION()
 	void OnRep_Ammo();
 
@@ -91,8 +138,41 @@ private:
 	FTimerHandle ReloadTimer;
 	double LastFireTime = -1000.0;
 	double LastCrimeReportTime = -1000.0;
+	double LastLocalShotTime = -1000.0;
+	double LastConfirmedHitTime = -1000.0;
+	bool bLastHitWasKill = false;
 	bool bReloading = false;
 
 	void FireOnce();
 	void FinishReload();
+};
+
+/** Compact SMG: fast automatic fire, light hits, wide spread. */
+UCLASS()
+class MISHPACHA_API AMishpachaSMG : public AMishpachaWeapon
+{
+	GENERATED_BODY()
+
+public:
+	AMishpachaSMG();
+};
+
+/** Pump shotgun: 8 pellets, devastating up close, slow, short range. */
+UCLASS()
+class MISHPACHA_API AMishpachaShotgun : public AMishpachaWeapon
+{
+	GENERATED_BODY()
+
+public:
+	AMishpachaShotgun();
+};
+
+/** Assault rifle: automatic, accurate, hits hard at range. */
+UCLASS()
+class MISHPACHA_API AMishpachaRifle : public AMishpachaWeapon
+{
+	GENERATED_BODY()
+
+public:
+	AMishpachaRifle();
 };

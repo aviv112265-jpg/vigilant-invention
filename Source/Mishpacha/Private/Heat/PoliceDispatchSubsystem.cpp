@@ -1,5 +1,6 @@
 // MISHPACHA - spawns and directs police based on players' Heat.
 #include "Heat/PoliceDispatchSubsystem.h"
+#include "Mishpacha.h"
 #include "Heat/PoliceDispatchConfig.h"
 #include "Heat/HeatComponent.h"
 #include "Heat/CrimeLibrary.h"
@@ -289,6 +290,7 @@ void UPoliceDispatchSubsystem::TryRoadblock(APawn* Target)
 		return; // too close to be fair, or not actually ahead
 	}
 	LastRoadblockTime = Now;
+	UE_LOG(LogMishpacha, Log, TEXT("Police: roadblock at %s, %.0f m ahead."), *Junction.ToString(), ToJunction.Size() / 100.f);
 
 	// Two cars broadside across the approach.
 	const FVector Approach = ToJunction.GetSafeNormal();

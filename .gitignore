@@ -22,3 +22,6 @@ Plugins/*/Intermediate/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Packaged game (Tools: RunUAT BuildCookRun -archivedirectory=Build)
+Build/

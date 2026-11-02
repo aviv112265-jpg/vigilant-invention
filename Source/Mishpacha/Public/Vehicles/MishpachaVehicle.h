@@ -65,6 +65,17 @@ public:
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
+	virtual void BeginPlay() override;
+
+	/** Engine loop (pitch follows speed) and the driver's radio (2D, local driver only). */
+	UPROPERTY(Transient)
+	TObjectPtr<class UAudioComponent> EngineAudio;
+
+	UPROPERTY(Transient)
+	TObjectPtr<class UAudioComponent> RadioAudio;
+
+	int32 PlayingRadioStation = 0;
+	void UpdateSounds();
 
 	/**
 	 * Auto setup: a car with no skeletal mesh (the plain C++ class, e.g. the gray-box city's parked cars)
@@ -102,7 +113,7 @@ protected:
 	float RoofExitHeight = 250.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Vehicle|Radio", meta = (ClampMin = "1"))
-	int32 NumRadioStations = 6;
+	int32 NumRadioStations = 3;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float LookSensitivity = 1.f;

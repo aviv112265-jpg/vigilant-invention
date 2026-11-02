@@ -3,6 +3,8 @@
 #include "AI/MishpachaPoliceDriverAI.h"
 #include "Characters/MishpachaNPCCharacters.h"
 #include "Heat/PoliceDispatchSubsystem.h"
+#include "World/MishpachaSounds.h"
+#include "Components/AudioComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
@@ -55,6 +57,33 @@ void AMishpachaPoliceCar::BeginPlay()
 		};
 		Paint(LightBarRed, FLinearColor(1.f, 0.03f, 0.02f), 0.f);
 		Paint(LightBarBlue, FLinearColor(0.05f, 0.2f, 1.f), 0.5f);
+	}
+	if (GetNetMode() != NM_DedicatedServer)
+	{
+		SirenAudio = MishpachaSounds::MakeLoop(GetMesh(), TEXT("S_Siren_Loop"), 14000.f);
+		if (SirenAudio)
+		{
+			SirenAudio->SetVolumeMultiplier(0.6f);
+			SirenAudio->SetPitchMultiplier(FMath::FRandRange(0.96f, 1.04f)); // two cars never wail in sync
+			SirenAudio->Play(FMath::FRandRange(0.f, 3.5f));
+		}
+	}
+}
+
+void AMishpachaPoliceCar::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if (SirenAudio)
+	{
+		const bool bStolen = HasDriver();
+		if (bStolen && SirenAudio->IsPlaying())
+		{
+			SirenAudio->Stop();
+		}
+		else if (!bStolen && !SirenAudio->IsPlaying())
+		{
+			SirenAudio->Play();
+		}
 	}
 }
 

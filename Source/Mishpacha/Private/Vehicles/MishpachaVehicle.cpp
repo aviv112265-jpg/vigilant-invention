@@ -4,6 +4,9 @@
 #include "Heat/CrimeLibrary.h"
 #include "ChaosVehicleMovementComponent.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
+#include "Components/AudioComponent.h"
+#include "World/MishpachaSounds.h"
+#include "Core/MishpachaPlayerController.h"
 #include "Mishpacha.h"
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -199,9 +202,81 @@ void AMishpachaVehicle::OnRep_PaintColor()
 	}
 }
 
+void AMishpachaVehicle::BeginPlay()
+{
+	Super::BeginPlay();
+	if (GetNetMode() != NM_DedicatedServer)
+	{
+		EngineAudio = MishpachaSounds::MakeLoop(GetMesh(), TEXT("S_Engine_Loop"), 5500.f);
+	}
+}
+
+void AMishpachaVehicle::UpdateSounds()
+{
+	const float Speed = GetVelocity().Size();
+	const float SpeedFactor = FMath::Clamp(Speed / 2500.f, 0.f, 1.f);
+
+	// Engine: idles while someone sits in it, revs with speed; parked and empty = silent.
+	if (EngineAudio)
+	{
+		const bool bRunning = HasDriver() || GetController() != nullptr || Speed > 150.f;
+		if (bRunning && !EngineAudio->IsPlaying())
+		{
+			EngineAudio->Play();
+		}
+		else if (!bRunning && EngineAudio->IsPlaying())
+		{
+			EngineAudio->Stop();
+		}
+		if (bRunning)
+		{
+			UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovementComponent();
+			const float Throttle = VehicleMovement ? VehicleMovement->GetThrottleInput() : 0.f;
+			EngineAudio->SetPitchMultiplier(0.55f + SpeedFactor * 1.3f + Throttle * 0.15f);
+			EngineAudio->SetVolumeMultiplier(0.35f + SpeedFactor * 0.45f + Throttle * 0.2f);
+		}
+	}
+
+	// Radio: only for the local driver, station 0 = off.
+	const int32 WantedStation = (IsLocallyControlled() && HasDriver()) ? RadioStation : 0;
+	if (WantedStation != PlayingRadioStation)
+	{
+		if (AMishpachaPlayerController* PC = IsLocallyControlled() ? Cast<AMishpachaPlayerController>(GetController()) : nullptr)
+		{
+			const FText Names[] = { NSLOCTEXT("MishpachaRadio", "Off", "Radio off"), NSLOCTEXT("MishpachaRadio", "TelAvirFM", "Radio: Tel Avir FM"), NSLOCTEXT("MishpachaRadio", "Mizrahi", "Radio: Mizrahi Wave") };
+			if (RadioStation >= 0 && RadioStation < UE_ARRAY_COUNT(Names) && (WantedStation > 0 || PlayingRadioStation > 0) && HasDriver())
+			{
+				PC->ClientShowNotification(Names[RadioStation]);
+			}
+		}
+		PlayingRadioStation = WantedStation;
+		if (RadioAudio)
+		{
+			RadioAudio->Stop();
+			RadioAudio->DestroyComponent();
+			RadioAudio = nullptr;
+		}
+		static const FName Stations[] = { NAME_None, TEXT("S_Radio_TelAvirFM"), TEXT("S_Radio_MizrahiWave") };
+		if (WantedStation > 0 && WantedStation < UE_ARRAY_COUNT(Stations))
+		{
+			RadioAudio = MishpachaSounds::MakeLoop(GetMesh(), Stations[WantedStation], 0.f, false);
+			if (RadioAudio)
+			{
+				RadioAudio->SetVolumeMultiplier(0.55f);
+				RadioAudio->Play();
+			}
+		}
+	}
+}
+
 void AMishpachaVehicle::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if (GetNetMode() != NM_DedicatedServer)
+	{
+		UpdateSounds();
+	}
 
 	if (!IsLocallyControlled() || !CameraBoom)
 	{

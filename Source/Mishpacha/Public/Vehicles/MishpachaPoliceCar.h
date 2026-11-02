@@ -36,8 +36,14 @@ public:
 
 	bool HasDeployed() const { return bDeployed; }
 
+	virtual void Tick(float DeltaSeconds) override;
+
 protected:
 	virtual void BeginPlay() override;
+
+	/** Wail while the police drive it (silent once a player steals it). */
+	UPROPERTY(Transient)
+	TObjectPtr<class UAudioComponent> SirenAudio;
 
 	UPROPERTY(VisibleAnywhere, Category = "Police")
 	TObjectPtr<UStaticMeshComponent> LightBarRed;

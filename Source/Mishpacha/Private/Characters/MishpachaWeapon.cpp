@@ -2,6 +2,7 @@
 #include "Characters/MishpachaWeapon.h"
 #include "Characters/MishpachaCharacter.h"
 #include "World/MishpachaWorldEvents.h"
+#include "World/MishpachaSounds.h"
 #include "DrawDebugHelpers.h"
 #include "Heat/CrimeLibrary.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -45,6 +46,7 @@ AMishpachaWeapon::AMishpachaWeapon()
 AMishpachaSMG::AMishpachaSMG()
 {
 	DisplayName = LOCTEXT("SMG", "SMG");
+	FireSoundName = TEXT("S_Shot_SMG");
 	Damage = 14.f;
 	FireRate = 11.f;
 	bAutomatic = true;
@@ -58,6 +60,7 @@ AMishpachaSMG::AMishpachaSMG()
 AMishpachaShotgun::AMishpachaShotgun()
 {
 	DisplayName = LOCTEXT("Shotgun", "Shotgun");
+	FireSoundName = TEXT("S_Shot_Shotgun");
 	Damage = 14.f;
 	PelletsPerShot = 8;
 	FireRate = 1.3f;
@@ -71,6 +74,7 @@ AMishpachaShotgun::AMishpachaShotgun()
 AMishpachaRifle::AMishpachaRifle()
 {
 	DisplayName = LOCTEXT("Rifle", "Assault Rifle");
+	FireSoundName = TEXT("S_Shot_Rifle");
 	Damage = 30.f;
 	FireRate = 8.f;
 	bAutomatic = true;
@@ -247,6 +251,7 @@ void AMishpachaWeapon::ClientConfirmHit_Implementation(bool bKilled)
 {
 	LastConfirmedHitTime = GetWorld()->GetTimeSeconds();
 	bLastHitWasKill = bKilled;
+	MishpachaSounds::Play2D(this, TEXT("S_UI_HitMarker"), bKilled ? 0.7f : 0.45f, bKilled ? 0.8f : 1.f);
 }
 
 void AMishpachaWeapon::FinishReload()
@@ -263,6 +268,7 @@ void AMishpachaWeapon::MulticastFireEffects_Implementation(FVector_NetQuantize I
 		return;
 	}
 	BP_OnFired(ImpactPoint);
+	MishpachaSounds::PlayAt(this, FireSoundName, Body ? Body->GetComponentLocation() : GetActorLocation(), 1.f, FMath::FRandRange(0.94f, 1.06f), 9000.f);
 
 #if ENABLE_DRAW_DEBUG
 	// Gray-box tracer so shots are visible before weapon meshes / VFX exist.

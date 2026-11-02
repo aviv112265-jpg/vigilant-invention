@@ -13,6 +13,8 @@
 #include "World/MishpachaRouteGuide.h"
 #include "World/MishpachaDayNight.h"
 #include "Characters/MishpachaWeapon.h"
+#include "World/MishpachaSounds.h"
+#include "Sound/SoundBase.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "Engine/Texture2D.h"
@@ -88,6 +90,12 @@ void AMishpachaHUD::BeginPlay()
 	// PlayerState / pawn / game state arrive at different times on clients - keep (re)binding.
 	GetWorldTimerManager().SetTimer(BindTimer, this, &AMishpachaHUD::RefreshBindings, 0.5f, true, 0.f);
 	GetWorldTimerManager().SetTimer(RouteTimer, this, &AMishpachaHUD::UpdateRoute, 0.25f, true, 0.5f);
+
+	// The city's hum under everything.
+	if (USoundBase* Ambience = MishpachaSounds::Get(TEXT("S_City_Ambience")))
+	{
+		UGameplayStatics::SpawnSound2D(this, Ambience, 0.3f, 1.f, FMath::FRandRange(0.f, 5.f));
+	}
 
 	if (FParse::Param(FCommandLine::Get(), TEXT("MishpachaCapture")))
 	{
@@ -1749,6 +1757,7 @@ void AMishpachaHUD::MenuNavigate(int32 Delta)
 	{
 		return;
 	}
+	MishpachaSounds::Play2D(this, TEXT("S_UI_Click"), 0.3f);
 	for (int32 Step = 0; Step < Items.Num(); ++Step)
 	{
 		MenuSelected = (MenuSelected + Delta + Items.Num()) % Items.Num();
@@ -1765,6 +1774,7 @@ void AMishpachaHUD::MenuActivate()
 	BuildMenuItems(Items);
 	if (Items.IsValidIndex(MenuSelected) && Items[MenuSelected].bEnabled && Items[MenuSelected].Action)
 	{
+		MishpachaSounds::Play2D(this, TEXT("S_UI_Click"), 0.45f, 0.75f);
 		const bool bWasConfirming = bConfirmNewStory;
 		Items[MenuSelected].Action();
 		if (bWasConfirming && bConfirmNewStory && MenuPage == EMishpachaMenuPage::Main && MenuSelected != 1)

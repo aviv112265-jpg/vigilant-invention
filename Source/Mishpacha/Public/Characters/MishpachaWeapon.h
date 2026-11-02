@@ -68,6 +68,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon", meta = (ClampMin = "1", ClampMax = "16"))
 	int32 PelletsPerShot = 1;
 
+	/** Gunshot sound in /Game/Mishpacha/Audio (Tools/CreateSounds.py). */
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FName FireSoundName = TEXT("S_Shot_Pistol");
+
 	/** Size (cm) of the gray-box gun shape. */
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FVector BodySize = FVector(22.f, 4.f, 12.f);

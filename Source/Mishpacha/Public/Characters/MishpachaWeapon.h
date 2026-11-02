@@ -45,6 +45,11 @@ public:
 	double GetLastHitTime() const { return LastConfirmedHitTime; }
 	bool WasLastHitKill() const { return bLastHitWasKill; }
 
+	USkeletalMeshComponent* GetWeaponMesh() const { return Mesh; }
+
+	/** Rifle-style hold (both hands on the gun) vs. a pistol. */
+	bool IsTwoHanded() const { return bTwoHanded; }
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -75,6 +80,15 @@ protected:
 	/** Size (cm) of the gray-box gun shape. */
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FVector BodySize = FVector(22.f, 4.f, 12.f);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	bool bTwoHanded = false;
+
+	/** Extra gray-box parts (grip, magazine, stock, barrel). Weapon space: +X = barrel, origin = right-hand grip. */
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<UStaticMeshComponent>> Parts;
+
+	void BuildGrayboxShape();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	float Range = 10000.f;

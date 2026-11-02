@@ -12,6 +12,7 @@ public class Mishpacha : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
+			"AnimGraphRuntime", // code-built anim graph (MishpachaAnimInstance)
 			"InputCore",
 			"EnhancedInput",
 			"ChaosVehicles",

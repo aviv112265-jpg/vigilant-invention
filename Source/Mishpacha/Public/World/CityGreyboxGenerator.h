@@ -181,9 +181,30 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
 	TObjectPtr<UInstancedStaticMeshComponent> LampHeadsISM;
 
+	/** Painted things, one color per instance (M_Paint): awnings, benches, kiosks, beach umbrellas, flowers. */
+	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
+	TObjectPtr<UInstancedStaticMeshComponent> PaintBoxesISM;
+
+	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
+	TObjectPtr<UInstancedStaticMeshComponent> PaintCylindersISM;
+
+	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
+	TObjectPtr<UInstancedStaticMeshComponent> PaintConesISM;
+
+	UPROPERTY(VisibleAnywhere, Category = "Greybox|Details")
+	TObjectPtr<UInstancedStaticMeshComponent> PaintBlobsISM;
+
 	/** Balconies, AC units, street trees, beach palms and street lamps. */
 	UPROPERTY(EditAnywhere, Category = "Greybox|Details")
 	bool bStreetDetails = true;
+
+	/** Traffic lights, stop signs and street-name signs at the intersections (server; cars knock them down). */
+	UPROPERTY(EditAnywhere, Category = "Greybox|Details")
+	bool bStreetProps = true;
+
+	/** Share of the pedestrians that are street cats. */
+	UPROPERTY(EditAnywhere, Category = "Greybox|Civilians", meta = (ClampMin = "0", ClampMax = "1"))
+	float CatShare = 0.2f;
 
 	UFUNCTION()
 	void OnRep_Seed();
@@ -213,6 +234,7 @@ private:
 	void SpawnLightingIfMissing();
 	void SpawnGameplayActors();
 	void SpawnParkedCars();
+	void SpawnStreetProps();
 	void CreateDefaultMissions(const TMap<FName, FVector>& Targets);
 	void MaintainCivilians();
 

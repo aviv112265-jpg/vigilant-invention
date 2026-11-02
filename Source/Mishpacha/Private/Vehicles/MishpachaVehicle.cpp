@@ -6,6 +6,12 @@
 #include "ChaosWheeledVehicleMovementComponent.h"
 #include "Components/AudioComponent.h"
 #include "World/MishpachaSounds.h"
+#include "World/MishpachaDayNight.h"
+#include "World/MishpachaStreetProp.h"
+#include "Components/SpotLightComponent.h"
+#include "Engine/OverlapResult.h"
+#include "Engine/SkeletalMesh.h"
+#include "Engine/StaticMesh.h"
 #include "Core/MishpachaPlayerController.h"
 #include "Mishpacha.h"
 #include "Components/StaticMeshComponent.h"
@@ -159,6 +165,240 @@ void AMishpachaVehicle::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(AMishpachaVehicle, Driver);
 	DOREPLIFETIME(AMishpachaVehicle, RadioStation);
 	DOREPLIFETIME(AMishpachaVehicle, PaintColor);
+	DOREPLIFETIME(AMishpachaVehicle, bLightsSwitchedOff);
+}
+
+// ---------------------------------------------------------------------------
+// Lights
+// ---------------------------------------------------------------------------
+
+void AMishpachaVehicle::ToggleLights()
+{
+	if (HasAuthority())
+	{
+		ServerToggleLights_Implementation();
+	}
+	else
+	{
+		ServerToggleLights();
+	}
+}
+
+void AMishpachaVehicle::ServerToggleLights_Implementation()
+{
+	bLightsSwitchedOff = !bLightsSwitchedOff;
+	OnRep_LightsSwitchedOff();
+}
+
+void AMishpachaVehicle::OnRep_LightsSwitchedOff()
+{
+	if (AMishpachaPlayerController* PC = IsLocallyControlled() ? Cast<AMishpachaPlayerController>(GetController()) : nullptr)
+	{
+		PC->ClientShowNotification(bLightsSwitchedOff
+			? NSLOCTEXT("MishpachaVehicle", "LightsOff", "Lights OFF - harder for the police to spot you at night")
+			: NSLOCTEXT("MishpachaVehicle", "LightsAuto", "Lights: automatic"));
+	}
+	UpdateLights();
+}
+
+float AMishpachaVehicle::GetPoliceSightScale(const AActor* Target)
+{
+	const AMishpachaDayNight* Time = Target ? AMishpachaDayNight::Find(Target) : nullptr;
+	const float Night = Time ? Time->GetNightAmount() : 0.f;
+	if (Night < 0.3f)
+	{
+		return 1.f;
+	}
+	const AMishpachaVehicle* Car = Cast<AMishpachaVehicle>(Target);
+	if (const AMishpachaCharacter* Character = Cast<AMishpachaCharacter>(Target))
+	{
+		Car = Character->GetCurrentVehicle();
+	}
+	if (Car)
+	{
+		return Car->AreLightsOn() ? 1.f : FMath::Lerp(1.f, 0.35f, Night);
+	}
+	return FMath::Lerp(1.f, 0.7f, Night);
+}
+
+void AMishpachaVehicle::BuildLights()
+{
+	USkeletalMeshComponent* Body = GetMesh();
+	const USkeletalMesh* BodyMesh = Body ? Body->GetSkeletalMeshAsset() : nullptr;
+	UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"), nullptr, LOAD_Quiet | LOAD_NoWarn);
+	UMaterialInterface* Glow = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Mishpacha/Materials/M_CarLight.M_CarLight"), nullptr, LOAD_Quiet | LOAD_NoWarn);
+	if (!BodyMesh || !Cube || !Glow)
+	{
+		UE_LOG(LogMishpacha, Warning, TEXT("%s: no headlights (mesh %d, cube %d, M_CarLight %d)."), *GetName(), BodyMesh != nullptr, Cube != nullptr, Glow != nullptr);
+		return;
+	}
+	bLightsBuilt = true;
+
+	// Corners of the car (vehicle space: +X forward, +Z up): the visible body parts if there are any
+	// (vehicle templates show static parts on a hidden skeleton), else the skeletal mesh.
+	FBox Box(ForceInit);
+	TArray<UStaticMeshComponent*> BodyParts;
+	GetComponents<UStaticMeshComponent>(BodyParts);
+	for (const UStaticMeshComponent* Part : BodyParts)
+	{
+		if (Part->IsVisible() && Part->GetStaticMesh())
+		{
+			Box += Part->CalcBounds(Part->GetComponentTransform().GetRelativeTransform(GetActorTransform())).GetBox();
+		}
+	}
+	if (!Box.IsValid)
+	{
+		Box = BodyMesh->GetBounds().GetBox();
+	}
+	const float FrontX = Box.Max.X - 4.f;
+	const float RearX = Box.Min.X + 4.f;
+	const float SideY = Box.GetExtent().Y * 0.62f;
+	const float LightZ = Box.Min.Z + Box.GetSize().Z * 0.42f;
+
+	HeadGlow = UMaterialInstanceDynamic::Create(Glow, this);
+	HeadGlow->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, 0.92f, 0.78f));
+	TailGlow = UMaterialInstanceDynamic::Create(Glow, this);
+	TailGlow->SetVectorParameterValue(TEXT("Color"), FLinearColor(1.f, 0.03f, 0.02f));
+
+	auto AddLamp = [&](const FVector& Location, const FVector& Size, UMaterialInstanceDynamic* Material)
+	{
+		UStaticMeshComponent* Lamp = NewObject<UStaticMeshComponent>(this);
+		Lamp->SetStaticMesh(Cube);
+		Lamp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Lamp->SetCastShadow(false);
+		Lamp->SetupAttachment(Body);
+		Lamp->SetRelativeLocation(Location);
+		Lamp->SetRelativeScale3D(Size / 100.f);
+		Lamp->SetMaterial(0, Material);
+		Lamp->RegisterComponent();
+	};
+	for (const float Side : { -1.f, 1.f })
+	{
+		AddLamp(FVector(FrontX, Side * SideY, LightZ), FVector(6.f, 32.f, 9.f), HeadGlow);
+		AddLamp(FVector(RearX, Side * SideY, LightZ + 8.f), FVector(6.f, 36.f, 8.f), TailGlow);
+	}
+
+	HeadBeam = NewObject<USpotLightComponent>(this);
+	HeadBeam->SetupAttachment(Body);
+	HeadBeam->SetRelativeLocationAndRotation(FVector(FrontX + 10.f, 0.f, LightZ), FRotator(-6.f, 0.f, 0.f));
+	HeadBeam->SetIntensityUnits(ELightUnits::Candelas);
+	HeadBeam->SetIntensity(1200.f);
+	HeadBeam->SetLightColor(FLinearColor(1.f, 0.93f, 0.8f));
+	HeadBeam->SetAttenuationRadius(3500.f);
+	HeadBeam->SetInnerConeAngle(16.f);
+	HeadBeam->SetOuterConeAngle(34.f);
+	HeadBeam->SetCastShadows(false);
+	HeadBeam->SetVisibility(false);
+	HeadBeam->RegisterComponent();
+}
+
+void AMishpachaVehicle::UpdateLights()
+{
+	if (!bLightsBuilt)
+	{
+		return;
+	}
+	if (!DayNight.IsValid())
+	{
+		DayNight = AMishpachaDayNight::Find(this);
+	}
+	const float Night = DayNight.IsValid() ? DayNight->GetNightAmount() : 0.f;
+
+	// On by themselves after dark whenever someone (player or AI) is driving, unless switched off.
+	const bool bOccupied = HasDriver() || GetController() != nullptr;
+	const bool bWasOn = bLightsOn;
+	bLightsOn = bOccupied && Night > 0.35f && !bLightsSwitchedOff;
+	if (bLightsOn != bWasOn && IsLocallyControlled())
+	{
+		UE_LOG(LogMishpacha, Log, TEXT("%s: headlights %s (night %.2f)."), *GetName(), bLightsOn ? TEXT("on") : TEXT("off"), Night);
+	}
+
+	// Brake lights: braking, or reversing.
+	UChaosVehicleMovementComponent* VehicleMovement = GetVehicleMovementComponent();
+	const bool bBraking = bOccupied && VehicleMovement && VehicleMovement->GetBrakeInput() > 0.1f;
+	HeadGlow->SetScalarParameterValue(TEXT("Glow"), bLightsOn ? 40.f : 0.05f);
+	TailGlow->SetScalarParameterValue(TEXT("Glow"), bBraking ? 30.f : (bLightsOn ? 8.f : 0.05f));
+	if (HeadBeam)
+	{
+		HeadBeam->SetVisibility(bLightsOn);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Running things over
+// ---------------------------------------------------------------------------
+
+void AMishpachaVehicle::CheckBumper(float DeltaSeconds)
+{
+	const FVector Velocity = GetVelocity();
+	const float Speed = Velocity.Size();
+	const USkeletalMesh* BodyMesh = GetMesh() ? GetMesh()->GetSkeletalMeshAsset() : nullptr;
+	if (Speed < 250.f || !BodyMesh)
+	{
+		return;
+	}
+
+	// A box just past the bumper the car is moving toward, as long as one or two frames of travel.
+	const FBox Box = BodyMesh->GetBounds().GetBox();
+	const FTransform& Transform = GetActorTransform();
+	const bool bForward = (Velocity | GetActorForwardVector()) >= 0.f;
+	const float Reach = Speed * DeltaSeconds * 2.f + 50.f;
+	const float BumperX = bForward ? Box.Max.X : Box.Min.X;
+	const FVector LocalCenter(BumperX + (bForward ? 1.f : -1.f) * (Reach * 0.5f - 20.f), 0.f, Box.Min.Z + Box.GetSize().Z * 0.5f);
+	const FVector HalfSize(Reach * 0.5f + 20.f, Box.GetExtent().Y * 0.95f, Box.GetExtent().Z);
+
+	FCollisionObjectQueryParams Objects;
+	Objects.AddObjectTypesToQuery(ECC_Pawn);
+	Objects.AddObjectTypesToQuery(ECC_WorldDynamic);
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(VehicleBumper), false, this);
+	if (Driver)
+	{
+		Params.AddIgnoredActor(Driver);
+	}
+	TArray<FOverlapResult> Overlaps;
+	GetWorld()->OverlapMultiByObjectType(Overlaps, Transform.TransformPosition(LocalCenter), Transform.GetRotation(), Objects,
+		FCollisionShape::MakeBox(HalfSize), Params);
+
+	const double Now = GetWorld()->GetTimeSeconds();
+	for (const FOverlapResult& Overlap : Overlaps)
+	{
+		AActor* Other = Overlap.GetActor();
+		if (!Other || Other == this)
+		{
+			continue;
+		}
+		const double* Last = RecentBumps.Find(Other);
+		if (Last && Now - *Last < 1.0)
+		{
+			continue;
+		}
+		if (AMishpachaCharacter* Person = Cast<AMishpachaCharacter>(Other))
+		{
+			if (!Person->IsDead() && !Person->GetCurrentVehicle())
+			{
+				RecentBumps.Add(Other, Now);
+				Person->HitByVehicle(this, Velocity, GetController());
+			}
+		}
+		else if (AMishpachaStreetProp* Prop = Cast<AMishpachaStreetProp>(Other))
+		{
+			if (Prop->IsStanding())
+			{
+				RecentBumps.Add(Other, Now);
+				Prop->HitByVehicle(Velocity);
+			}
+		}
+	}
+	if (RecentBumps.Num() > 16)
+	{
+		for (auto It = RecentBumps.CreateIterator(); It; ++It)
+		{
+			if (!It.Key().IsValid() || Now - It.Value() > 2.0)
+			{
+				It.RemoveCurrent();
+			}
+		}
+	}
 }
 
 void AMishpachaVehicle::SetPaintColor(const FLinearColor& NewColor)
@@ -208,6 +448,7 @@ void AMishpachaVehicle::BeginPlay()
 	if (GetNetMode() != NM_DedicatedServer)
 	{
 		EngineAudio = MishpachaSounds::MakeLoop(GetMesh(), TEXT("S_Engine_Loop"), 5500.f);
+		BuildLights();
 	}
 }
 
@@ -276,6 +517,11 @@ void AMishpachaVehicle::Tick(float DeltaSeconds)
 	if (GetNetMode() != NM_DedicatedServer)
 	{
 		UpdateSounds();
+		UpdateLights();
+	}
+	if (HasAuthority())
+	{
+		CheckBumper(DeltaSeconds);
 	}
 
 	if (!IsLocallyControlled() || !CameraBoom)

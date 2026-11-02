@@ -91,12 +91,33 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+	/** Server: a car drove into this character (AMishpachaVehicle's bumper check). Hurts, knocks back, or kills and throws the body. */
+	void HitByVehicle(AActor* Vehicle, const FVector& VehicleVelocity, AController* Driver);
+
 	UPROPERTY(BlueprintAssignable, Category = "Health")
 	FOnMishpachaHealthChanged OnHealthChanged;
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	/** After the pose is final each frame: the gray-box gun goes into the right palm, long guns through the left hand too. */
+	void PlaceWeaponInHands();
+	FDelegateHandle BonesFinalizedHandle;
+
+	/** Every machine, when the character dies (after the ragdoll starts). Bodies built from shapes fall apart here. */
+	virtual void OnDeathVisuals() {}
+
+	/** Clothes and hair on the mannequin (siblings by name, NPCs by role). */
+	void ApplyOutfit();
+
+	/** Pedestrians: Quinn instead of Manny. */
+	bool bFemaleBody = false;
+
+	/** Velocity change for the ragdoll when killed by a car (replicated with bDead). */
+	UPROPERTY(Replicated)
+	FVector_NetQuantize10 DeathImpulse = FVector::ZeroVector;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<USpringArmComponent> CameraBoom;

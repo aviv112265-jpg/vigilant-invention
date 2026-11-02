@@ -55,6 +55,7 @@ AMishpachaSMG::AMishpachaSMG()
 	SpreadDegrees = 4.f;
 	Range = 6000.f;
 	BodySize = FVector(34.f, 5.f, 14.f);
+	bTwoHanded = true;
 }
 
 AMishpachaShotgun::AMishpachaShotgun()
@@ -69,6 +70,7 @@ AMishpachaShotgun::AMishpachaShotgun()
 	SpreadDegrees = 9.f;
 	Range = 3000.f;
 	BodySize = FVector(70.f, 6.f, 9.f);
+	bTwoHanded = true;
 }
 
 AMishpachaRifle::AMishpachaRifle()
@@ -83,6 +85,7 @@ AMishpachaRifle::AMishpachaRifle()
 	SpreadDegrees = 1.8f;
 	Range = 15000.f;
 	BodySize = FVector(80.f, 6.f, 14.f);
+	bTwoHanded = true;
 }
 
 void AMishpachaWeapon::BeginPlay()
@@ -93,19 +96,80 @@ void AMishpachaWeapon::BeginPlay()
 		Ammo = MagazineSize;
 	}
 
-	// Gray-box gun: a dark box along the hand, longer for bigger guns (cube = 100 cm, pivot at center).
-	if (Body && Body->GetStaticMesh())
+	if (Body && Body->GetStaticMesh() && !Mesh->GetSkeletalMeshAsset())
 	{
-		Body->SetRelativeLocation(FVector(0.f, BodySize.X * 0.3f, 0.f));
-		Body->SetRelativeRotation(FRotator(0.f, 90.f, 0.f));
-		Body->SetRelativeScale3D(BodySize / 100.f);
-		if (UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"), nullptr, LOAD_Quiet | LOAD_NoWarn))
+		BuildGrayboxShape();
+	}
+}
+
+void AMishpachaWeapon::BuildGrayboxShape()
+{
+	// Weapon space: +X along the barrel, origin in the right hand's grip; the character lines the
+	// weapon up with its hands every frame (AMishpachaCharacter::PlaceWeaponInHands).
+	UMaterialInterface* BaseMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"), nullptr, LOAD_Quiet | LOAD_NoWarn);
+	UMaterialInstanceDynamic* Metal = BaseMaterial ? UMaterialInstanceDynamic::Create(BaseMaterial, this) : nullptr;
+	UMaterialInstanceDynamic* Polymer = BaseMaterial ? UMaterialInstanceDynamic::Create(BaseMaterial, this) : nullptr;
+	if (Metal && Polymer)
+	{
+		Metal->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(0.035f, 0.036f, 0.04f));
+		Polymer->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(0.012f, 0.012f, 0.012f));
+	}
+
+	// Box from its center and size in cm (cube = 100 cm, pivot at center).
+	auto AddBox = [this](UStaticMeshComponent* Part, const FVector& Center, const FVector& Size, float Pitch, UMaterialInterface* Material)
+	{
+		if (!Part)
 		{
-			if (UMaterialInstanceDynamic* MID = Body->CreateDynamicMaterialInstance(0, BaseMaterial))
-			{
-				MID->SetVectorParameterValue(FName(TEXT("Color")), FLinearColor(0.03f, 0.03f, 0.035f));
-			}
+			Part = NewObject<UStaticMeshComponent>(this);
+			Part->SetStaticMesh(Body->GetStaticMesh());
+			Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			Part->SetCastShadow(false);
+			Part->SetupAttachment(Mesh);
+			Part->RegisterComponent();
+			Parts.Add(Part);
 		}
+		Part->SetRelativeLocationAndRotation(Center, FRotator(Pitch, 0.f, 0.f));
+		Part->SetRelativeScale3D(Size / 100.f);
+		if (Material)
+		{
+			Part->SetMaterial(0, Material);
+		}
+	};
+
+	const float L = BodySize.X;
+	const float W = BodySize.Y;
+	if (!bTwoHanded)
+	{
+		// Pistol: slide over the hand, frame, angled grip in the palm.
+		AddBox(Body, FVector(5.f, 0.f, 5.2f), FVector(L * 0.9f, W * 0.8f, 3.6f), 0.f, Metal);
+		AddBox(nullptr, FVector(4.f, 0.f, 2.6f), FVector(L * 0.75f, W * 0.7f, 2.4f), 0.f, Polymer);
+		AddBox(nullptr, FVector(-1.f, 0.f, -2.f), FVector(3.4f, W * 0.7f, 10.f), -14.f, Polymer);
+		return;
+	}
+
+	// Long guns: receiver, barrel, pistol grip; magazine and stock where they have one.
+	const bool bShotgun = PelletsPerShot > 1;
+	const float ReceiverFront = L * (bShotgun ? 0.32f : 0.4f);
+	AddBox(Body, FVector((ReceiverFront - 8.f) * 0.5f, 0.f, 3.5f), FVector(ReceiverFront + 8.f, W * 0.8f, 7.f), 0.f, Metal);
+	const float BarrelEnd = L * 0.72f;
+	AddBox(nullptr, FVector((ReceiverFront + BarrelEnd) * 0.5f, 0.f, 4.5f), FVector(BarrelEnd - ReceiverFront, 2.4f, 2.4f), 0.f, Metal);
+	AddBox(nullptr, FVector(-0.5f, 0.f, -3.5f), FVector(3.4f, W * 0.6f, 9.f), -16.f, Polymer);
+	if (bShotgun)
+	{
+		// Magazine tube and pump under the barrel.
+		AddBox(nullptr, FVector((ReceiverFront + BarrelEnd) * 0.5f, 0.f, 1.8f), FVector(BarrelEnd - ReceiverFront, 2.6f, 2.6f), 0.f, Metal);
+		AddBox(nullptr, FVector(ReceiverFront + 10.f, 0.f, 1.8f), FVector(14.f, 4.2f, 4.2f), 0.f, Polymer);
+	}
+	else
+	{
+		AddBox(nullptr, FVector(ReceiverFront * 0.45f, 0.f, -4.5f), FVector(5.f, W * 0.5f, BodySize.Z), 12.f, Polymer);
+		// Handguard around the barrel, where the left hand holds it.
+		AddBox(nullptr, FVector(ReceiverFront + L * 0.12f, 0.f, 4.f), FVector(L * 0.24f, 4.6f, 5.2f), 0.f, Polymer);
+	}
+	if (L > 40.f)
+	{
+		const float StockLength = L * 0.3f;
+		AddBox(nullptr, FVector(-8.f - StockLength * 0.5f, 0.f, 1.5f), FVector(StockLength, W * 0.7f, 8.f), 4.f, Polymer);
 	}
 }
 

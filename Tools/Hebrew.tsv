@@ -204,3 +204,7 @@ MishpachaGreybox,PlaceHome	משפחת סלע
 MishpachaHUD,MenuLanguage	שפה: {0}
 MishpachaHUD,MenuLanguageDetail	אנגלית / עברית
 MishpachaHUD,MenuLanguageNoFont	עברית צריכה את הגופן העברי (Tools/ImportFonts.py)
+MishpachaHUD,HintLights	אורות
+MishpachaHUD,KeyH	H
+MishpachaVehicle,LightsOff	אורות כבויים - קשה יותר למשטרה לזהות אותך בלילה
+MishpachaVehicle,LightsAuto	אורות: אוטומטי

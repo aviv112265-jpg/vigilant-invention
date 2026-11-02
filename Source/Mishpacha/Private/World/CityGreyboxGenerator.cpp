@@ -1,6 +1,8 @@
 // MISHPACHA - procedural gray-box "Tel Avir".
 #include "World/CityGreyboxGenerator.h"
 #include "Characters/MishpachaNPCCharacters.h"
+#include "Characters/MishpachaCat.h"
+#include "World/MishpachaStreetProp.h"
 #include "Family/SiblingSpawnPoint.h"
 #include "Missions/MissionDefinition.h"
 #include "Missions/MissionObjectives.h"
@@ -82,6 +84,10 @@ ACityGreyboxGenerator::ACityGreyboxGenerator()
 	PalmFrondsISM = MakeISM(this, Root, TEXT("PalmFronds"));
 	LampPostsISM = MakeISM(this, Root, TEXT("LampPosts"));
 	LampHeadsISM = MakeISM(this, Root, TEXT("LampHeads"));
+	PaintBoxesISM = MakeISM(this, Root, TEXT("PaintBoxes"));
+	PaintCylindersISM = MakeISM(this, Root, TEXT("PaintCylinders"));
+	PaintConesISM = MakeISM(this, Root, TEXT("PaintCones"));
+	PaintBlobsISM = MakeISM(this, Root, TEXT("PaintBlobs"));
 
 	CivilianClass = AMishpachaCivilian::StaticClass();
 	ParkedCarClass = AMishpachaVehicle::StaticClass();
@@ -451,6 +457,24 @@ void ACityGreyboxGenerator::BuildGeometry()
 	SetupISM(LampHeadsISM, Cube, Surface(TEXT("M_LampGlow")), FLinearColor::White, false);
 	LampPostsISM->SetCastShadow(false);
 	LampHeadsISM->SetCastShadow(false);
+
+	// Painted street life: color (3 floats), stripes, night glow per instance.
+	UStaticMesh* Cone = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cone.Cone"), nullptr, LOAD_Quiet | LOAD_NoWarn);
+	UMaterialInterface* Paint = Surface(TEXT("M_Paint"));
+	const bool bPaintPerInstance = Paint != BaseMaterial;
+	SetupISM(PaintBoxesISM, Cube, Paint, FLinearColor(0.8f, 0.3f, 0.2f), true);
+	SetupISM(PaintCylindersISM, Cylinder ? Cylinder : Cube, Paint, FLinearColor(0.2f, 0.4f, 0.3f), true);
+	SetupISM(PaintConesISM, Cone ? Cone : Cube, Paint, FLinearColor(0.9f, 0.5f, 0.1f), false);
+	SetupISM(PaintBlobsISM, Sphere ? Sphere : Cube, Paint, FLinearColor(0.8f, 0.1f, 0.5f), false);
+	for (UInstancedStaticMeshComponent* PaintISM : { PaintBoxesISM.Get(), PaintCylindersISM.Get(), PaintConesISM.Get(), PaintBlobsISM.Get() })
+	{
+		PaintISM->NumCustomDataFloats = 5;
+		PaintISM->SetCullDistances(0, 14000);
+		PaintISM->SetCastShadow(PaintISM != PaintBlobsISM);
+	}
+	// Buildings: paint color (3 floats) + "has shops" (1).
+	BuildingsWhiteISM->NumCustomDataFloats = 4;
+	BuildingsCreamISM->NumCustomDataFloats = 4;
 	for (UInstancedStaticMeshComponent* DetailISM : { BalconiesISM.Get(), ACUnitsISM.Get(), TreeCanopiesISM.Get(), PalmFrondsISM.Get() })
 	{
 		// Small things: skip them in the shadow pass and cull them early in the distance.
@@ -500,6 +524,87 @@ void ACityGreyboxGenerator::BuildGeometry()
 	// Details use their own stream so adding them never changes the city's layout.
 	FRandomStream DetailStream(Seed + 101);
 	const FVector WorldOffset = GetActorLocation(); // the facade shader's window grid is in world space
+
+	// Painted instances, gathered per mesh and added at the end with their colors.
+	struct FPaintBatch
+	{
+		TArray<FTransform> Transforms;
+		TArray<float> Data;
+		void Add(const FTransform& Transform, const FLinearColor& Color, bool bStripes, float Glow)
+		{
+			Transforms.Add(Transform);
+			Data.Append({ Color.R, Color.G, Color.B, bStripes ? 1.f : 0.f, Glow });
+		}
+	};
+	FPaintBatch PaintBoxes, PaintCylinders, PaintCones, PaintBlobs;
+	TArray<float> WhiteData, CreamData;
+
+	// Tel Aviv: mostly white and cream Bauhaus, with pastel blocks in between.
+	const FLinearColor Facades[] = {
+		FLinearColor(0.86f, 0.86f, 0.83f), FLinearColor(0.88f, 0.87f, 0.84f), FLinearColor(0.84f, 0.84f, 0.8f), FLinearColor(0.82f, 0.74f, 0.6f),
+		FLinearColor(0.9f, 0.63f, 0.5f), FLinearColor(0.62f, 0.8f, 0.68f), FLinearColor(0.93f, 0.84f, 0.52f), FLinearColor(0.6f, 0.75f, 0.88f),
+		FLinearColor(0.9f, 0.64f, 0.7f), FLinearColor(0.76f, 0.47f, 0.34f), FLinearColor(0.73f, 0.67f, 0.86f), FLinearColor(0.95f, 0.78f, 0.55f) };
+	const FLinearColor Awnings[] = {
+		FLinearColor(0.75f, 0.06f, 0.05f), FLinearColor(0.04f, 0.3f, 0.65f), FLinearColor(0.05f, 0.45f, 0.22f), FLinearColor(0.95f, 0.65f, 0.04f),
+		FLinearColor(0.85f, 0.3f, 0.5f), FLinearColor(0.95f, 0.4f, 0.05f), FLinearColor(0.1f, 0.55f, 0.6f), FLinearColor(0.35f, 0.15f, 0.45f) };
+	auto PickColor = [&DetailStream](const FLinearColor* Colors, int32 Count) { return Colors[DetailStream.RandRange(0, Count - 1)]; };
+
+	// Street-level shops on one building: awnings over some of M_Facade's 600 cm shop bays, and
+	// the odd bougainvillea spilling over a corner.
+	auto AddShopDetails = [&](const FVector& LotCenter, float SizeX, float SizeY)
+	{
+		for (int32 Side = 0; Side < 4; ++Side)
+		{
+			const bool bWallAlongY = Side < 2;
+			const float Sign = (Side % 2 == 0) ? 1.f : -1.f;
+			const float WallLength = bWallAlongY ? SizeY : SizeX;
+			const FVector Normal = bWallAlongY ? FVector(Sign, 0.f, 0.f) : FVector(0.f, Sign, 0.f);
+			const FVector WallCenter = LotCenter + Normal * ((bWallAlongY ? SizeX : SizeY) * 0.5f);
+			const float WorldAlong = bWallAlongY ? WorldOffset.Y : WorldOffset.X;
+			const float WallStart = (bWallAlongY ? LotCenter.Y : LotCenter.X) - WallLength * 0.5f + WorldAlong;
+			const float Yaw = Normal.Rotation().Yaw;
+			for (float Bay = FMath::CeilToFloat(WallStart / 600.f) * 600.f; Bay + 600.f <= WallStart + WallLength; Bay += 600.f)
+			{
+				if (DetailStream.FRand() > 0.5f)
+				{
+					continue;
+				}
+				FVector Center = WallCenter + Normal * 55.f + FVector(0.f, 0.f, SidewalkHeight + 262.f);
+				(bWallAlongY ? Center.Y : Center.X) = Bay + 300.f - WorldAlong;
+				PaintBoxes.Add(FTransform(FRotator(-16.f, Yaw, 0.f), Center, FVector(1.15f, 5.f, 0.07f)),
+					PickColor(Awnings, UE_ARRAY_COUNT(Awnings)), DetailStream.FRand() < 0.5f, 0.f);
+			}
+			if (DetailStream.FRand() < 0.12f)
+			{
+				// Bougainvillea: a magenta-pink mass over green, up the wall from the street.
+				FVector Corner = WallCenter + Normal * 30.f;
+				(bWallAlongY ? Corner.Y : Corner.X) += (DetailStream.FRand() < 0.5f ? -1.f : 1.f) * (WallLength * 0.5f - 120.f);
+				const FRotator Flat(0.f, Yaw, 0.f);
+				PaintBlobs.Add(FTransform(Flat, Corner + FVector(0.f, 0.f, SidewalkHeight + 220.f), FVector(0.7f, 2.2f, 3.6f)), FLinearColor(0.06f, 0.2f, 0.05f), false, 0.f);
+				PaintBlobs.Add(FTransform(Flat, Corner + Normal * 15.f + FVector(0.f, 0.f, SidewalkHeight + 300.f), FVector(0.6f, 2.0f, 2.4f)),
+					DetailStream.FRand() < 0.7f ? FLinearColor(0.75f, 0.03f, 0.35f) : FLinearColor(0.9f, 0.3f, 0.05f), false, 0.f);
+			}
+		}
+	};
+
+	// A kiosk with a few cafe tables under umbrellas (plazas and the beach promenade).
+	auto AddKiosk = [&](const FVector& Spot, float Yaw)
+	{
+		const FRotator Facing(0.f, Yaw, 0.f);
+		const FLinearColor Body = PickColor(Awnings, UE_ARRAY_COUNT(Awnings));
+		PaintBoxes.Add(FTransform(Facing, Spot + FVector(0.f, 0.f, SidewalkHeight + 130.f), FVector(3.2f, 3.2f, 2.6f)), Body, false, 0.f);
+		PaintBoxes.Add(FTransform(Facing, Spot + FVector(0.f, 0.f, SidewalkHeight + 275.f), FVector(4.2f, 4.2f, 0.3f)), FLinearColor(0.9f, 0.9f, 0.88f), false, 0.f);
+		PaintBoxes.Add(FTransform(Facing, Spot + Facing.RotateVector(FVector(162.f, 0.f, 0.f)) + FVector(0.f, 0.f, SidewalkHeight + 200.f), FVector(0.05f, 2.6f, 0.5f)),
+			FLinearColor(0.95f, 0.85f, 0.3f), false, 1.f);
+		for (int32 Table = 0; Table < 3; ++Table)
+		{
+			const FVector At = Spot + Facing.RotateVector(FVector(420.f, (Table - 1) * 330.f, 0.f));
+			const FLinearColor Shade = PickColor(Awnings, UE_ARRAY_COUNT(Awnings));
+			PaintCylinders.Add(FTransform(FRotator::ZeroRotator, At + FVector(0.f, 0.f, SidewalkHeight + 37.f), FVector(0.8f, 0.8f, 0.04f)), FLinearColor(0.9f, 0.9f, 0.9f), false, 0.f);
+			PaintCylinders.Add(FTransform(FRotator::ZeroRotator, At + FVector(0.f, 0.f, SidewalkHeight + 125.f), FVector(0.05f, 0.05f, 2.5f)), FLinearColor(0.6f, 0.6f, 0.6f), false, 0.f);
+			PaintCones.Add(FTransform(FRotator::ZeroRotator, At + FVector(0.f, 0.f, SidewalkHeight + 255.f), FVector(2.6f, 2.6f, 0.5f)), Shade, true, 0.f);
+		}
+	};
 
 	// Balconies and AC units on one Bauhaus building, aligned with M_Facade's window grid
 	// (a window every 300 cm along the wall, a floor every 320 cm above a 115 cm base).
@@ -587,6 +692,10 @@ void ACityGreyboxGenerator::BuildGeometry()
 					if (bEmptyLot)
 					{
 						AddMapArea(LotCenter, Lot - 400.f, Lot - 400.f, EMishpachaMapAreaType::Plaza);
+						if (bStreetDetails && bPaintPerInstance)
+						{
+							AddKiosk(LotCenter, DetailStream.RandRange(0, 3) * 90.f);
+						}
 						continue;
 					}
 
@@ -604,13 +713,21 @@ void ACityGreyboxGenerator::BuildGeometry()
 					Height = Floors * 320.f + 100.f;
 					const FTransform Building = Box(LotCenter + FVector(0.f, 0.f, SidewalkHeight + Height * 0.5f), FVector(SizeX, SizeY, Height));
 					AddMapArea(LotCenter, SizeX, SizeY, EMishpachaMapAreaType::Building);
+					const bool bShops = bPaintPerInstance && DetailStream.FRand() < 0.65f;
+					const FLinearColor FacadePaint = Facades[DetailStream.RandRange(0, UE_ARRAY_COUNT(Facades) - 1)];
 					if (Stream.FRand() < 0.6f)
 					{
 						White.Add(Building);
+						WhiteData.Append({ FacadePaint.R, FacadePaint.G, FacadePaint.B, bShops ? 1.f : 0.f });
 					}
 					else
 					{
 						Cream.Add(Building);
+						CreamData.Append({ FacadePaint.R, FacadePaint.G, FacadePaint.B, bShops ? 1.f : 0.f });
+					}
+					if (bShops && bStreetDetails)
+					{
+						AddShopDetails(LotCenter, SizeX, SizeY);
 					}
 
 					// Solar water heaters ("dudei shemesh") on the roof.
@@ -644,6 +761,20 @@ void ACityGreyboxGenerator::BuildGeometry()
 					{
 						if (DetailStream.FRand() < 0.3f)
 						{
+							// No tree here: a bench facing the street and a bin, now and then.
+							if (bPaintPerInstance && DetailStream.FRand() < 0.6f)
+							{
+								const bool bAlongX = FMath::IsNearlyEqual(Spot.Y, Y0 + TreeInset) || FMath::IsNearlyEqual(Spot.Y, Y0 + BlockSize - TreeInset);
+								const FVector Inward = bAlongX ? FVector(0.f, Spot.Y < Y0 + BlockSize * 0.5f ? 1.f : -1.f, 0.f) : FVector(Spot.X < X0 + BlockSize * 0.5f ? 1.f : -1.f, 0.f, 0.f);
+								const FRotator Facing = (-Inward).Rotation();
+								const FVector Seat = Spot + Inward * 90.f;
+								const FLinearColor Wood = DetailStream.FRand() < 0.5f ? FLinearColor(0.35f, 0.18f, 0.08f) : FLinearColor(0.05f, 0.25f, 0.12f);
+								PaintBoxes.Add(FTransform(Facing, Seat + FVector(0.f, 0.f, SidewalkHeight + 45.f), FVector(0.5f, 1.8f, 0.08f)), Wood, false, 0.f);
+								PaintBoxes.Add(FTransform(Facing, Seat + Inward * 24.f + FVector(0.f, 0.f, SidewalkHeight + 75.f), FVector(0.06f, 1.8f, 0.4f)), Wood, false, 0.f);
+								PaintBoxes.Add(FTransform(Facing, Seat + FVector(0.f, 0.f, SidewalkHeight + 22.f), FVector(0.4f, 1.6f, 0.44f)), FLinearColor(0.08f, 0.08f, 0.08f), false, 0.f);
+								PaintCylinders.Add(FTransform(FRotator::ZeroRotator, Seat + Facing.RotateVector(FVector(0.f, 130.f, 0.f)) + FVector(0.f, 0.f, SidewalkHeight + 45.f), FVector(0.5f, 0.5f, 0.9f)),
+									FLinearColor(0.15f, 0.3f, 0.15f), false, 0.f);
+							}
 							continue;
 						}
 						const float Scale = DetailStream.FRandRange(0.85f, 1.2f);
@@ -663,6 +794,17 @@ void ACityGreyboxGenerator::BuildGeometry()
 	SidewalksISM->AddInstances(Sidewalks, false);
 	BuildingsWhiteISM->AddInstances(White, false);
 	BuildingsCreamISM->AddInstances(Cream, false);
+	if (bPaintPerInstance)
+	{
+		for (int32 Index = 0; Index < White.Num(); ++Index)
+		{
+			BuildingsWhiteISM->SetCustomData(Index, MakeArrayView(WhiteData.GetData() + Index * 4, 4), false);
+		}
+		for (int32 Index = 0; Index < Cream.Num(); ++Index)
+		{
+			BuildingsCreamISM->SetCustomData(Index, MakeArrayView(CreamData.GetData() + Index * 4, 4), false);
+		}
+	}
 	TowersISM->AddInstances(Towers, false);
 	RoofDetailsISM->AddInstances(Roof, false);
 
@@ -782,6 +924,58 @@ void ACityGreyboxGenerator::BuildGeometry()
 		}
 		PalmTrunksISM->AddInstances(PalmTrunks, false);
 		PalmFrondsISM->AddInstances(PalmFronds, false);
+
+		if (bPaintPerInstance)
+		{
+			// Beach: rows of striped umbrellas with sunbeds, lifeguard towers, kiosks on the promenade.
+			const FLinearColor Umbrellas[] = { FLinearColor(0.85f, 0.08f, 0.05f), FLinearColor(0.05f, 0.35f, 0.75f), FLinearColor(0.95f, 0.7f, 0.05f),
+				FLinearColor(0.05f, 0.55f, 0.3f), FLinearColor(0.9f, 0.4f, 0.6f), FLinearColor(0.95f, 0.45f, 0.05f) };
+			for (float Y = MinY + 600.f; Y <= -MinY - 600.f; Y += 520.f)
+			{
+				for (int32 Row = 0; Row < 2; ++Row)
+				{
+					if (DetailStream.FRand() < 0.35f)
+					{
+						continue;
+					}
+					const FVector Base(MinX - 2600.f - Row * 1500.f + DetailStream.FRandRange(-200.f, 200.f), Y + DetailStream.FRandRange(-120.f, 120.f), -10.f);
+					PaintCylinders.Add(FTransform(FRotator::ZeroRotator, Base + FVector(0.f, 0.f, 120.f), FVector(0.05f, 0.05f, 2.4f)), FLinearColor(0.85f, 0.85f, 0.85f), false, 0.f);
+					PaintCones.Add(FTransform(FRotator(DetailStream.FRandRange(-8.f, 8.f), 0.f, 0.f), Base + FVector(0.f, 0.f, 235.f), FVector(2.8f, 2.8f, 0.55f)),
+						Umbrellas[DetailStream.RandRange(0, UE_ARRAY_COUNT(Umbrellas) - 1)], DetailStream.FRand() < 0.6f, 0.f);
+					for (const float Side : { -1.f, 1.f })
+					{
+						PaintBoxes.Add(FTransform(FRotator(0.f, 90.f, 0.f), Base + FVector(-60.f, Side * 80.f, 20.f), FVector(1.9f, 0.62f, 0.12f)),
+							DetailStream.FRand() < 0.5f ? FLinearColor(0.9f, 0.9f, 0.88f) : FLinearColor(0.05f, 0.3f, 0.6f), false, 0.f);
+					}
+				}
+			}
+			for (float Y = MinY + 3000.f; Y <= -MinY - 3000.f; Y += 9000.f)
+			{
+				const FVector Tower(MinX - 5200.f, Y, -10.f);
+				for (const FVector2D Leg : { FVector2D(-90.f, -90.f), FVector2D(90.f, -90.f), FVector2D(-90.f, 90.f), FVector2D(90.f, 90.f) })
+				{
+					PaintBoxes.Add(FTransform(FRotator::ZeroRotator, Tower + FVector(Leg.X, Leg.Y, 150.f), FVector(0.12f, 0.12f, 3.f)), FLinearColor(0.85f, 0.85f, 0.85f), false, 0.f);
+				}
+				PaintBoxes.Add(FTransform(FRotator::ZeroRotator, Tower + FVector(0.f, 0.f, 400.f), FVector(2.6f, 2.6f, 2.f)), FLinearColor(0.9f, 0.9f, 0.88f), false, 0.f);
+				PaintBoxes.Add(FTransform(FRotator::ZeroRotator, Tower + FVector(0.f, 0.f, 520.f), FVector(3.2f, 3.2f, 0.3f)), FLinearColor(0.8f, 0.06f, 0.04f), false, 0.f);
+				AddKiosk(FVector(MinX - 1400.f, Y + 4500.f, -10.f - SidewalkHeight), 180.f);
+			}
+		}
+	}
+
+	PaintBoxesISM->AddInstances(PaintBoxes.Transforms, false);
+	PaintCylindersISM->AddInstances(PaintCylinders.Transforms, false);
+	PaintConesISM->AddInstances(PaintCones.Transforms, false);
+	PaintBlobsISM->AddInstances(PaintBlobs.Transforms, false);
+	for (const TPair<UInstancedStaticMeshComponent*, const FPaintBatch*>& Pair : { TPair<UInstancedStaticMeshComponent*, const FPaintBatch*>(PaintBoxesISM, &PaintBoxes),
+		TPair<UInstancedStaticMeshComponent*, const FPaintBatch*>(PaintCylindersISM, &PaintCylinders), TPair<UInstancedStaticMeshComponent*, const FPaintBatch*>(PaintConesISM, &PaintCones),
+		TPair<UInstancedStaticMeshComponent*, const FPaintBatch*>(PaintBlobsISM, &PaintBlobs) })
+	{
+		for (int32 Index = 0; Index < Pair.Value->Transforms.Num(); ++Index)
+		{
+			Pair.Key->SetCustomData(Index, MakeArrayView(Pair.Value->Data.GetData() + Index * 5, 5), false);
+		}
+		Pair.Key->MarkRenderStateDirty();
 	}
 
 	// --- Destination beacons (tall yellow pillars over mission targets) ---
@@ -932,6 +1126,10 @@ void ACityGreyboxGenerator::SpawnGameplayActors()
 
 	// --- Parked cars (before the missions: "get a car" steps only exist when there are cars) ---
 	SpawnParkedCars();
+	if (bStreetProps)
+	{
+		SpawnStreetProps();
+	}
 
 	// --- Default missions, unless the level already has its own markers ---
 	const bool bHasMarkers = static_cast<bool>(TActorIterator<AMissionStartMarker>(World));
@@ -939,6 +1137,52 @@ void ACityGreyboxGenerator::SpawnGameplayActors()
 	{
 		CreateDefaultMissions(Targets);
 	}
+}
+
+void ACityGreyboxGenerator::SpawnStreetProps()
+{
+	UWorld* World = GetWorld();
+	FRandomStream Stream(Seed + 303);
+	const float Corner = RoadWidth * 0.5f + 90.f; // on the sidewalk, just past the curb
+	int32 Count = 0;
+
+	auto Spawn = [&](EMishpachaPropKind Kind, int32 I, int32 J, float SX, float SY, float Yaw, int32 Phase)
+	{
+		const FVector Local = IntersectionLocal(I, J) + FVector(SX * Corner, SY * Corner, SidewalkHeight);
+		const FTransform Transform(FRotator(0.f, Yaw, 0.f), ToWorld(Local));
+		AMishpachaStreetProp* Prop = World->SpawnActorDeferred<AMishpachaStreetProp>(AMishpachaStreetProp::StaticClass(), Transform, this, nullptr,
+			ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+		if (Prop)
+		{
+			Prop->Setup(Kind, Phase);
+			Prop->FinishSpawning(Transform);
+			++Count;
+		}
+	};
+
+	for (int32 I = 0; I <= BlocksX; ++I)
+	{
+		for (int32 J = 0; J <= BlocksY; ++J)
+		{
+			const bool bInner = I > 0 && J > 0 && I < BlocksX && J < BlocksY;
+			if (bInner && (I + J) % 2 == 0)
+			{
+				// Traffic lights for both streets (Israel drives on the right: the light stands on the far right corner).
+				Spawn(EMishpachaPropKind::TrafficLight, I, J, 1.f, -1.f, 180.f, 0);   // traffic going +X
+				Spawn(EMishpachaPropKind::TrafficLight, I, J, -1.f, 1.f, 0.f, 0);     // going -X
+				Spawn(EMishpachaPropKind::TrafficLight, I, J, 1.f, 1.f, -90.f, 1);    // going +Y
+				Spawn(EMishpachaPropKind::TrafficLight, I, J, -1.f, -1.f, 90.f, 1);   // going -Y
+			}
+			else if (Stream.FRand() < 0.7f)
+			{
+				const float SX = Stream.FRand() < 0.5f ? -1.f : 1.f;
+				const float SY = Stream.FRand() < 0.5f ? -1.f : 1.f;
+				Spawn(EMishpachaPropKind::StopSign, I, J, SX, SY, Stream.RandRange(0, 3) * 90.f, 0);
+				Spawn(EMishpachaPropKind::StreetSign, I, J, -SX, -SY, 45.f, 0);
+			}
+		}
+	}
+	UE_LOG(LogMishpacha, Log, TEXT("CityGreyboxGenerator: %d street props."), Count);
 }
 
 void ACityGreyboxGenerator::SpawnParkedCars()
@@ -1388,7 +1632,10 @@ void ACityGreyboxGenerator::MaintainCivilians()
 			continue;
 		}
 
-		APawn* Civilian = World->SpawnActor<APawn>(CivilianClass, Candidate, FRotator(0.f, FMath::FRandRange(0.f, 360.f), 0.f), Params);
+		// Tel Aviv has as many street cats as people (almost).
+		UClass* SpawnClass = FMath::FRand() < CatShare ? AMishpachaCat::StaticClass() : CivilianClass.Get();
+		APawn* Civilian = World->SpawnActor<APawn>(SpawnClass, SpawnClass == AMishpachaCat::StaticClass() ? Candidate - FVector(0.f, 0.f, 75.f) : Candidate,
+			FRotator(0.f, FMath::FRandRange(0.f, 360.f), 0.f), Params);
 		if (Civilian)
 		{
 			if (!Civilian->GetController())

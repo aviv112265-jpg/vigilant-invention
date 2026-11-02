@@ -1,6 +1,7 @@
 // MISHPACHA - asset-free police officer brain.
 #include "AI/MishpachaPoliceAIController.h"
 #include "Characters/MishpachaCharacter.h"
+#include "Vehicles/MishpachaVehicle.h"
 #include "Heat/HeatComponent.h"
 #include "Heat/CrimeLibrary.h"
 #include "GameFramework/GameStateBase.h"
@@ -70,7 +71,7 @@ bool AMishpachaPoliceAIController::CanSee(const AActor* Other) const
 	{
 		return false;
 	}
-	if (FVector::DistSquared(MyPawn->GetActorLocation(), Other->GetActorLocation()) > FMath::Square(SightDistance))
+	if (FVector::DistSquared(MyPawn->GetActorLocation(), Other->GetActorLocation()) > FMath::Square(SightDistance * AMishpachaVehicle::GetPoliceSightScale(Other)))
 	{
 		return false;
 	}

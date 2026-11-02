@@ -8,6 +8,7 @@
 #include "AIController.h"
 #include "AI/MishpachaPoliceAIController.h"
 #include "Vehicles/MishpachaPoliceCar.h"
+#include "Vehicles/MishpachaVehicle.h"
 #include "World/CityGreyboxGenerator.h"
 #include "EngineUtils.h"
 #include "NavigationSystem.h"
@@ -107,7 +108,9 @@ void UPoliceDispatchSubsystem::Refresh()
 				continue;
 			}
 
-			if (FVector::Dist(UnitPawn->GetActorLocation(), Target->GetActorLocation()) <= Config->SightDistance && HasLineOfSight(UnitPawn, Target))
+			// Dark and no headlights: they have to be much closer to notice you.
+			const float Sight = Config->SightDistance * AMishpachaVehicle::GetPoliceSightScale(Target);
+			if (FVector::Dist(UnitPawn->GetActorLocation(), Target->GetActorLocation()) <= Sight && HasLineOfSight(UnitPawn, Target))
 			{
 				Heat->NotifySpottedByPolice(Target->GetActorLocation());
 			}

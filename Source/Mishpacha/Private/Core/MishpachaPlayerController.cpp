@@ -16,6 +16,8 @@
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
 #include "Characters/MishpachaNPCCharacters.h"
+#include "Characters/MishpachaCat.h"
+#include "World/MishpachaStreetProp.h"
 #include "Mishpacha.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -173,9 +175,12 @@ void AMishpachaPlayerController::BuildMapInput()
 	MapZoomAction = MakeAction(TEXT("IA_MapZoom"), EInputActionValueType::Axis1D);
 	WheelAction = MakeAction(TEXT("IA_WeaponWheel"), EInputActionValueType::Boolean);
 	WheelAction->bTriggerWhenPaused = true;
+	LightsAction = MakeAction(TEXT("IA_Lights"), EInputActionValueType::Boolean);
 
 	// Always on top of the pawn context: open / close the map.
 	UIContext = NewObject<UInputMappingContext>(this, TEXT("IMC_UI_Default"));
+	Map(UIContext, LightsAction, EKeys::H);
+	Map(UIContext, LightsAction, EKeys::Gamepad_DPad_Left);
 	Map(UIContext, WheelAction, EKeys::Tab);
 	Map(UIContext, WheelAction, EKeys::Gamepad_LeftShoulder);
 	Map(UIContext, MapToggleAction, EKeys::M);
@@ -281,6 +286,7 @@ void AMishpachaPlayerController::SetupInputComponent()
 	EIC->BindAction(MapZoomAction, ETriggerEvent::Triggered, this, &ThisClass::HandleMapZoom);
 	EIC->BindAction(WheelAction, ETriggerEvent::Started, this, &ThisClass::HandleWheelStarted);
 	EIC->BindAction(WheelAction, ETriggerEvent::Completed, this, &ThisClass::HandleWheelCompleted);
+	EIC->BindAction(LightsAction, ETriggerEvent::Started, this, &ThisClass::HandleLights);
 	EIC->BindAction(MenuToggleAction, ETriggerEvent::Started, this, &ThisClass::HandleMenuToggle);
 	EIC->BindAction(MenuSelectAction, ETriggerEvent::Started, this, &ThisClass::HandleMenuSelect);
 	EIC->BindAction(MenuClickAction, ETriggerEvent::Started, this, &ThisClass::HandleMenuClick);
@@ -823,6 +829,14 @@ void AMishpachaPlayerController::HandleHandbrakeCompleted()
 	}
 }
 
+void AMishpachaPlayerController::HandleLights()
+{
+	if (AMishpachaVehicle* Vehicle = GetMishpachaVehicle())
+	{
+		Vehicle->ToggleLights();
+	}
+}
+
 void AMishpachaPlayerController::HandleRadio()
 {
 	if (AMishpachaVehicle* Vehicle = GetMishpachaVehicle())
@@ -901,6 +915,54 @@ void AMishpachaPlayerController::Mish_Equip(int32 Slot)
 	if (AMishpachaCharacter* MyCharacter = GetMishpachaCharacter())
 	{
 		MyCharacter->RequestEquipSlot(Slot);
+	}
+}
+
+void AMishpachaPlayerController::Mish_TestRunOver()
+{
+	// A pedestrian, a cat and a traffic light in a row in front of the car (then Mish_AutoDrive 1).
+	AMishpachaVehicle* Vehicle = GetMishpachaVehicle();
+	if (!Vehicle || !HasAuthority())
+	{
+		return;
+	}
+	const FVector Forward = Vehicle->GetActorForwardVector();
+	const FVector Base = Vehicle->GetActorLocation();
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	// No brains: they stand still in the road.
+	auto StandStill = [](APawn* Spawned)
+	{
+		if (AController* Brain = Spawned ? Spawned->GetController() : nullptr)
+		{
+			Brain->UnPossess();
+			Brain->Destroy();
+		}
+	};
+	StandStill(GetWorld()->SpawnActor<APawn>(AMishpachaCivilian::StaticClass(), Base + Forward * 1500.f + FVector(0.f, 0.f, 100.f), FRotator::ZeroRotator, Params));
+	StandStill(GetWorld()->SpawnActor<APawn>(AMishpachaCat::StaticClass(), Base + Forward * 2200.f + FVector(0.f, 0.f, 30.f), FRotator::ZeroRotator, Params));
+	const FTransform PropTransform(FRotator::ZeroRotator, Base + Forward * 3200.f - FVector(0.f, 0.f, 40.f));
+	if (AMishpachaStreetProp* Prop = GetWorld()->SpawnActorDeferred<AMishpachaStreetProp>(AMishpachaStreetProp::StaticClass(), PropTransform))
+	{
+		Prop->Setup(EMishpachaPropKind::TrafficLight, 0);
+		Prop->FinishSpawning(PropTransform);
+	}
+}
+
+void AMishpachaPlayerController::Mish_Aim(int32 bAim)
+{
+	if (AMishpachaCharacter* MyCharacter = GetMishpachaCharacter())
+	{
+		MyCharacter->SetAiming(bAim != 0);
+	}
+}
+
+void AMishpachaPlayerController::Mish_Look(float RelativeYaw, float Pitch)
+{
+	// Camera around the pawn (180 = look at its face), for screenshots.
+	if (const APawn* MyPawn = GetPawn())
+	{
+		SetControlRotation(FRotator(Pitch, MyPawn->GetActorRotation().Yaw + RelativeYaw, 0.f));
 	}
 }
 

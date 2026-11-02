@@ -1,6 +1,9 @@
 // MISHPACHA - base playable / NPC human character.
 #include "Characters/MishpachaCharacter.h"
 #include "Characters/MishpachaWeapon.h"
+#include "Characters/MishpachaAnimInstance.h"
+#include "Characters/MishpachaOutfits.h"
+#include "Math/RandomStream.h"
 #include "Mishpacha.h"
 #include "Vehicles/MishpachaVehicle.h"
 #include "Abilities/SiblingAbilityComponent.h"
@@ -71,6 +74,11 @@ void AMishpachaCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	SetupAutoVisuals();
+	if (GetNetMode() != NM_DedicatedServer && GetMesh())
+	{
+		BonesFinalizedHandle = GetMesh()->RegisterOnBoneTransformsFinalizedDelegate(
+			FOnBoneTransformsFinalizedMultiCast::FDelegate::CreateUObject(this, &AMishpachaCharacter::PlaceWeaponInHands));
+	}
 
 	if (HasAuthority())
 	{
@@ -90,6 +98,7 @@ void AMishpachaCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(AMishpachaCharacter, SiblingId);
 	DOREPLIFETIME(AMishpachaCharacter, Health);
 	DOREPLIFETIME(AMishpachaCharacter, bDead);
+	DOREPLIFETIME(AMishpachaCharacter, DeathImpulse);
 	DOREPLIFETIME_CONDITION(AMishpachaCharacter, bSprinting, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AMishpachaCharacter, bAiming, COND_SkipOwner);
 	DOREPLIFETIME(AMishpachaCharacter, CurrentWeapon);
@@ -291,9 +300,92 @@ void AMishpachaCharacter::AttachWeapon()
 {
 	if (CurrentWeapon && GetMesh())
 	{
-		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponSocketName);
+		// The code-built gun is lined up with both hands every frame (PlaceWeaponInHands); a real
+		// weapon mesh from a Blueprint snaps to the hand socket as usual.
+		const bool bGraybox = !CurrentWeapon->GetWeaponMesh() || !CurrentWeapon->GetWeaponMesh()->GetSkeletalMeshAsset();
+		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, bGraybox ? NAME_None : WeaponSocketName);
 		CurrentWeapon->SetActorHiddenInGame(CurrentVehicle != nullptr);
+		PlaceWeaponInHands();
 	}
+}
+
+void AMishpachaCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (BonesFinalizedHandle.IsValid() && GetMesh())
+	{
+		GetMesh()->UnregisterOnBoneTransformsFinalizedDelegate(BonesFinalizedHandle);
+		BonesFinalizedHandle.Reset();
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
+void AMishpachaCharacter::PlaceWeaponInHands()
+{
+	USkeletalMeshComponent* Body = GetMesh();
+	if (!CurrentWeapon || !Body || bDead || CurrentWeapon->IsHidden() || CurrentWeapon->GetAttachParentSocketName() != NAME_None)
+	{
+		return;
+	}
+	static const FName HandR(TEXT("hand_r"));
+	static const FName FingerR(TEXT("middle_01_r"));
+	static const FName HandL(TEXT("hand_l"));
+	static const FName FingerL(TEXT("middle_01_l"));
+	if (Body->GetBoneIndex(HandR) == INDEX_NONE || Body->GetBoneIndex(FingerR) == INDEX_NONE)
+	{
+		return;
+	}
+
+	// Grip = the middle of the right palm. Pistols point where the character aims; long guns run from
+	// the right hand through the left one, the way the rifle pose holds them.
+	const FVector RightPalm = (Body->GetBoneLocation(HandR) + Body->GetBoneLocation(FingerR)) * 0.5f;
+	const FVector RightBack = Body->GetBoneLocation(HandR);
+	FVector Forward = FRotator(FMath::Clamp(FRotator::NormalizeAxis(GetBaseAimRotation().Pitch), -60.f, 60.f), GetActorRotation().Yaw, 0.f).Vector();
+	if (CurrentWeapon->IsTwoHanded() && Body->GetBoneIndex(HandL) != INDEX_NONE)
+	{
+		const FVector LeftPalm = (Body->GetBoneLocation(HandL) + Body->GetBoneLocation(FingerL)) * 0.5f;
+		const FVector ToLeft = LeftPalm - RightPalm;
+		if (ToLeft.Size() > 15.f && (ToLeft.GetSafeNormal() | Forward) > 0.3f)
+		{
+			Forward = ToLeft.GetSafeNormal();
+		}
+	}
+	// Up: away from the back of the hand (the slide sits on top of the fist), kept square to the barrel.
+	FVector Up = FVector::VectorPlaneProject(FVector::UpVector, Forward).GetSafeNormal();
+	const FVector Palm = (RightPalm - RightBack).GetSafeNormal();
+	if (!Palm.IsNearlyZero())
+	{
+		Up = FVector::VectorPlaneProject(Up * 2.f - Palm * 0.3f, Forward).GetSafeNormal();
+	}
+	const FRotator Rotation = FRotationMatrix::MakeFromXZ(Forward, Up).Rotator();
+	CurrentWeapon->SetActorLocationAndRotation(RightPalm + Up * 1.5f, Rotation);
+}
+
+void AMishpachaCharacter::HitByVehicle(AActor* Vehicle, const FVector& VehicleVelocity, AController* Driver)
+{
+	if (!HasAuthority() || bDead || CurrentVehicle)
+	{
+		return;
+	}
+	const float Speed = VehicleVelocity.Size();
+	if (Speed < 250.f)
+	{
+		return;
+	}
+
+	// Thrown forward and up, away from the bumper.
+	const FVector Launch = VehicleVelocity * 0.9f + FVector(0.f, 0.f, 200.f + Speed * 0.25f);
+	// ~25 km/h kills, slower bumps hurt.
+	const float DamageAmount = Speed >= 700.f ? MaxHealth * 2.f : FMath::GetMappedRangeValueClamped(FVector2f(250.f, 700.f), FVector2f(15.f, 90.f), Speed);
+	if (Health - DamageAmount <= 0.f)
+	{
+		DeathImpulse = Launch;
+	}
+	else
+	{
+		LaunchCharacter(Launch * 0.6f, true, true);
+	}
+	FDamageEvent DamageEvent;
+	TakeDamage(DamageAmount, DamageEvent, Driver, Vehicle);
 }
 
 float AMishpachaCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -347,7 +439,7 @@ void AMishpachaCharacter::Die(AController* Killer)
 	bDead = true;
 	AController* MyController = GetController();
 
-	if (Killer && Killer != MyController && Killer->IsPlayerController())
+	if (Killer && Killer != MyController && Killer->IsPlayerController() && !ActorHasTag(FName(TEXT("Animal"))))
 	{
 		const ECrimeType Crime = ActorHasTag(FName(TEXT("Police"))) ? ECrimeType::CopKilled : ECrimeType::Murder;
 		UCrimeLibrary::ReportCrimeByActor(Killer->GetPawn(), Crime, GetActorLocation());
@@ -390,7 +482,17 @@ void AMishpachaCharacter::OnRep_Dead()
 	{
 		GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 		GetMesh()->SetSimulatePhysics(true);
+		if (!DeathImpulse.IsNearlyZero())
+		{
+			// Run over: the body flies off the bumper.
+			GetMesh()->AddImpulseToAllBodiesBelow(DeathImpulse, NAME_None, true, true);
+		}
 	}
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->SetActorHiddenInGame(true);
+	}
+	OnDeathVisuals();
 
 	// Placeholder body: just fall over.
 	if (PlaceholderBody)
@@ -585,7 +687,7 @@ namespace MishpachaVisuals
 USkeletalMesh* AMishpachaCharacter::LoadMannequinMesh() const
 {
 	static const FName Shira(TEXT("Shira"));
-	if (SiblingId == Shira)
+	if (SiblingId == Shira || bFemaleBody)
 	{
 		return MishpachaVisuals::LoadFirst<USkeletalMesh>({
 			TEXT("/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple"),
@@ -614,7 +716,41 @@ void AMishpachaCharacter::OnRep_SiblingId()
 		{
 			GetMesh()->SetSkeletalMeshAsset(Wanted);
 		}
+		ApplyOutfit();
 	}
+}
+
+void AMishpachaCharacter::ApplyOutfit()
+{
+	if (!bUsingAutoMannequin || !GetMesh())
+	{
+		return;
+	}
+	static const FName Shira(TEXT("Shira"));
+	FMishpachaOutfit Outfit;
+	if (!FMishpachaOutfit::ForSibling(SiblingId, Outfit))
+	{
+		// Same look on every machine: seeded from where the NPC appeared.
+		const FVector Spot = GetActorLocation();
+		FRandomStream Stream(FMath::FloorToInt32(Spot.X / 50.f) * 7919 + FMath::FloorToInt32(Spot.Y / 50.f) * 104729);
+		if (ActorHasTag(FName(TEXT("Police"))))
+		{
+			Outfit = FMishpachaOutfit::Police();
+		}
+		else if (ActorHasTag(FName(TEXT("Rival"))))
+		{
+			Outfit = FMishpachaOutfit::Rival(Stream);
+		}
+		else if (ActorHasTag(FName(TEXT("Family"))))
+		{
+			Outfit = FMishpachaOutfit::FamilySoldier();
+		}
+		else
+		{
+			Outfit = FMishpachaOutfit::Civilian(Stream, bFemaleBody);
+		}
+	}
+	Outfit.Apply(GetMesh(), SiblingId == Shira || bFemaleBody);
 }
 
 FLinearColor AMishpachaCharacter::GetPlaceholderColor() const
@@ -649,9 +785,18 @@ void AMishpachaCharacter::SetupAutoVisuals()
 		return;
 	}
 
+	// Pedestrians: about half of them women (same pick on every machine, see ApplyOutfit).
+	if (ActorHasTag(FName(TEXT("Civilian"))))
+	{
+		const FVector Spot = GetActorLocation();
+		FRandomStream Stream(FMath::FloorToInt32(Spot.X / 50.f) * 31 + FMath::FloorToInt32(Spot.Y / 50.f) * 17);
+		bFemaleBody = Stream.FRand() < 0.45f;
+	}
+
 	// 1) Third Person template mannequin (Add Feature or Content Pack > Third Person). Paths differ between engine versions.
 	USkeletalMesh* Mannequin = LoadMannequinMesh();
-	UClass* AnimClass = MishpachaVisuals::LoadFirstClass({
+	// Code-built graph (proper weapon hold) when the template's pistol/rifle animations are there.
+	UClass* AnimClass = UMishpachaAnimInstance::HasAnimations() ? UMishpachaAnimInstance::StaticClass() : MishpachaVisuals::LoadFirstClass({
 		TEXT("/Game/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed.ABP_Unarmed_C"),
 		TEXT("/Game/Characters/Mannequins/Animations/ABP_Manny.ABP_Manny_C") });
 
@@ -660,6 +805,7 @@ void AMishpachaCharacter::SetupAutoVisuals()
 		GetMesh()->SetSkeletalMeshAsset(Mannequin);
 		GetMesh()->SetAnimInstanceClass(AnimClass);
 		bUsingAutoMannequin = true;
+		ApplyOutfit();
 		AttachWeapon();
 		return;
 	}

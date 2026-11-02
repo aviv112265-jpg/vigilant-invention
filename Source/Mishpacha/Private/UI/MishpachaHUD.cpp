@@ -159,6 +159,16 @@ void AMishpachaHUD::StartAutomatedCapture()
 				Delay += FCString::Atof(*Line.RightChop(5));
 				continue;
 			}
+			if (Line.StartsWith(TEXT("Shot:")))
+			{
+				// "Shot:Name" - a screenshot Name.png at this point of the script.
+				const FString ShotName = Line.RightChop(5) + TEXT(".png");
+				After(Delay, FTimerDelegate::CreateWeakLambda(this, [ShotName]()
+				{
+					FScreenshotRequest::RequestScreenshot(ShotName, false, false);
+				}));
+				continue;
+			}
 			const FString ConsoleLine = Line.Replace(TEXT(":"), TEXT(" "));
 			After(Delay, FTimerDelegate::CreateWeakLambda(this, [this, ConsoleLine]()
 			{
@@ -1949,6 +1959,7 @@ void AMishpachaHUD::DrawControlsHint()
 		DrawKeyChip(X, Y, LOCTEXT("KeyF", "F"), LOCTEXT("HintExit", "Exit car"));
 		DrawKeyChip(X, Y, LOCTEXT("KeySpace", "SPACE"), LOCTEXT("HintHandbrake", "Handbrake"));
 		DrawKeyChip(X, Y, LOCTEXT("KeyR", "R"), LOCTEXT("HintRadio", "Radio"));
+		DrawKeyChip(X, Y, LOCTEXT("KeyH", "H"), LOCTEXT("HintLights", "Lights"));
 		return;
 	}
 	DrawKeyChip(X, Y, LOCTEXT("KeyTabWeapons", "TAB"), LOCTEXT("HintWeapons", "Weapons"));

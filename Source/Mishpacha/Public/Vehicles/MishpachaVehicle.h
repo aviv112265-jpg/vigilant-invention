@@ -58,6 +58,20 @@ public:
 	/** True if this car has a mesh of its own, or the template vehicle (see TemplateVehicleClass) exists. */
 	bool HasVehicleSetup() const;
 
+	// ----- Lights -----
+
+	/** Driver: switch the headlights off / back to automatic (they come on by themselves after dark). */
+	UFUNCTION(BlueprintCallable, Category = "Vehicle|Lights")
+	void ToggleLights();
+
+	UFUNCTION(BlueprintPure, Category = "Vehicle|Lights")
+	bool AreLightsOn() const { return bLightsOn; }
+
+	bool AreLightsSwitchedOff() const { return bLightsSwitchedOff; }
+
+	/** How far police can see this target (1 = normal): driving at night with the lights off - or on foot in the dark - is harder to spot. */
+	static float GetPoliceSightScale(const AActor* Target);
+
 	/** Server: repaint the body (any material with a "Paint Tint" parameter). Replicated. */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Vehicle")
 	void SetPaintColor(const FLinearColor& NewColor);
@@ -76,6 +90,36 @@ protected:
 
 	int32 PlayingRadioStation = 0;
 	void UpdateSounds();
+
+	/** Driver's choice: lights off even at night (replicated). */
+	UPROPERTY(ReplicatedUsing = OnRep_LightsSwitchedOff)
+	bool bLightsSwitchedOff = false;
+
+	UFUNCTION()
+	void OnRep_LightsSwitchedOff();
+
+	UFUNCTION(Server, Reliable)
+	void ServerToggleLights();
+
+	/** Head lamps' beam (no shadows) and the glowing head / tail light blocks. */
+	UPROPERTY(Transient)
+	TObjectPtr<class USpotLightComponent> HeadBeam;
+
+	UPROPERTY(Transient)
+	TObjectPtr<class UMaterialInstanceDynamic> HeadGlow;
+
+	UPROPERTY(Transient)
+	TObjectPtr<class UMaterialInstanceDynamic> TailGlow;
+
+	bool bLightsOn = false;
+	bool bLightsBuilt = false;
+	TWeakObjectPtr<class AMishpachaDayNight> DayNight;
+	void BuildLights();
+	void UpdateLights();
+
+	/** Server: what the front (or rear, reversing) bumper is about to hit - people, cats, signs. */
+	void CheckBumper(float DeltaSeconds);
+	TMap<TWeakObjectPtr<AActor>, double> RecentBumps;
 
 	/**
 	 * Auto setup: a car with no skeletal mesh (the plain C++ class, e.g. the gray-box city's parked cars)

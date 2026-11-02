@@ -71,6 +71,16 @@ public:
 	UFUNCTION(Exec)
 	void Mish_Equip(int32 Slot);
 
+	UFUNCTION(Exec)
+	void Mish_Aim(int32 bAim);
+
+	/** In a car: puts a pedestrian, a cat and a traffic light in front of it. */
+	UFUNCTION(Exec)
+	void Mish_TestRunOver();
+
+	UFUNCTION(Exec)
+	void Mish_Look(float RelativeYaw, float Pitch);
+
 	/** Open (1) / close-and-equip (0) the weapon wheel, as if Tab were held / released. */
 	UFUNCTION(Exec)
 	void Mish_Wheel(int32 bOpen);
@@ -191,6 +201,10 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<UInputAction> WheelAction;
 
+	/** H / D-pad left in a car: headlights off / automatic. */
+	UPROPERTY(Transient)
+	TObjectPtr<UInputAction> LightsAction;
+
 	UPROPERTY(Transient)
 	TObjectPtr<UInputMappingContext> MenuContext;
 
@@ -257,6 +271,7 @@ private:
 	void HandleHandbrakeStarted();
 	void HandleHandbrakeCompleted();
 	void HandleRadio();
+	void HandleLights();
 	void HandleMapToggle();
 	void HandleMapSelect();
 	void HandleMapClear();

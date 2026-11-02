@@ -58,6 +58,15 @@ public:
 	/** Center of the intersection closest to a world point (road surface). */
 	FVector GetNearestIntersection(const FVector& WorldLocation) const;
 
+	/** Street grid: intersections (I, J) for I in 0..BlocksX, J in 0..BlocksY (world, road surface). */
+	FVector GetIntersection(int32 I, int32 J) const { return ToWorld(IntersectionLocal(I, J) + FVector(0.f, 0.f, 2.f)); }
+	int32 GetBlocksX() const { return BlocksX; }
+	int32 GetBlocksY() const { return BlocksY; }
+
+	/** Civilian cars driving around the players (server). */
+	UPROPERTY(EditAnywhere, Category = "Greybox|Vehicles", meta = (ClampMin = "0", ClampMax = "40"))
+	int32 MaxTraffic = 8;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -193,6 +202,10 @@ private:
 	TArray<FMishpachaMapPlace> MapPlaces;
 	FBox2D MapBounds = FBox2D(ForceInit);
 	FTimerHandle CivilianTimer;
+	FTimerHandle TrafficTimer;
+	TArray<TWeakObjectPtr<APawn>> TrafficCars;
+	int32 TrafficReportCounter = 0;
+	void MaintainTraffic();
 	bool bGeometryBuilt = false;
 	bool bGameplaySpawned = false;
 

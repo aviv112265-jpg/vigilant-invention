@@ -6,6 +6,9 @@
 #include "Missions/MissionObjectives.h"
 #include "Missions/MissionStartMarker.h"
 #include "Vehicles/MishpachaVehicle.h"
+#include "Vehicles/MishpachaTrafficCar.h"
+#include "AI/MishpachaTrafficAI.h"
+#include "GameFramework/PlayerController.h"
 #include "Mishpacha.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/DirectionalLightComponent.h"
@@ -110,6 +113,7 @@ void ACityGreyboxGenerator::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(CivilianTimer);
+		World->GetTimerManager().ClearTimer(TrafficTimer);
 	}
 	Super::EndPlay(EndPlayReason);
 }
@@ -146,6 +150,10 @@ void ACityGreyboxGenerator::Generate()
 	if (MaxCivilians > 0 && CivilianClass && !GetWorldTimerManager().IsTimerActive(CivilianTimer))
 	{
 		GetWorldTimerManager().SetTimer(CivilianTimer, this, &ACityGreyboxGenerator::MaintainCivilians, 2.f, true, 1.f);
+	}
+	if (MaxTraffic > 0 && ParkedCarClass && GetDefault<AMishpachaVehicle>()->HasVehicleSetup() && !GetWorldTimerManager().IsTimerActive(TrafficTimer))
+	{
+		GetWorldTimerManager().SetTimer(TrafficTimer, this, &ACityGreyboxGenerator::MaintainTraffic, 1.5f, true, 3.f);
 	}
 }
 
@@ -1207,6 +1215,112 @@ void ACityGreyboxGenerator::CreateDefaultMissions(const TMap<FName, FVector>& Ta
 // ---------------------------------------------------------------------------
 // Pedestrians (server)
 // ---------------------------------------------------------------------------
+
+void ACityGreyboxGenerator::MaintainTraffic()
+{
+	UWorld* World = GetWorld();
+	TArray<FVector> PlayerLocations;
+	for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (const APawn* Pawn = It->Get() ? It->Get()->GetPawn() : nullptr)
+		{
+			PlayerLocations.Add(Pawn->GetActorLocation());
+		}
+	}
+	if (PlayerLocations.Num() == 0)
+	{
+		return;
+	}
+	auto DistToPlayers = [&PlayerLocations](const FVector& Location)
+	{
+		double Best = TNumericLimits<double>::Max();
+		for (const FVector& Player : PlayerLocations)
+		{
+			Best = FMath::Min(Best, FVector::Dist2D(Player, Location));
+		}
+		return Best;
+	};
+
+	// Drop cars that drove off far away (or were stolen: then they're ordinary cars now).
+	for (int32 Index = TrafficCars.Num() - 1; Index >= 0; --Index)
+	{
+		APawn* Car = TrafficCars[Index].Get();
+		const bool bStillTraffic = Car && Car->GetController() && !Car->GetController()->IsPlayerController();
+		if (!bStillTraffic)
+		{
+			TrafficCars.RemoveAtSwap(Index);
+			continue;
+		}
+		if (DistToPlayers(Car->GetActorLocation()) > 13000.0)
+		{
+			if (AController* Driver = Car->GetController())
+			{
+				Driver->Destroy();
+			}
+			Car->Destroy();
+			TrafficCars.RemoveAtSwap(Index);
+		}
+	}
+
+	// Now and then: how is traffic doing (moving vs. standing)?
+	if (++TrafficReportCounter % 8 == 0)
+	{
+		int32 Moving = 0;
+		for (const TWeakObjectPtr<APawn>& Car : TrafficCars)
+		{
+			Moving += (Car.IsValid() && Car->GetVelocity().Size() > 200.f) ? 1 : 0;
+		}
+		UE_LOG(LogMishpacha, Log, TEXT("Traffic: %d cars, %d moving."), TrafficCars.Num(), Moving);
+	}
+
+	// One new car per tick: on a block-long stretch 30-90 m from a player, in the right-hand lane.
+	if (TrafficCars.Num() >= MaxTraffic)
+	{
+		return;
+	}
+	for (int32 Attempt = 0; Attempt < 10; ++Attempt)
+	{
+		const FIntPoint From(FMath::RandRange(0, BlocksX), FMath::RandRange(0, BlocksY));
+		const FIntPoint Steps[] = { FIntPoint(1, 0), FIntPoint(-1, 0), FIntPoint(0, 1), FIntPoint(0, -1) };
+		const FIntPoint To = From + Steps[FMath::RandRange(0, 3)];
+		if (To.X < 0 || To.Y < 0 || To.X > BlocksX || To.Y > BlocksY)
+		{
+			continue;
+		}
+		const FVector A = GetIntersection(From.X, From.Y);
+		const FVector B = GetIntersection(To.X, To.Y);
+		const FVector Direction = (B - A).GetSafeNormal2D();
+		const FVector Spot = FMath::Lerp(A, B, FMath::FRandRange(0.3f, 0.7f)) + FVector(-Direction.Y, Direction.X, 0.f) * 280.f;
+		const double Distance = DistToPlayers(Spot);
+		if (Distance < 3000.0 || Distance > 9000.0)
+		{
+			continue;
+		}
+		// Don't drop it onto something.
+		FCollisionQueryParams Params(SCENE_QUERY_STAT(TrafficSpawn), false);
+		if (World->OverlapAnyTestByChannel(Spot + FVector(0.f, 0.f, 120.f), FQuat::Identity, ECC_Pawn, FCollisionShape::MakeBox(FVector(260.f, 140.f, 80.f)), Params))
+		{
+			continue;
+		}
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+		AMishpachaTrafficCar* Car = World->SpawnActor<AMishpachaTrafficCar>(AMishpachaTrafficCar::StaticClass(), Spot + FVector(0.f, 0.f, 50.f), Direction.Rotation(), SpawnParams);
+		if (!Car)
+		{
+			continue;
+		}
+		const FLinearColor Paints[] = { FLinearColor(0.85f, 0.85f, 0.85f), FLinearColor(0.45f, 0.46f, 0.48f), FLinearColor(0.02f, 0.02f, 0.025f),
+			FLinearColor(0.03f, 0.07f, 0.25f), FLinearColor(0.45f, 0.02f, 0.02f), FLinearColor(0.8f, 0.6f, 0.05f) }; // ... and the odd yellow taxi
+		Car->SetPaintColor(Paints[FMath::RandRange(0, UE_ARRAY_COUNT(Paints) - 1)]);
+		if (AMishpachaTrafficAI* Driver = Cast<AMishpachaTrafficAI>(Car->GetController()))
+		{
+			Driver->SetLeg(From, To);
+		}
+		TrafficCars.Add(Car);
+		return;
+	}
+}
 
 void ACityGreyboxGenerator::MaintainCivilians()
 {

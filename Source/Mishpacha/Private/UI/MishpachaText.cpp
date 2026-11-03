@@ -212,6 +212,11 @@ namespace MishpachaText
 		return FInternationalization::Get().GetCurrentCulture()->GetTwoLetterISOLanguageName();
 	}
 
+	bool IsRightToLeft()
+	{
+		return GetLanguage() == TEXT("he");
+	}
+
 	void ApplySavedLanguage()
 	{
 		FString Culture;

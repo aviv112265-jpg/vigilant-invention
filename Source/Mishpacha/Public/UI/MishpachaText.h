@@ -28,6 +28,9 @@ namespace MishpachaText
 	MISHPACHA_API void SetLanguage(const FString& Culture);
 	MISHPACHA_API FString GetLanguage();
 
+	/** Hebrew UI: menus and key hints are laid out right to left. */
+	MISHPACHA_API bool IsRightToLeft();
+
 	/** At startup: the saved language (default Hebrew when the Hebrew font is there, else English). */
 	MISHPACHA_API void ApplySavedLanguage();
 }

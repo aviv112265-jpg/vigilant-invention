@@ -1284,7 +1284,7 @@ void AMishpachaHUD::DrawFullMap()
 	}
 
 	// Controls.
-	float HintX = MapX;
+	float HintX = MishpachaText::IsRightToLeft() ? MapX + Side : MapX;
 	const float HintY = MapY + Side + S(18.f);
 	DrawKeyChip(HintX, HintY, LOCTEXT("KeyLMB", "LMB"), LOCTEXT("HintSet", "Set / remove waypoint"));
 	DrawKeyChip(HintX, HintY, LOCTEXT("KeyRMB", "RMB"), LOCTEXT("HintClear", "Clear waypoint"));
@@ -1854,15 +1854,20 @@ void AMishpachaHUD::DrawMenu()
 	const float Appear = FMath::Clamp(float(Now - MenuOpenedTime) / 0.3f, 0.f, 1.f);
 	using MishpachaHUDStyle::WithAlpha;
 
-	// Backdrop: the (paused) city, darkened, with a panel on the left.
+	// Backdrop: the (paused) city, darkened, with a panel on the left (on the right in Hebrew, mirrored).
+	const bool bRTL = MishpachaText::IsRightToLeft();
+	auto MirrorX = [bRTL, ClipX](float X) { return bRTL ? ClipX - X : X; };
+	auto Inward = [bRTL](float D) { return bRTL ? -D : D; }; // an offset into the panel from its outer edge
+	const float TextAlign = bRTL ? 1.f : 0.f;
+
 	FillRect(0.f, 0.f, ClipX, ClipY, FLinearColor(0.f, 0.f, 0.f, 0.45f));
 	const float PanelW = FMath::Min(S(620.f), ClipX);
-	FillRect(0.f, 0.f, PanelW, ClipY, FLinearColor(0.008f, 0.01f, 0.016f, 0.82f));
-	FillRect(PanelW, 0.f, S(2.f), ClipY, WithAlpha(MishpachaHUDStyle::Gold, 0.5f));
+	FillRect(bRTL ? ClipX - PanelW : 0.f, 0.f, PanelW, ClipY, FLinearColor(0.008f, 0.01f, 0.016f, 0.82f));
+	FillRect(bRTL ? ClipX - PanelW - S(2.f) : PanelW, 0.f, S(2.f), ClipY, WithAlpha(MishpachaHUDStyle::Gold, 0.5f));
 
-	const float Left = S(84.f) - (1.f - Appear) * S(30.f);
-	DrawLabel(LOCTEXT("MenuTitle", "MISHPACHA"), Left, S(110.f), Font(54.f, true), WithAlpha(MishpachaHUDStyle::Gold, Appear));
-	DrawLabel(LOCTEXT("MenuTagline", "THE SELA FAMILY   /   TEL AVIR"), Left + S(4.f), S(190.f), Font(11.f, true), WithAlpha(MishpachaHUDStyle::TextDim, Appear));
+	const float Left = MirrorX(S(84.f) - (1.f - Appear) * S(30.f)); // the text's start edge
+	DrawLabel(LOCTEXT("MenuTitle", "MISHPACHA"), Left, S(110.f), Font(54.f, true), WithAlpha(MishpachaHUDStyle::Gold, Appear), TextAlign);
+	DrawLabel(LOCTEXT("MenuTagline", "THE SELA FAMILY   /   TEL AVIR"), Left + Inward(S(4.f)), S(190.f), Font(11.f, true), WithAlpha(MishpachaHUDStyle::TextDim, Appear), TextAlign);
 
 	FText PageTitle;
 	switch (MenuPage)
@@ -1875,7 +1880,7 @@ void AMishpachaHUD::DrawMenu()
 	}
 	if (!PageTitle.IsEmpty())
 	{
-		DrawLabel(PageTitle, Left + S(4.f), S(245.f), Font(13.f, true), WithAlpha(MishpachaHUDStyle::TextMain, Appear));
+		DrawLabel(PageTitle, Left + Inward(S(4.f)), S(245.f), Font(13.f, true), WithAlpha(MishpachaHUDStyle::TextMain, Appear), TextAlign);
 	}
 
 	TArray<FMenuItem> Items;
@@ -1896,7 +1901,9 @@ void AMishpachaHUD::DrawMenu()
 	const float ItemH = S(58.f);
 	for (int32 Index = 0; Index < Items.Num(); ++Index)
 	{
-		const FBox2D Rect(FVector2D(Left - S(24.f), Y), FVector2D(PanelW - S(40.f), Y + ItemH - S(6.f)));
+		const float RectA = MirrorX(S(84.f) - S(24.f));
+		const float RectB = MirrorX(PanelW - S(40.f));
+		const FBox2D Rect(FVector2D(FMath::Min(RectA, RectB), Y), FVector2D(FMath::Max(RectA, RectB), Y + ItemH - S(6.f)));
 		MenuItemRects.Add(Rect);
 		if (bMouseMoved && Rect.IsInside(Mouse) && Items[Index].bEnabled)
 		{
@@ -1907,23 +1914,24 @@ void AMishpachaHUD::DrawMenu()
 		if (bSelected)
 		{
 			FillRect(Rect.Min.X, Rect.Min.Y, Rect.GetSize().X, Rect.GetSize().Y, WithAlpha(FLinearColor(1.f, 1.f, 1.f, 0.07f), ItemAppear));
-			FillRect(Rect.Min.X, Rect.Min.Y, S(4.f), Rect.GetSize().Y, WithAlpha(MishpachaHUDStyle::Gold, ItemAppear));
+			FillRect(bRTL ? Rect.Max.X - S(4.f) : Rect.Min.X, Rect.Min.Y, S(4.f), Rect.GetSize().Y, WithAlpha(MishpachaHUDStyle::Gold, ItemAppear));
 		}
 		const FLinearColor LabelColor = !Items[Index].bEnabled ? FLinearColor(1.f, 1.f, 1.f, 0.28f) : (bSelected ? MishpachaHUDStyle::TextMain : MishpachaHUDStyle::TextDim);
-		DrawLabel(Items[Index].Label, Left + (bSelected ? S(8.f) : 0.f), Y + S(4.f), Font(19.f, true), WithAlpha(LabelColor, ItemAppear));
+		const float ItemX = Left + Inward(bSelected ? S(8.f) : 0.f);
+		DrawLabel(Items[Index].Label, ItemX, Y + S(4.f), Font(19.f, true), WithAlpha(LabelColor, ItemAppear), TextAlign);
 		if (!Items[Index].Detail.IsEmpty())
 		{
-			DrawLabel(Items[Index].Detail, Left + (bSelected ? S(8.f) : 0.f), Y + S(32.f), Font(9.5f), WithAlpha(FLinearColor(1.f, 1.f, 1.f, bSelected ? 0.6f : 0.35f), ItemAppear));
+			DrawLabel(Items[Index].Detail, ItemX, Y + S(32.f), Font(9.5f), WithAlpha(FLinearColor(1.f, 1.f, 1.f, bSelected ? 0.6f : 0.35f), ItemAppear), TextAlign);
 		}
 		Y += ItemH;
 	}
 
 	if (!MenuStatus.IsEmpty())
 	{
-		DrawLabel(MenuStatus, Left, Y + S(14.f), Font(11.f, true), MishpachaHUDStyle::Info);
+		DrawLabel(MenuStatus, Left, Y + S(14.f), Font(11.f, true), MishpachaHUDStyle::Info, TextAlign);
 	}
 
-	float HintX = Left;
+	float HintX = Left; // DrawKeyChip runs right to left from here in Hebrew
 	const float HintY = ClipY - S(60.f);
 	DrawKeyChip(HintX, HintY, LOCTEXT("KeyEnter", "ENTER"), LOCTEXT("HintSelect", "Select"));
 	DrawKeyChip(HintX, HintY, LOCTEXT("KeyWS", "W / S"), LOCTEXT("HintMove", "Move"));
@@ -1940,17 +1948,28 @@ void AMishpachaHUD::DrawKeyChip(float& X, float Y, const FText& Key, const FText
 	const FVector2D KeySize = MeasureText(Key, KeyFont);
 	const float ChipW = KeySize.X + S(12.f);
 	const float ChipH = S(20.f);
-	FillRect(X, Y, ChipW, ChipH, FLinearColor(1.f, 1.f, 1.f, 0.14f));
-	FillRect(X, Y + ChipH - S(2.f), ChipW, S(2.f), FLinearColor(0.f, 0.f, 0.f, 0.35f));
-	DrawLabel(Key, X + S(6.f), Y + (ChipH - KeySize.Y) * 0.5f, KeyFont, MishpachaHUDStyle::TextMain, 0.f, false);
+	// Hebrew: X is the right edge and the chips run leftwards (key, then its label to the left of it).
+	const bool bRTL = MishpachaText::IsRightToLeft();
+	const float ChipX = bRTL ? X - ChipW : X;
+	FillRect(ChipX, Y, ChipW, ChipH, FLinearColor(1.f, 1.f, 1.f, 0.14f));
+	FillRect(ChipX, Y + ChipH - S(2.f), ChipW, S(2.f), FLinearColor(0.f, 0.f, 0.f, 0.35f));
+	DrawLabel(Key, ChipX + S(6.f), Y + (ChipH - KeySize.Y) * 0.5f, KeyFont, MishpachaHUDStyle::TextMain, 0.f, false);
+	const float LabelW = MeasureText(Label, LabelFont).X;
+	if (bRTL)
+	{
+		X = ChipX - S(7.f);
+		DrawLabel(Label, X, Y + S(2.f), LabelFont, FLinearColor(1.f, 1.f, 1.f, 0.7f), 1.f);
+		X -= LabelW + S(20.f);
+		return;
+	}
 	X += ChipW + S(7.f);
 	DrawLabel(Label, X, Y + S(2.f), LabelFont, FLinearColor(1.f, 1.f, 1.f, 0.7f));
-	X += MeasureText(Label, LabelFont).X + S(20.f);
+	X += LabelW + S(20.f);
 }
 
 void AMishpachaHUD::DrawControlsHint()
 {
-	float X = S(28.f);
+	float X = MishpachaText::IsRightToLeft() ? Canvas->ClipX - S(28.f) : S(28.f);
 	const float Y = Canvas->ClipY - S(44.f);
 	const APlayerController* PC = GetOwningPlayerController();
 	if (PC && Cast<AMishpachaVehicle>(PC->GetPawn()))

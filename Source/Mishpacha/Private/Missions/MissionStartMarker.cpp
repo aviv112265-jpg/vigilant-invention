@@ -6,6 +6,7 @@
 #include "Core/MishpachaPlayerController.h"
 #include "Family/FamilySubsystem.h"
 #include "Family/SiblingDefinition.h"
+#include "UI/MishpachaText.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
@@ -110,7 +111,7 @@ void AMissionStartMarker::ResolveAppearance()
 	FText WhoText = LOCTEXT("AnyoneJob", "JOB");
 	if (!Mission->RequiredSibling.IsNone())
 	{
-		WhoText = FText::FromName(Mission->RequiredSibling);
+		WhoText = MishpachaText::SiblingName(Mission->RequiredSibling);
 		const UFamilySubsystem* Family = GetWorld()->GetSubsystem<UFamilySubsystem>();
 		const int32 Index = Family ? Family->FindSiblingIndex(Mission->RequiredSibling) : INDEX_NONE;
 		const USiblingDefinition* Definition = Index != INDEX_NONE ? Family->GetSiblingState(Index).Definition.Get() : nullptr;
@@ -135,6 +136,8 @@ void AMissionStartMarker::OnRep_Appearance()
 	}
 	Label->SetText(MarkerText);
 	Label->SetTextRenderColor(MarkerColor.ToFColor(true));
+	// The 3D text font has no Hebrew glyphs (nor right-to-left); the HUD map labels the marker instead.
+	Label->SetVisibility(!MishpachaText::HasHebrew(MarkerText.ToString()));
 }
 
 void AMissionStartMarker::Tick(float DeltaSeconds)
@@ -174,8 +177,8 @@ void AMissionStartMarker::HandleOverlap(UPrimitiveComponent* OverlappedComponent
 			const UFamilySubsystem* Family = GetWorld()->GetSubsystem<UFamilySubsystem>();
 			const int32 Index = Family ? Family->FindSiblingIndex(Mission->RequiredSibling) : INDEX_NONE;
 			MPC->ClientShowNotification(Index != INDEX_NONE
-				? FText::Format(LOCTEXT("WrongSiblingKey", "This job is for {0}. Press {1} to switch."), FText::FromName(Mission->RequiredSibling), FText::AsNumber(Index + 1))
-				: FText::Format(LOCTEXT("WrongSibling", "This job is for {0}."), FText::FromName(Mission->RequiredSibling)));
+				? FText::Format(LOCTEXT("WrongSiblingKey", "This job is for {0}. Press {1} to switch."), MishpachaText::SiblingName(Mission->RequiredSibling, false), FText::AsNumber(Index + 1))
+				: FText::Format(LOCTEXT("WrongSibling", "This job is for {0}."), MishpachaText::SiblingName(Mission->RequiredSibling, false)));
 		}
 	}
 }

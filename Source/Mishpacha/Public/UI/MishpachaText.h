@@ -21,6 +21,9 @@ namespace MishpachaText
 
 	MISHPACHA_API bool HasHebrewFont();
 
+	/** Display name for a sibling id (Rafi / Shira / Omer -> localized, e.g. רפי), upper-cased for Latin. Other ids pass through. */
+	MISHPACHA_API FText SiblingName(FName SiblingId, bool bUpper = true);
+
 	/** "en" / "he": applies the culture (all LOCTEXT strings switch live) and remembers it. */
 	MISHPACHA_API void SetLanguage(const FString& Culture);
 	MISHPACHA_API FString GetLanguage();

@@ -1106,7 +1106,7 @@ void AMishpachaHUD::DrawMapContents(const FMapView& View, bool bFullMap)
 			DrawDisc(P, Blip * 0.85f, AsCharacter->GetPlaceholderColor());
 			if (bFullMap)
 			{
-				DrawLabel(FText::FromName(AsCharacter->GetSiblingId()), P.X + Blip * 1.5f, P.Y - S(8.f), Font(10.f, true), AsCharacter->GetPlaceholderColor());
+				DrawLabel(MishpachaText::SiblingName(AsCharacter->GetSiblingId(), false), P.X + Blip * 1.5f, P.Y - S(8.f), Font(10.f, true), AsCharacter->GetPlaceholderColor());
 			}
 		}
 	}
@@ -1328,7 +1328,7 @@ void AMishpachaHUD::DrawStatusPanel(float X, float Y, float Width)
 
 	// Name + money.
 	const FText Who = PlayerCharacter && !PlayerCharacter->GetSiblingId().IsNone()
-		? FText::FromString(PlayerCharacter->GetSiblingId().ToString().ToUpper())
+		? MishpachaText::SiblingName(PlayerCharacter->GetSiblingId())
 		: LOCTEXT("PlayerName", "PLAYER");
 	DrawLabel(Who, Left, Y + S(9.f), Font(14.f, true), Accent);
 	if (PS)
@@ -1456,7 +1456,7 @@ void AMishpachaHUD::DrawMissionCard()
 	DrawLabel(LOCTEXT("CurrentJob", "CURRENT JOB"), Left, Y + S(14.f), SmallFont, WithAlpha(Accent, Alpha));
 	if (!Mission.RequiredSibling.IsNone())
 	{
-		DrawLabel(FText::FromString(Mission.RequiredSibling.ToString().ToUpper()), Right, Y + S(14.f), SmallFont, WithAlpha(MishpachaHUDStyle::TextDim, Alpha), 1.f);
+		DrawLabel(MishpachaText::SiblingName(Mission.RequiredSibling), Right, Y + S(14.f), SmallFont, WithAlpha(MishpachaHUDStyle::TextDim, Alpha), 1.f);
 	}
 
 	// Title.

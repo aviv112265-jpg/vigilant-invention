@@ -175,6 +175,19 @@ namespace MishpachaText
 		return GetHebrewUIFont() != nullptr;
 	}
 
+	FText SiblingName(FName SiblingId, bool bUpper)
+	{
+		// Same keys as the built-in family in StoryGameMode, so Hebrew.tsv translates them.
+		static const FName Rafi(TEXT("Rafi"));
+		static const FName Shira(TEXT("Shira"));
+		static const FName Omer(TEXT("Omer"));
+		const FText Name = SiblingId == Rafi ? NSLOCTEXT("MishpachaFamily", "RafiName", "Rafi")
+			: SiblingId == Shira ? NSLOCTEXT("MishpachaFamily", "ShiraName", "Shira")
+			: SiblingId == Omer ? NSLOCTEXT("MishpachaFamily", "OmerName", "Omer")
+			: FText::FromName(SiblingId);
+		return bUpper ? FText::FromString(Name.ToString().ToUpper()) : Name;
+	}
+
 	FSlateFontInfo MakeFont(const UObject* RobotoFont, int32 Size, bool bBold)
 	{
 		const FName Typeface = bBold ? FName(TEXT("Bold")) : FName(TEXT("Regular"));

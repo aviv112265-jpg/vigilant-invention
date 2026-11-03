@@ -1,4 +1,4 @@
-// MISHPACHA - civilian driver: keeps right, wanders the street grid, brakes for whatever is ahead.
+// MISHPACHA - civilian driver: keeps right, wanders the street grid, stops at red lights, brakes for whatever is ahead.
 #pragma once
 
 #include "CoreMinimal.h"
@@ -47,6 +47,7 @@ private:
 	float StuckTime = 0.f;
 	float BlockedTime = 0.f;
 	float ReverseTimeLeft = 0.f;
+	bool bWaitingAtLight = false;
 
 	void Drive();
 	FVector LanePoint(const FIntPoint& Node, const FVector& Direction) const;

@@ -13,6 +13,7 @@ class UStaticMesh;
 class UMissionDefinition;
 class APawn;
 class AMishpachaVehicle;
+class AMishpachaStreetProp;
 
 /**
  * Builds a block grid (roads, sidewalks, Bauhaus-white low-rises, a glass-tower corner,
@@ -62,6 +63,10 @@ public:
 	FVector GetIntersection(int32 I, int32 J) const { return ToWorld(IntersectionLocal(I, J) + FVector(0.f, 0.f, 2.f)); }
 	int32 GetBlocksX() const { return BlocksX; }
 	int32 GetBlocksY() const { return BlocksY; }
+	float GetRoadWidth() const { return RoadWidth; }
+
+	/** Traffic light color for cars crossing intersection Node along the grid's X (or Y): 0 red, 1 yellow, 2 green; -1 = no working light there. */
+	int32 GetSignalColor(const FIntPoint& Node, bool bAlongX) const;
 
 	/** Civilian cars driving around the players (server). */
 	UPROPERTY(EditAnywhere, Category = "Greybox|Vehicles", meta = (ClampMin = "0", ClampMax = "40"))
@@ -225,6 +230,8 @@ private:
 	FTimerHandle CivilianTimer;
 	FTimerHandle TrafficTimer;
 	TArray<TWeakObjectPtr<APawn>> TrafficCars;
+	/** Traffic lights by (I, J, phase), for the traffic AI. */
+	TMultiMap<FIntVector, TWeakObjectPtr<AMishpachaStreetProp>> Signals;
 	int32 TrafficReportCounter = 0;
 	void MaintainTraffic();
 	bool bGeometryBuilt = false;

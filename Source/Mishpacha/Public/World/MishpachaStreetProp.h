@@ -45,6 +45,9 @@ public:
 
 	bool IsStanding() const { return State == EMishpachaPropState::Standing; }
 
+	/** Traffic lights of phase 0 (along the grid's X) and 1 (along Y) on the shared 24 s cycle: 0 red, 1 yellow, 2 green. */
+	static int32 GetSignalColor(const UWorld* World, int32 InPhase);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

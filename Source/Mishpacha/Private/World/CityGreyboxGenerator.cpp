@@ -1156,6 +1156,10 @@ void ACityGreyboxGenerator::SpawnStreetProps()
 		{
 			Prop->Setup(Kind, Phase);
 			Prop->FinishSpawning(Transform);
+			if (Kind == EMishpachaPropKind::TrafficLight)
+			{
+				Signals.Add(FIntVector(I, J, Phase), Prop);
+			}
 			++Count;
 		}
 	};
@@ -1183,6 +1187,21 @@ void ACityGreyboxGenerator::SpawnStreetProps()
 		}
 	}
 	UE_LOG(LogMishpacha, Log, TEXT("CityGreyboxGenerator: %d street props."), Count);
+}
+
+int32 ACityGreyboxGenerator::GetSignalColor(const FIntPoint& Node, bool bAlongX) const
+{
+	// Lights of phase 0 face the traffic along X, phase 1 along Y; once they're all knocked down, nobody waits.
+	TArray<TWeakObjectPtr<AMishpachaStreetProp>> Lights;
+	Signals.MultiFind(FIntVector(Node.X, Node.Y, bAlongX ? 0 : 1), Lights);
+	for (const TWeakObjectPtr<AMishpachaStreetProp>& Light : Lights)
+	{
+		if (Light.IsValid() && Light->IsStanding())
+		{
+			return AMishpachaStreetProp::GetSignalColor(GetWorld(), bAlongX ? 0 : 1);
+		}
+	}
+	return -1;
 }
 
 void ACityGreyboxGenerator::SpawnParkedCars()

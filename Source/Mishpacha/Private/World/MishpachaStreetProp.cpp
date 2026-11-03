@@ -154,17 +154,22 @@ void AMishpachaStreetProp::Build()
 	}
 }
 
+int32 AMishpachaStreetProp::GetSignalColor(const UWorld* World, int32 InPhase)
+{
+	// 24 s cycle on the server clock (same on every machine): green 10, yellow 2, red 12; the cross street is half a cycle later.
+	const AGameStateBase* GameState = World ? World->GetGameState() : nullptr;
+	const double Now = GameState ? GameState->GetServerWorldTimeSeconds() : (World ? World->GetTimeSeconds() : 0.0);
+	const float T = FMath::Fmod(static_cast<float>(Now) + InPhase * 12.f, 24.f);
+	return T < 10.f ? 2 : (T < 12.f ? 1 : 0);
+}
+
 void AMishpachaStreetProp::UpdateLamps()
 {
 	if (Lamps.Num() < 3)
 	{
 		return;
 	}
-	// 24 s cycle on the server clock (same on every machine): green 10, yellow 2, red 12; the cross street is half a cycle later.
-	const AGameStateBase* GameState = GetWorld() ? GetWorld()->GetGameState() : nullptr;
-	const double Now = GameState ? GameState->GetServerWorldTimeSeconds() : GetWorld()->GetTimeSeconds();
-	const float T = FMath::Fmod(static_cast<float>(Now) + Phase * 12.f, 24.f);
-	const int32 Lit = State == EMishpachaPropState::Broken ? -1 : (T < 10.f ? 2 : (T < 12.f ? 1 : 0));
+	const int32 Lit = State == EMishpachaPropState::Broken ? -1 : GetSignalColor(GetWorld(), Phase);
 	for (int32 Lamp = 0; Lamp < 3; ++Lamp)
 	{
 		Lamps[Lamp]->SetScalarParameterValue(TEXT("Glow"), Lamp == Lit ? 18.f : 0.15f);

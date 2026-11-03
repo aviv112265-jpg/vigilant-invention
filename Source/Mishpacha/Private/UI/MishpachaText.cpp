@@ -6,6 +6,7 @@
 #include "Internationalization/Culture.h"
 #include "Internationalization/Internationalization.h"
 #include "Misc/ConfigCacheIni.h"
+#include "UObject/Package.h"
 
 namespace MishpachaText
 {
@@ -125,9 +126,10 @@ namespace MishpachaText
 		Entry.Font = FFontData(Face);
 	}
 
-	static TSharedPtr<const FCompositeFont> GetCompositeFont()
+	// The canvas only draws with a UFont, so the Roboto + Hebrew composite lives in a transient runtime-cached one.
+	static UFont* GetHebrewUIFont()
 	{
-		static TSharedPtr<FCompositeFont> Font;
+		static UFont* Font = nullptr;
 		static bool bTried = false;
 		if (bTried)
 		{
@@ -141,7 +143,7 @@ namespace MishpachaText
 		UFontFace* HebrewBold = LoadFace(TEXT("/Game/Mishpacha/Fonts/NotoSansHebrew-Bold.NotoSansHebrew-Bold"));
 		if (!Regular || !Bold || !HebrewRegular)
 		{
-			return Font; // stays null: plain Roboto
+			return nullptr; // plain Roboto
 		}
 		for (UFontFace* Face : { Regular, Bold, HebrewRegular, HebrewBold })
 		{
@@ -151,11 +153,15 @@ namespace MishpachaText
 			}
 		}
 
-		Font = MakeShared<FCompositeFont>();
-		AddFace(Font->DefaultTypeface, TEXT("Regular"), Regular);
-		AddFace(Font->DefaultTypeface, TEXT("Bold"), Bold);
+		Font = NewObject<UFont>(GetTransientPackage(), TEXT("MishpachaHebrewUIFont"));
+		Font->AddToRoot();
+		Font->FontCacheType = EFontCacheType::Runtime;
+		Font->LegacyFontName = TEXT("Regular");
+		FCompositeFont& Composite = Font->GetMutableInternalCompositeFont();
+		AddFace(Composite.DefaultTypeface, TEXT("Regular"), Regular);
+		AddFace(Composite.DefaultTypeface, TEXT("Bold"), Bold);
 
-		FCompositeSubFont& Hebrew = Font->SubTypefaces.AddDefaulted_GetRef();
+		FCompositeSubFont& Hebrew = Composite.SubTypefaces.AddDefaulted_GetRef();
 		Hebrew.CharacterRanges.Add(FInt32Range(FInt32Range::BoundsType::Inclusive(0x0590), FInt32Range::BoundsType::Inclusive(0x05FF)));
 		Hebrew.CharacterRanges.Add(FInt32Range(FInt32Range::BoundsType::Inclusive(0xFB1D), FInt32Range::BoundsType::Inclusive(0xFB4F)));
 		Hebrew.CharacterRanges.Add(FInt32Range(FInt32Range::BoundsType::Inclusive(0x20AA), FInt32Range::BoundsType::Inclusive(0x20AA))); // shekel sign
@@ -166,15 +172,15 @@ namespace MishpachaText
 
 	bool HasHebrewFont()
 	{
-		return GetCompositeFont().IsValid();
+		return GetHebrewUIFont() != nullptr;
 	}
 
 	FSlateFontInfo MakeFont(const UObject* RobotoFont, int32 Size, bool bBold)
 	{
 		const FName Typeface = bBold ? FName(TEXT("Bold")) : FName(TEXT("Regular"));
-		if (TSharedPtr<const FCompositeFont> Composite = GetCompositeFont())
+		if (const UFont* Hebrew = GetHebrewUIFont())
 		{
-			return FSlateFontInfo(Composite, float(Size), Typeface);
+			return FSlateFontInfo(Hebrew, float(Size), Typeface);
 		}
 		return FSlateFontInfo(RobotoFont, float(Size), Typeface);
 	}

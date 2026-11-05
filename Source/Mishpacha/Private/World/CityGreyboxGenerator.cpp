@@ -3,6 +3,7 @@
 #include "Characters/MishpachaNPCCharacters.h"
 #include "Characters/MishpachaCat.h"
 #include "World/MishpachaStreetProp.h"
+#include "UI/MishpachaText.h"
 #include "Family/SiblingSpawnPoint.h"
 #include "Missions/MissionDefinition.h"
 #include "Missions/MissionObjectives.h"
@@ -1366,7 +1367,7 @@ void ACityGreyboxGenerator::CreateDefaultMissions(const TMap<FName, FVector>& Ta
 	{
 		if (Objective)
 		{
-			Objective->Speaker = FText::FromName(Speaker);
+			Objective->Speaker = MishpachaText::SiblingName(Speaker, false);
 			Objective->Dialogue = Line;
 		}
 	};
@@ -1451,6 +1452,36 @@ void ACityGreyboxGenerator::CreateDefaultMissions(const TMap<FName, FVector>& Ta
 	Say(Reach(FamilyJob, GreyboxNames::Hospital, LOCTEXT("Family01D", "Deliver it to the judge's driver at the hospital")),
 		GreyboxNames::Shira, LOCTEXT("Family01DSay", "Hospital parking. Nobody remembers faces at a hospital."));
 
+	// ----- Finale: all three, Omer starts, Rafi fights, Shira finishes -----
+	UMissionDefinition* FinaleJob = MakeMission(FName(TEXT("Family_02")),
+		LOCTEXT("Family02Title", "The Whole Family"),
+		LOCTEXT("Family02Desc", "The out-of-town crew grabbed Shira's witness and they're holding him at the evidence warehouse. If he talks, all three go down. For once, the Selas work one job together."),
+		GreyboxNames::Omer, 15000);
+	FinaleJob->bAllowSwitching = true;
+	FinaleJob->Prerequisites.Add(RafiJob2->MissionId);
+	FinaleJob->Prerequisites.Add(ShiraJob2->MissionId);
+	FinaleJob->Prerequisites.Add(OmerJob2->MissionId);
+	FinaleJob->Prerequisites.Add(FamilyJob->MissionId);
+	Say(Reach(FinaleJob, GreyboxNames::Warehouse, LOCTEXT("Family02A", "Omer: get eyes on the warehouse")),
+		GreyboxNames::Omer, LOCTEXT("Family02ASay", "Rafi, Shira, I found him. Back room. You're not going to like who's guarding him."));
+	Say(RivalCrew(FinaleJob, GreyboxNames::Warehouse, 4, LOCTEXT("Family02B", "Take out the guards (press Q: the drone marks them)")),
+		GreyboxNames::Omer, LOCTEXT("Family02BSay", "Everyone keeps saying I'm the baby. Watch this."));
+	Say(SwitchTo(FinaleJob, GreyboxNames::Rafi, LOCTEXT("Family02C", "Switch to Rafi (press 1)")),
+		GreyboxNames::Rafi, LOCTEXT("Family02CSay", "Good work, kid. Now they'll send everything they have. Let them."));
+	Say(Reach(FinaleJob, GreyboxNames::Garage, LOCTEXT("Family02D", "Rafi: get to Moshe's garage, their base")),
+		GreyboxNames::Rafi, LOCTEXT("Family02DSay", "They came to my street. I'm going to theirs."));
+	Say(RivalCrew(FinaleJob, GreyboxNames::Garage, 6, LOCTEXT("Family02E", "Finish the crew (press Q to call the boys)")),
+		GreyboxNames::Rafi, LOCTEXT("Family02ESay", "Dad built this with his hands. Nobody takes it from us."));
+	Say(SwitchTo(FinaleJob, GreyboxNames::Shira, LOCTEXT("Family02F", "Switch to Shira (press 2)")),
+		GreyboxNames::Shira, LOCTEXT("Family02FSay", "Now that you two are done shooting, let me clean this up legally."));
+	Say(Reach(FinaleJob, GreyboxNames::Hospital, LOCTEXT("Family02G", "Shira: meet the judge's driver at the hospital")),
+		GreyboxNames::Shira, LOCTEXT("Family02GSay", "One signature and that warehouse never existed."));
+	Say(WaitAt(FinaleJob, GreyboxNames::Hospital, 8.f, LOCTEXT("Family02H", "Wait for the signature (stay close)")),
+		GreyboxNames::Shira, LOCTEXT("Family02HSay", "I told Rafi the last time was the last time. I lied to him, too."));
+	LoseHeat(FinaleJob, LOCTEXT("Family02I", "Lose the police"));
+	Say(Reach(FinaleJob, GreyboxNames::Dropoff, LOCTEXT("Family02J", "Come home: the family drop-off")),
+		GreyboxNames::Rafi, LOCTEXT("Family02JSay", "Sit down, all of you. Dad would have hated this. Then he'd have poured three glasses."));
+
 	// Markers on the avenues around the central intersection. Each sibling's next job takes the
 	// same spot once the previous one is done (see AMissionStartMarker::RefreshAvailability).
 	const FVector Center = IntersectionLocal(BlocksX / 2, BlocksY / 2);
@@ -1463,6 +1494,7 @@ void ACityGreyboxGenerator::CreateDefaultMissions(const TMap<FName, FVector>& Ta
 		TPair<UMissionDefinition*, FVector>(OmerJob, Center + FVector(0.f, Off, 0.f)),
 		TPair<UMissionDefinition*, FVector>(OmerJob2, Center + FVector(0.f, Off, 0.f)),
 		TPair<UMissionDefinition*, FVector>(FamilyJob, Center + FVector(-Off, 0.f, 0.f)),
+		TPair<UMissionDefinition*, FVector>(FinaleJob, Center + FVector(-Off, 0.f, 0.f)),
 	};
 	for (const TPair<UMissionDefinition*, FVector>& Placement : Placements)
 	{

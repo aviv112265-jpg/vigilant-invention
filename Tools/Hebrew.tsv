@@ -208,3 +208,24 @@ MishpachaHUD,HintLights	אורות
 MishpachaHUD,KeyH	H
 MishpachaVehicle,LightsOff	אורות כבויים - קשה יותר למשטרה לזהות אותך בלילה
 MishpachaVehicle,LightsAuto	אורות: אוטומטי
+MishpachaGreybox,Family02Title	כל המשפחה
+MishpachaGreybox,Family02Desc	הכנופיה מחוץ לעיר חטפה את העד של שירה ומחזיקה אותו במחסן הראיות. אם הוא ידבר, שלושתם נופלים. הפעם, כל האחים על אותה עבודה.
+MishpachaGreybox,Family02A	עומר: תבדוק את המחסן מקרוב
+MishpachaGreybox,Family02ASay	רפי, שירה, מצאתי אותו. בחדר האחורי. לא תאהבו מי שומר עליו.
+MishpachaGreybox,Family02B	חסל את השומרים (Q: הרחפן מסמן אותם)
+MishpachaGreybox,Family02BSay	כולם אומרים שאני התינוק. תסתכלו על זה.
+MishpachaGreybox,Family02C	עבור לרפי (מקש 1)
+MishpachaGreybox,Family02CSay	עבודה טובה, ילד. עכשיו הם ישלחו את כל מה שיש להם. שישלחו.
+MishpachaGreybox,Family02D	רפי: סע למוסך של משה, הבסיס שלהם
+MishpachaGreybox,Family02DSay	הם באו לרחוב שלי. אני הולך לרחוב שלהם.
+MishpachaGreybox,Family02E	גמור את הכנופיה (Q קורא לחבר'ה)
+MishpachaGreybox,Family02ESay	אבא בנה את זה בידיים. אף אחד לא לוקח את זה מאיתנו.
+MishpachaGreybox,Family02F	עבור לשירה (מקש 2)
+MishpachaGreybox,Family02FSay	עכשיו, כשסיימתם לירות, תנו לי לנקות את זה לפי החוק.
+MishpachaGreybox,Family02G	שירה: פגשי את הנהג של השופט בבית החולים
+MishpachaGreybox,Family02GSay	חתימה אחת, והמחסן הזה מעולם לא היה קיים.
+MishpachaGreybox,Family02H	חכי לחתימה (הישארי קרוב)
+MishpachaGreybox,Family02HSay	אמרתי לרפי שהפעם האחרונה היא האחרונה. גם לו שיקרתי.
+MishpachaGreybox,Family02I	התחמק מהמשטרה
+MishpachaGreybox,Family02J	הביתה: נקודת המסירה של המשפחה
+MishpachaGreybox,Family02JSay	שבו, כולכם. אבא היה שונא את זה. ואז היה מוזג שלוש כוסות.

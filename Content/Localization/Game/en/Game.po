@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Game\n"
-"POT-Creation-Date: 2026-11-02 23:45\n"
-"PO-Revision-Date: 2026-11-02 23:45\n"
+"POT-Creation-Date: 2026-11-05 14:51\n"
+"PO-Revision-Date: 2026-11-05 14:51\n"
 "Language-Team: \n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
@@ -251,29 +251,29 @@ msgid "The youngest. Just out of the army."
 msgstr "The youngest. Just out of the army."
 
 #. Key:	AnyoneJob
-#. SourceLocation:	Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(110)
-#: Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(110)
+#. SourceLocation:	Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(111)
+#: Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(111)
 msgctxt "MishpachaMissions,AnyoneJob"
 msgid "JOB"
 msgstr "JOB"
 
 #. Key:	MarkerLabel
-#. SourceLocation:	Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(126)
-#: Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(126)
+#. SourceLocation:	Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(127)
+#: Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(127)
 msgctxt "MishpachaMissions,MarkerLabel"
 msgid "{0}: {1}"
 msgstr "{0}: {1}"
 
 #. Key:	WrongSiblingKey
-#. SourceLocation:	Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(177)
-#: Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(177)
+#. SourceLocation:	Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(180)
+#: Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(180)
 msgctxt "MishpachaMissions,WrongSiblingKey"
 msgid "This job is for {0}. Press {1} to switch."
 msgstr "This job is for {0}. Press {1} to switch."
 
 #. Key:	WrongSibling
-#. SourceLocation:	Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(178)
-#: Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(178)
+#. SourceLocation:	Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(181)
+#: Source/Mishpacha/Private/Missions/MissionStartMarker.cpp(181)
 msgctxt "MishpachaMissions,WrongSibling"
 msgid "This job is for {0}."
 msgstr "This job is for {0}."
@@ -895,281 +895,281 @@ msgid "Hebrew needs the Hebrew font (Tools/ImportFonts.py)"
 msgstr "Hebrew needs the Hebrew font (Tools/ImportFonts.py)"
 
 #. Key:	MenuTitle
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1864)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1864)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1869)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1869)
 msgctxt "MishpachaHUD,MenuTitle"
 msgid "MISHPACHA"
 msgstr "MISHPACHA"
 
 #. Key:	MenuTagline
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1865)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1865)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1870)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1870)
 msgctxt "MishpachaHUD,MenuTagline"
 msgid "THE SELA FAMILY   /   TEL AVIR"
 msgstr "THE SELA FAMILY   /   TEL AVIR"
 
 #. Key:	PagePaused
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1870)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1870)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1875)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1875)
 msgctxt "MishpachaHUD,PagePaused"
 msgid "PAUSED"
 msgstr "PAUSED"
 
 #. Key:	PageMultiplayer
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1871)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1871)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1876)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1876)
 msgctxt "MishpachaHUD,PageMultiplayer"
 msgid "MULTIPLAYER"
 msgstr "MULTIPLAYER"
 
 #. Key:	PageSessions
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1872)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1872)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1877)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1877)
 msgctxt "MishpachaHUD,PageSessions"
 msgid "GAMES ON YOUR NETWORK"
 msgstr "GAMES ON YOUR NETWORK"
 
 #. Key:	PageSettings
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1873)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1873)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1878)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1878)
 msgctxt "MishpachaHUD,PageSettings"
 msgid "SETTINGS"
 msgstr "SETTINGS"
 
 #. Key:	HintSelect
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1928)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1928)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1936)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1936)
 msgctxt "MishpachaHUD,HintSelect"
 msgid "Select"
 msgstr "Select"
 
 #. Key:	KeyEnter
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1928)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1928)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1936)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1936)
 msgctxt "MishpachaHUD,KeyEnter"
 msgid "ENTER"
 msgstr "ENTER"
 
 #. Key:	HintMove
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1929)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1929)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1937)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1937)
 msgctxt "MishpachaHUD,HintMove"
 msgid "Move"
 msgstr "Move"
 
 #. Key:	KeyWS
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1929)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1929)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1937)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1937)
 msgctxt "MishpachaHUD,KeyWS"
 msgid "W / S"
 msgstr "W / S"
 
 #. Key:	HintBack
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1932)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1932)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1940)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1940)
 msgctxt "MishpachaHUD,HintBack"
 msgid "Back"
 msgstr "Back"
 
 #. Key:	KeyP
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1932)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1932)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1940)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1940)
 msgctxt "MishpachaHUD,KeyP"
 msgid "P"
 msgstr "P"
 
 #. Key:	HintMap
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1958)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1958)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1977)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1977)
 msgctxt "MishpachaHUD,HintMap"
 msgid "Map"
 msgstr "Map"
 
 #. Key:	KeyMMap
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1958)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1958)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1977)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1977)
 msgctxt "MishpachaHUD,KeyMMap"
 msgid "M"
 msgstr "M"
 
 #. Key:	HintExit
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1959)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1959)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1978)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1978)
 msgctxt "MishpachaHUD,HintExit"
 msgid "Exit car"
 msgstr "Exit car"
 
 #. Key:	KeyF
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1959)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1959)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1978)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1978)
 msgctxt "MishpachaHUD,KeyF"
 msgid "F"
 msgstr "F"
 
 #. Key:	HintHandbrake
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1960)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1960)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1979)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1979)
 msgctxt "MishpachaHUD,HintHandbrake"
 msgid "Handbrake"
 msgstr "Handbrake"
 
 #. Key:	KeySpace
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1960)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1960)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1979)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1979)
 msgctxt "MishpachaHUD,KeySpace"
 msgid "SPACE"
 msgstr "SPACE"
 
 #. Key:	HintRadio
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1961)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1961)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1980)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1980)
 msgctxt "MishpachaHUD,HintRadio"
 msgid "Radio"
 msgstr "Radio"
 
 #. Key:	KeyR
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1961)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1961)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1980)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1980)
 msgctxt "MishpachaHUD,KeyR"
 msgid "R"
 msgstr "R"
 
 #. Key:	HintLights
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1962)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1962)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1981)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1981)
 msgctxt "MishpachaHUD,HintLights"
 msgid "Lights"
 msgstr "Lights"
 
 #. Key:	KeyH
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1962)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1962)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1981)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1981)
 msgctxt "MishpachaHUD,KeyH"
 msgid "H"
 msgstr "H"
 
 #. Key:	HintWeapons
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1965)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1965)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1984)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1984)
 msgctxt "MishpachaHUD,HintWeapons"
 msgid "Weapons"
 msgstr "Weapons"
 
 #. Key:	KeyTabWeapons
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1965)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1965)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1984)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1984)
 msgctxt "MishpachaHUD,KeyTabWeapons"
 msgid "TAB"
 msgstr "TAB"
 
 #. Key:	HintSwitch
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1967)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1967)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1986)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1986)
 msgctxt "MishpachaHUD,HintSwitch"
 msgid "Switch"
 msgstr "Switch"
 
 #. Key:	Key123
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1967)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1967)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1986)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1986)
 msgctxt "MishpachaHUD,Key123"
 msgid "1 2 3"
 msgstr "1 2 3"
 
 #. Key:	HintAbility
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1968)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1968)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1987)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1987)
 msgctxt "MishpachaHUD,HintAbility"
 msgid "Ability"
 msgstr "Ability"
 
 #. Key:	KeyQ
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1968)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1968)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1987)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1987)
 msgctxt "MishpachaHUD,KeyQ"
 msgid "Q"
 msgstr "Q"
 
 #. Key:	HintCar
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1969)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1969)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1988)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1988)
 msgctxt "MishpachaHUD,HintCar"
 msgid "Car"
 msgstr "Car"
 
 #. Key:	HintSprint
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1970)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1970)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1989)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1989)
 msgctxt "MishpachaHUD,HintSprint"
 msgid "Sprint"
 msgstr "Sprint"
 
 #. Key:	KeyShift
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1970)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1970)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1989)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1989)
 msgctxt "MishpachaHUD,KeyShift"
 msgid "SHIFT"
 msgstr "SHIFT"
 
 #. Key:	Reloading
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2053)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2053)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2072)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2072)
 msgctxt "MishpachaHUD,Reloading"
 msgid "RELOADING"
 msgstr "RELOADING"
 
 #. Key:	AmmoFmt
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2054)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2054)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2073)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2073)
 msgctxt "MishpachaHUD,AmmoFmt"
 msgid "{0} / {1}"
 msgstr "{0} / {1}"
 
 #. Key:	Unarmed
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2177)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2177)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2196)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2196)
 msgctxt "MishpachaHUD,Unarmed"
 msgid "Unarmed"
 msgstr "Unarmed"
 
 #. Key:	UnarmedUpper
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2184)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2184)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2203)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2203)
 msgctxt "MishpachaHUD,UnarmedUpper"
 msgid "UNARMED"
 msgstr "UNARMED"
 
 #. Key:	StatDamage
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2194)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2194)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2213)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2213)
 msgctxt "MishpachaHUD,StatDamage"
 msgid "DAMAGE"
 msgstr "DAMAGE"
 
 #. Key:	StatRate
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2195)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2195)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2214)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2214)
 msgctxt "MishpachaHUD,StatRate"
 msgid "FIRE RATE"
 msgstr "FIRE RATE"
 
 #. Key:	StatRange
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2196)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2196)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2215)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2215)
 msgctxt "MishpachaHUD,StatRange"
 msgid "RANGE"
 msgstr "RANGE"
 
 #. Key:	StatMag
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2197)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2197)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2216)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2216)
 msgctxt "MishpachaHUD,StatMag"
 msgid "MAG {0}"
 msgstr "MAG {0}"
 
 #. Key:	WheelHint
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2199)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2199)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2218)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2218)
 msgctxt "MishpachaHUD,WheelHint"
 msgid "Release TAB to equip"
 msgstr "Release TAB to equip"
@@ -1238,386 +1238,533 @@ msgid "Radio: Tel Avir FM"
 msgstr "Radio: Tel Avir FM"
 
 #. Key:	Rafi01Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1357)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1357)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1377)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1377)
 msgctxt "MishpachaGreybox,Rafi01Title"
 msgid "Collection at the Market"
 msgstr "Collection at the Market"
 
 #. Key:	Rafi01Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1358)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1358)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1378)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1378)
 msgctxt "MishpachaGreybox,Rafi01Desc"
 msgid "A stall owner in the Old Yafeh market stopped paying. Remind him who runs this city."
 msgstr "A stall owner in the Old Yafeh market stopped paying. Remind him who runs this city."
 
 #. Key:	Rafi01A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1360)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1360)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1380)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1380)
 msgctxt "MishpachaGreybox,Rafi01A"
 msgid "Go to the market (yellow pillar near the beach)"
 msgstr "Go to the market (yellow pillar near the beach)"
 
 #. Key:	Rafi01ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1361)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1361)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1381)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1381)
 msgctxt "MishpachaGreybox,Rafi01ASay"
 msgid "Three months Itzik hasn't paid. Today he pays for all three."
 msgstr "Three months Itzik hasn't paid. Today he pays for all three."
 
 #. Key:	Rafi01B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1362)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1362)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1382)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1382)
 msgctxt "MishpachaGreybox,Rafi01B"
 msgid "If the cops are on you, lose them"
 msgstr "If the cops are on you, lose them"
 
 #. Key:	Rafi02Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1365)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1365)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1385)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1385)
 msgctxt "MishpachaGreybox,Rafi02Title"
 msgid "Rival Crew"
 msgstr "Rival Crew"
 
 #. Key:	Rafi02Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1366)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1366)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1386)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1386)
 msgctxt "MishpachaGreybox,Rafi02Desc"
 msgid "Some crew from out of town set up shop at Moshe's garage. On our street."
 msgstr "Some crew from out of town set up shop at Moshe's garage. On our street."
 
 #. Key:	Rafi02A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1369)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1369)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1389)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1389)
 msgctxt "MishpachaGreybox,Rafi02A"
 msgid "Drive to Moshe's garage"
 msgstr "Drive to Moshe's garage"
 
 #. Key:	Rafi02ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1370)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1370)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1390)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1390)
 msgctxt "MishpachaGreybox,Rafi02ASay"
 msgid "Moshe called. Strangers in his garage, and they're not there for an oil change."
 msgstr "Moshe called. Strangers in his garage, and they're not there for an oil change."
 
 #. Key:	Rafi02B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1371)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1371)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1391)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1391)
 msgctxt "MishpachaGreybox,Rafi02B"
 msgid "Take out the rival crew (press Q to call the boys)"
 msgstr "Take out the rival crew (press Q to call the boys)"
 
 #. Key:	Rafi02BSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1372)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1372)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1392)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1392)
 msgctxt "MishpachaGreybox,Rafi02BSay"
 msgid "Nobody does business in Tel Avir without asking the Sela family."
 msgstr "Nobody does business in Tel Avir without asking the Sela family."
 
 #. Key:	Rafi02C
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1373)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1373)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1393)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1393)
 msgctxt "MishpachaGreybox,Rafi02C"
 msgid "Lose the police"
 msgstr "Lose the police"
 
 #. Key:	Shira01Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1377)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1377)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1397)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1397)
 msgctxt "MishpachaGreybox,Shira01Title"
 msgid "Dad's Phone"
 msgstr "Dad's Phone"
 
 #. Key:	Shira01Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1378)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1378)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1398)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1398)
 msgctxt "MishpachaGreybox,Shira01Desc"
 msgid "Dad's phone is sitting in the police evidence warehouse. Get it out before they unlock it."
 msgstr "Dad's phone is sitting in the police evidence warehouse. Get it out before they unlock it."
 
 #. Key:	Shira01A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1380)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1380)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1400)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1400)
 msgctxt "MishpachaGreybox,Shira01A"
 msgid "Get to the evidence warehouse"
 msgstr "Get to the evidence warehouse"
 
 #. Key:	Shira01ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1381)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1381)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1401)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1401)
 msgctxt "MishpachaGreybox,Shira01ASay"
 msgid "If they read what's on that phone, all three of us go down. Me first."
 msgstr "If they read what's on that phone, all three of us go down. Me first."
 
 #. Key:	Shira01B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1382)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1382)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1402)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1402)
 msgctxt "MishpachaGreybox,Shira01B"
 msgid "Grab a car"
 msgstr "Grab a car"
 
 #. Key:	Shira01C
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1383)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1383)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1403)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1403)
 msgctxt "MishpachaGreybox,Shira01C"
 msgid "Bring the phone to the family drop-off"
 msgstr "Bring the phone to the family drop-off"
 
 #. Key:	Shira02Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1386)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1386)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1406)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1406)
 msgctxt "MishpachaGreybox,Shira02Title"
 msgid "The Witness"
 msgstr "The Witness"
 
 #. Key:	Shira02Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1387)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1387)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1407)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1407)
 msgctxt "MishpachaGreybox,Shira02Desc"
 msgid "A witness against the family is at the hospital. Shira wants to talk to him before the prosecutor does."
 msgstr "A witness against the family is at the hospital. Shira wants to talk to him before the prosecutor does."
 
 #. Key:	Shira02A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1390)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1390)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1410)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1410)
 msgctxt "MishpachaGreybox,Shira02A"
 msgid "Go to the hospital"
 msgstr "Go to the hospital"
 
 #. Key:	Shira02ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1391)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1391)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1411)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1411)
 msgctxt "MishpachaGreybox,Shira02ASay"
 msgid "I'm his lawyer as of this morning. He just doesn't know it yet."
 msgstr "I'm his lawyer as of this morning. He just doesn't know it yet."
 
 #. Key:	Shira02B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1392)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1392)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1412)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1412)
 msgctxt "MishpachaGreybox,Shira02B"
 msgid "Talk to the witness (stay close)"
 msgstr "Talk to the witness (stay close)"
 
 #. Key:	Shira02BSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1393)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1393)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1413)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1413)
 msgctxt "MishpachaGreybox,Shira02BSay"
 msgid "Nobody's asking you to lie. Just to remember a little less."
 msgstr "Nobody's asking you to lie. Just to remember a little less."
 
 #. Key:	Shira02C
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1394)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1394)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1414)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1414)
 msgctxt "MishpachaGreybox,Shira02C"
 msgid "Get a car"
 msgstr "Get a car"
 
 #. Key:	Shira02D
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1395)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1395)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1415)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1415)
 msgctxt "MishpachaGreybox,Shira02D"
 msgid "Take him somewhere quiet (the family drop-off)"
 msgstr "Take him somewhere quiet (the family drop-off)"
 
 #. Key:	Shira02DSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1396)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1396)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1416)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1416)
 msgctxt "MishpachaGreybox,Shira02DSay"
 msgid "Seatbelt. You're no use to anyone dead."
 msgstr "Seatbelt. You're no use to anyone dead."
 
 #. Key:	Omer01Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1400)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1400)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1420)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1420)
 msgctxt "MishpachaGreybox,Omer01Title"
 msgid "Last Delivery"
 msgstr "Last Delivery"
 
 #. Key:	Omer01Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1401)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1401)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1421)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1421)
 msgctxt "MishpachaGreybox,Omer01Desc"
 msgid "One last package for the family before the big trip. What could go wrong?"
 msgstr "One last package for the family before the big trip. What could go wrong?"
 
 #. Key:	Omer01A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1403)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1403)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1423)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1423)
 msgctxt "MishpachaGreybox,Omer01A"
 msgid "Get a ride"
 msgstr "Get a ride"
 
 #. Key:	Omer01ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1404)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1404)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1424)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1424)
 msgctxt "MishpachaGreybox,Omer01ASay"
 msgid "Rafi says it's just shoes. Nobody wraps shoes like this."
 msgstr "Rafi says it's just shoes. Nobody wraps shoes like this."
 
 #. Key:	Omer01B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1405)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1405)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1425)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1425)
 msgctxt "MishpachaGreybox,Omer01B"
 msgid "Deliver the package to Moshe's garage"
 msgstr "Deliver the package to Moshe's garage"
 
 #. Key:	Omer01C
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1406)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1406)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1426)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1426)
 msgctxt "MishpachaGreybox,Omer01C"
 msgid "Lose anyone following you"
 msgstr "Lose anyone following you"
 
 #. Key:	Omer02Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1409)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1409)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1429)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1429)
 msgctxt "MishpachaGreybox,Omer02Title"
 msgid "Eye in the Sky"
 msgstr "Eye in the Sky"
 
 #. Key:	Omer02Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1410)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1410)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1430)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1430)
 msgctxt "MishpachaGreybox,Omer02Desc"
 msgid "The warehouse has new guards, and they aren't police. Omer gets a look from above first."
 msgstr "The warehouse has new guards, and they aren't police. Omer gets a look from above first."
 
 #. Key:	Omer02A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1413)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1413)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1433)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1433)
 msgctxt "MishpachaGreybox,Omer02A"
 msgid "Go to the evidence warehouse"
 msgstr "Go to the evidence warehouse"
 
 #. Key:	Omer02ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1414)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1414)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1434)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1434)
 msgctxt "MishpachaGreybox,Omer02ASay"
 msgid "Two years in the drone unit. Finally useful for something."
 msgstr "Two years in the drone unit. Finally useful for something."
 
 #. Key:	Omer02B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1415)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1415)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1435)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1435)
 msgctxt "MishpachaGreybox,Omer02B"
 msgid "Take out the guards (press Q: the drone marks them)"
 msgstr "Take out the guards (press Q: the drone marks them)"
 
 #. Key:	Omer02BSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1416)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1416)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1436)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1436)
 msgctxt "MishpachaGreybox,Omer02BSay"
 msgid "Three on the ground. They haven't seen me. Yet."
 msgstr "Three on the ground. They haven't seen me. Yet."
 
 #. Key:	Omer02C
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1417)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1417)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1437)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1437)
 msgctxt "MishpachaGreybox,Omer02C"
 msgid "Lose the police"
 msgstr "Lose the police"
 
 #. Key:	Family01Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1421)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1421)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1441)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1441)
 msgctxt "MishpachaGreybox,Family01Title"
 msgid "The Handover"
 msgstr "The Handover"
 
 #. Key:	Family01Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1422)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1422)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1442)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1442)
 msgctxt "MishpachaGreybox,Family01Desc"
 msgid "Rafi has the money. Shira has the judge. They need to meet without anyone seeing them together."
 msgstr "Rafi has the money. Shira has the judge. They need to meet without anyone seeing them together."
 
 #. Key:	Family01A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1427)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1427)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1447)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1447)
 msgctxt "MishpachaGreybox,Family01A"
 msgid "Rafi: leave the envelope at the market"
 msgstr "Rafi: leave the envelope at the market"
 
 #. Key:	Family01ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1428)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1428)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1448)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1448)
 msgctxt "MishpachaGreybox,Family01ASay"
 msgid "Shira, it's at the market. Under the pomegranates. Don't make that face."
 msgstr "Shira, it's at the market. Under the pomegranates. Don't make that face."
 
 #. Key:	Family01B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1429)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1429)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1449)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1449)
 msgctxt "MishpachaGreybox,Family01B"
 msgid "Switch to Shira (press 2)"
 msgstr "Switch to Shira (press 2)"
 
 #. Key:	Family01BSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1430)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1430)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1450)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1450)
 msgctxt "MishpachaGreybox,Family01BSay"
 msgid "This is the last time, Rafi. I mean it this time."
 msgstr "This is the last time, Rafi. I mean it this time."
 
 #. Key:	Family01C
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1431)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1431)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1451)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1451)
 msgctxt "MishpachaGreybox,Family01C"
 msgid "Shira: pick up the envelope at the market"
 msgstr "Shira: pick up the envelope at the market"
 
 #. Key:	Family01D
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1432)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1432)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1452)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1452)
 msgctxt "MishpachaGreybox,Family01D"
 msgid "Deliver it to the judge's driver at the hospital"
 msgstr "Deliver it to the judge's driver at the hospital"
 
 #. Key:	Family01DSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1433)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1433)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1453)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1453)
 msgctxt "MishpachaGreybox,Family01DSay"
 msgid "Hospital parking. Nobody remembers faces at a hospital."
 msgstr "Hospital parking. Nobody remembers faces at a hospital."
 
+#. Key:	Family02Title
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1457)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1457)
+msgctxt "MishpachaGreybox,Family02Title"
+msgid "The Whole Family"
+msgstr "The Whole Family"
+
+#. Key:	Family02Desc
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1458)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1458)
+msgctxt "MishpachaGreybox,Family02Desc"
+msgid "The out-of-town crew grabbed Shira's witness and they're holding him at the evidence warehouse. If he talks, all three go down. For once, the Selas work one job together."
+msgstr "The out-of-town crew grabbed Shira's witness and they're holding him at the evidence warehouse. If he talks, all three go down. For once, the Selas work one job together."
+
+#. Key:	Family02A
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1465)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1465)
+msgctxt "MishpachaGreybox,Family02A"
+msgid "Omer: get eyes on the warehouse"
+msgstr "Omer: get eyes on the warehouse"
+
+#. Key:	Family02ASay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1466)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1466)
+msgctxt "MishpachaGreybox,Family02ASay"
+msgid "Rafi, Shira, I found him. Back room. You're not going to like who's guarding him."
+msgstr "Rafi, Shira, I found him. Back room. You're not going to like who's guarding him."
+
+#. Key:	Family02B
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1467)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1467)
+msgctxt "MishpachaGreybox,Family02B"
+msgid "Take out the guards (press Q: the drone marks them)"
+msgstr "Take out the guards (press Q: the drone marks them)"
+
+#. Key:	Family02BSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1468)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1468)
+msgctxt "MishpachaGreybox,Family02BSay"
+msgid "Everyone keeps saying I'm the baby. Watch this."
+msgstr "Everyone keeps saying I'm the baby. Watch this."
+
+#. Key:	Family02C
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1469)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1469)
+msgctxt "MishpachaGreybox,Family02C"
+msgid "Switch to Rafi (press 1)"
+msgstr "Switch to Rafi (press 1)"
+
+#. Key:	Family02CSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1470)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1470)
+msgctxt "MishpachaGreybox,Family02CSay"
+msgid "Good work, kid. Now they'll send everything they have. Let them."
+msgstr "Good work, kid. Now they'll send everything they have. Let them."
+
+#. Key:	Family02D
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1471)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1471)
+msgctxt "MishpachaGreybox,Family02D"
+msgid "Rafi: get to Moshe's garage, their base"
+msgstr "Rafi: get to Moshe's garage, their base"
+
+#. Key:	Family02DSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1472)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1472)
+msgctxt "MishpachaGreybox,Family02DSay"
+msgid "They came to my street. I'm going to theirs."
+msgstr "They came to my street. I'm going to theirs."
+
+#. Key:	Family02E
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1473)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1473)
+msgctxt "MishpachaGreybox,Family02E"
+msgid "Finish the crew (press Q to call the boys)"
+msgstr "Finish the crew (press Q to call the boys)"
+
+#. Key:	Family02ESay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1474)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1474)
+msgctxt "MishpachaGreybox,Family02ESay"
+msgid "Dad built this with his hands. Nobody takes it from us."
+msgstr "Dad built this with his hands. Nobody takes it from us."
+
+#. Key:	Family02F
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1475)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1475)
+msgctxt "MishpachaGreybox,Family02F"
+msgid "Switch to Shira (press 2)"
+msgstr "Switch to Shira (press 2)"
+
+#. Key:	Family02FSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1476)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1476)
+msgctxt "MishpachaGreybox,Family02FSay"
+msgid "Now that you two are done shooting, let me clean this up legally."
+msgstr "Now that you two are done shooting, let me clean this up legally."
+
+#. Key:	Family02G
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1477)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1477)
+msgctxt "MishpachaGreybox,Family02G"
+msgid "Shira: meet the judge's driver at the hospital"
+msgstr "Shira: meet the judge's driver at the hospital"
+
+#. Key:	Family02GSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1478)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1478)
+msgctxt "MishpachaGreybox,Family02GSay"
+msgid "One signature and that warehouse never existed."
+msgstr "One signature and that warehouse never existed."
+
+#. Key:	Family02H
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1479)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1479)
+msgctxt "MishpachaGreybox,Family02H"
+msgid "Wait for the signature (stay close)"
+msgstr "Wait for the signature (stay close)"
+
+#. Key:	Family02HSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1480)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1480)
+msgctxt "MishpachaGreybox,Family02HSay"
+msgid "I told Rafi the last time was the last time. I lied to him, too."
+msgstr "I told Rafi the last time was the last time. I lied to him, too."
+
+#. Key:	Family02I
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1481)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1481)
+msgctxt "MishpachaGreybox,Family02I"
+msgid "Lose the police"
+msgstr "Lose the police"
+
+#. Key:	Family02J
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1482)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1482)
+msgctxt "MishpachaGreybox,Family02J"
+msgid "Come home: the family drop-off"
+msgstr "Come home: the family drop-off"
+
+#. Key:	Family02JSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1483)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1483)
+msgctxt "MishpachaGreybox,Family02JSay"
+msgid "Sit down, all of you. Dad would have hated this. Then he'd have poured three glasses."
+msgstr "Sit down, all of you. Dad would have hated this. Then he'd have poured three glasses."
+
 #. Key:	PlaceMarket
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(993)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(993)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(994)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(994)
 msgctxt "MishpachaGreybox,PlaceMarket"
 msgid "Old Yafeh Market"
 msgstr "Old Yafeh Market"
 
 #. Key:	PlaceWarehouse
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(994)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(994)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(995)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(995)
 msgctxt "MishpachaGreybox,PlaceWarehouse"
 msgid "Evidence Warehouse"
 msgstr "Evidence Warehouse"
 
 #. Key:	PlaceGarage
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(995)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(995)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(996)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(996)
 msgctxt "MishpachaGreybox,PlaceGarage"
 msgid "Moshe's Garage"
 msgstr "Moshe's Garage"
 
 #. Key:	PlaceDropoff
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(996)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(996)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(997)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(997)
 msgctxt "MishpachaGreybox,PlaceDropoff"
 msgid "Family Drop-off"
 msgstr "Family Drop-off"
 
 #. Key:	PlaceHospital
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(997)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(997)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(998)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(998)
 msgctxt "MishpachaGreybox,PlaceHospital"
 msgid "Hospital"
 msgstr "Hospital"
 
 #. Key:	PlaceHome
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(998)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(998)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(999)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(999)
 msgctxt "MishpachaGreybox,PlaceHome"
 msgid "Sela Family"
 msgstr "Sela Family"

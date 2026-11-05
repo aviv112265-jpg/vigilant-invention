@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Game\n"
-"POT-Creation-Date: 2026-11-05 15:33\n"
-"PO-Revision-Date: 2026-11-05 15:33\n"
+"POT-Creation-Date: 2026-11-05 15:43\n"
+"PO-Revision-Date: 2026-11-05 15:43\n"
 "Language-Team: \n"
 "Language: he\n"
 "MIME-Version: 1.0\n"
@@ -111,8 +111,8 @@ msgid "Not while you're down."
 msgstr "לא כשאתה על הרצפה."
 
 #. Key:	NoAbility
-#. SourceLocation:	Source/Mishpacha/Private/Characters/MishpachaCharacter.cpp(651)
-#: Source/Mishpacha/Private/Characters/MishpachaCharacter.cpp(651)
+#. SourceLocation:	Source/Mishpacha/Private/Characters/MishpachaCharacter.cpp(652)
+#: Source/Mishpacha/Private/Characters/MishpachaCharacter.cpp(652)
 msgctxt "MishpachaCharacter,NoAbility"
 msgid "This character has no special ability."
 msgstr "לדמות הזו אין יכולת מיוחדת."
@@ -153,50 +153,50 @@ msgid "You were rushed to the hospital. Bill: NIS {0}"
 msgstr "פונית לבית החולים. חשבון: {0} ₪"
 
 #. Key:	SwitchStoryOnly
-#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(525)
-#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(525)
+#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(527)
+#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(527)
 msgctxt "MishpachaPlayerController,SwitchStoryOnly"
 msgid "Character switching is only available in Story mode."
 msgstr "החלפת דמויות זמינה רק במצב סיפור."
 
 #. Key:	SwitchHeat
-#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(532)
-#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(532)
+#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(534)
+#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(534)
 msgctxt "MishpachaPlayerController,SwitchHeat"
 msgid "Lose the heat before switching."
 msgstr "תתחמק מהמשטרה לפני שמחליפים."
 
 #. Key:	SwitchMission
-#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(535)
-#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(535)
+#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(537)
+#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(537)
 msgctxt "MishpachaPlayerController,SwitchMission"
 msgid "You can't switch during this job."
 msgstr "אי אפשר להחליף באמצע העבודה הזו."
 
 #. Key:	SwitchBusy
-#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(538)
-#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(538)
+#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(540)
+#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(540)
 msgctxt "MishpachaPlayerController,SwitchBusy"
 msgid "Can't switch right now (get out of the vehicle / drone first)."
 msgstr "אי אפשר להחליף עכשיו (צא קודם מהרכב / מהרחפן)."
 
 #. Key:	DevCantStart
-#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(877)
-#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(877)
+#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(892)
+#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(892)
 msgctxt "MishpachaPlayerController,DevCantStart"
 msgid "Can't start {0} (wrong sibling, prerequisites, or a job is running)."
 msgstr "אי אפשר להתחיל את {0} (אח לא נכון, משימה קודמת, או שכבר יש עבודה פעילה)."
 
 #. Key:	DevNoJob
-#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(882)
-#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(882)
+#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(897)
+#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(897)
 msgctxt "MishpachaPlayerController,DevNoJob"
 msgid "No job called {0}."
 msgstr "אין עבודה בשם {0}."
 
 #. Key:	DevCompleted
-#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(893)
-#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(893)
+#. SourceLocation:	Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(908)
+#: Source/Mishpacha/Private/Core/MishpachaPlayerController.cpp(908)
 msgctxt "MishpachaPlayerController,DevCompleted"
 msgid "Marked {0} as done."
 msgstr "{0} סומנה כגמורה."
@@ -579,625 +579,632 @@ msgctxt "MishpachaHUD,StepFmt"
 msgid "STEP {0} / {1}"
 msgstr "שלב {0} / {1}"
 
+#. Key:	PhoneLine
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1572)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1572)
+msgctxt "MishpachaHUD,PhoneLine"
+msgid "{0}: {1}"
+msgstr "{0}: {1}"
+
 #. Key:	BusinessAttack
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1585)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1585)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1630)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1630)
 msgctxt "MishpachaHUD,BusinessAttack"
 msgid "{0} under attack  {1}:{2}"
 msgstr "{0} תחת התקפה  {1}:{2}"
 
 #. Key:	BusinessBuy
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1601)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1601)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1646)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1646)
 msgctxt "MishpachaHUD,BusinessBuy"
 msgid "F  Buy {0}: {1} NIS, pays {2} NIS"
 msgstr "F  לקנות את {0}: ₪{1}, מכניס ₪{2}"
 
 #. Key:	BusinessOwned
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1605)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1605)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1650)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1650)
 msgctxt "MishpachaHUD,BusinessOwned"
 msgid "{0}: yours, pays {1} NIS"
 msgstr "{0}: שלך, מכניס ₪{1}"
 
 #. Key:	SessionFmt
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1721)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1721)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1766)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1766)
 msgctxt "MishpachaHUD,SessionFmt"
 msgid "{0}  ({1}/{2})  {3} ms"
 msgstr ""
 
 #. Key:	SessionsFailed
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1724)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1724)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1769)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1769)
 msgctxt "MishpachaHUD,SessionsFailed"
 msgid "Search failed."
 msgstr "החיפוש נכשל."
 
 #. Key:	SessionsFound
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1724)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1724)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1769)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1769)
 msgctxt "MishpachaHUD,SessionsFound"
 msgid "{0} game(s) found."
 msgstr "נמצאו {0} משחקים."
 
 #. Key:	MenuContinue
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1748)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1748)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1793)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1793)
 msgctxt "MishpachaHUD,MenuContinue"
 msgid "CONTINUE"
 msgstr "המשך"
 
 #. Key:	MenuStart
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1748)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1748)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1793)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1793)
 msgctxt "MishpachaHUD,MenuStart"
 msgid "START STORY"
 msgstr "התחל סיפור"
 
 #. Key:	MenuJobsDone
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1749)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1749)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1794)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1794)
 msgctxt "MishpachaHUD,MenuJobsDone"
 msgid "{0} job(s) done"
 msgstr "{0} עבודות הושלמו"
 
 #. Key:	MenuStartDetail
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1749)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1749)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1794)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1794)
 msgctxt "MishpachaHUD,MenuStartDetail"
 msgid "Rafi, Shira and Omer. Tel Avir is waiting."
 msgstr "רפי, שירה ועומר. תל אויר מחכה."
 
 #. Key:	MenuNew
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1751)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1751)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1796)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1796)
 msgctxt "MishpachaHUD,MenuNew"
 msgid "NEW STORY"
 msgstr "סיפור חדש"
 
 #. Key:	MenuNewConfirm
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1751)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1751)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1796)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1796)
 msgctxt "MishpachaHUD,MenuNewConfirm"
 msgid "NEW STORY - SURE?"
 msgstr "סיפור חדש - בטוח?"
 
 #. Key:	MenuNewConfirmDetail
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1752)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1752)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1797)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1797)
 msgctxt "MishpachaHUD,MenuNewConfirmDetail"
 msgid "Select again to erase all progress"
 msgstr "בחר שוב כדי למחוק את כל ההתקדמות"
 
 #. Key:	MenuNewDetail
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1752)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1752)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1797)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1797)
 msgctxt "MishpachaHUD,MenuNewDetail"
 msgid "Start over from the first job"
 msgstr "להתחיל מהעבודה הראשונה"
 
 #. Key:	MenuMultiplayer
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1767)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1767)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1812)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1812)
 msgctxt "MishpachaHUD,MenuMultiplayer"
 msgid "MULTIPLAYER"
 msgstr "מולטיפלייר"
 
 #. Key:	MenuMultiplayerDetail
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1767)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1767)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1812)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1812)
 msgctxt "MishpachaHUD,MenuMultiplayerDetail"
 msgid "Play with friends on your network"
 msgstr "לשחק עם חברים ברשת הביתית"
 
 #. Key:	MenuSettings
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1768)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1768)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1813)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1813)
 msgctxt "MishpachaHUD,MenuSettings"
 msgid "SETTINGS"
 msgstr "הגדרות"
 
 #. Key:	MenuSettingsDetail
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1768)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1768)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1813)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1813)
 msgctxt "MishpachaHUD,MenuSettingsDetail"
 msgid "Graphics quality, frame rate"
 msgstr "איכות גרפיקה, קצב פריימים, שפה"
 
 #. Key:	MenuQuit
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1769)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1769)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1814)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1814)
 msgctxt "MishpachaHUD,MenuQuit"
 msgid "QUIT"
 msgstr "יציאה"
 
 #. Key:	MenuResume
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1773)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1773)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1818)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1818)
 msgctxt "MishpachaHUD,MenuResume"
 msgid "RESUME"
 msgstr "המשך משחק"
 
 #. Key:	MenuMainMenu
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1775)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1775)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1820)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1820)
 msgctxt "MishpachaHUD,MenuMainMenu"
 msgid "MAIN MENU"
 msgstr "תפריט ראשי"
 
 #. Key:	MenuHost
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1779)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1779)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1824)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1824)
 msgctxt "MishpachaHUD,MenuHost"
 msgid "HOST A GAME (LAN)"
 msgstr "פתח משחק (LAN)"
 
 #. Key:	MenuHostDetail
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1779)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1779)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1824)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1824)
 msgctxt "MishpachaHUD,MenuHostDetail"
 msgid "Friends on the same network join you"
 msgstr "חברים באותה רשת מצטרפים אליך"
 
 #. Key:	MenuHostFailed
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1781)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1781)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1826)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1826)
 msgctxt "MishpachaHUD,MenuHostFailed"
 msgid "Couldn't host (online subsystem not available)."
 msgstr "לא ניתן לפתוח משחק (אין שירות רשת)."
 
 #. Key:	MenuHosting
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1781)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1781)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1826)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1826)
 msgctxt "MishpachaHUD,MenuHosting"
 msgid "Starting the game..."
 msgstr "פותח את המשחק..."
 
 #. Key:	MenuFind
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1783)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1783)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1828)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1828)
 msgctxt "MishpachaHUD,MenuFind"
 msgid "FIND GAMES (LAN)"
 msgstr "חפש משחקים (LAN)"
 
 #. Key:	MenuFindDetail
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1783)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1783)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1828)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1828)
 msgctxt "MishpachaHUD,MenuFindDetail"
 msgid "Look for games on your network"
 msgstr "חיפוש משחקים ברשת שלך"
 
 #. Key:	MenuSearchFailed
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1791)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1791)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1836)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1836)
 msgctxt "MishpachaHUD,MenuSearchFailed"
 msgid "Couldn't search (online subsystem not available)."
 msgstr "לא ניתן לחפש (אין שירות רשת)."
 
 #. Key:	MenuSearching
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1791)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1791)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1836)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1836)
 msgctxt "MishpachaHUD,MenuSearching"
 msgid "Searching..."
 msgstr "מחפש..."
 
 #. Key:	MenuBack
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1798)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1798)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1843)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1843)
 msgctxt "MishpachaHUD,MenuBack"
 msgid "BACK"
 msgstr "חזרה"
 
 #. Key:	MenuJoinDetail
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1803)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1803)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1848)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1848)
 msgctxt "MishpachaHUD,MenuJoinDetail"
 msgid "Join"
 msgstr "הצטרפות"
 
 #. Key:	MenuJoinFailed
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1805)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1805)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1850)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1850)
 msgctxt "MishpachaHUD,MenuJoinFailed"
 msgid "Couldn't join."
 msgstr "לא ניתן להצטרף."
 
 #. Key:	MenuJoining
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1805)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1805)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1850)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1850)
 msgctxt "MishpachaHUD,MenuJoining"
 msgid "Joining..."
 msgstr "מצטרף..."
 
 #. Key:	MenuNoGames
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1810)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1810)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1855)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1855)
 msgctxt "MishpachaHUD,MenuNoGames"
 msgid "NO GAMES FOUND"
 msgstr "לא נמצאו משחקים"
 
 #. Key:	MenuSearchingItem
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1810)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1810)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1855)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1855)
 msgctxt "MishpachaHUD,MenuSearchingItem"
 msgid "SEARCHING..."
 msgstr "מחפש..."
 
 #. Key:	MenuRefresh
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1812)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1812)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1857)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1857)
 msgctxt "MishpachaHUD,MenuRefresh"
 msgid "SEARCH AGAIN"
 msgstr "חפש שוב"
 
 #. Key:	QualityEpic
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1824)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1824)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1869)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1869)
 msgctxt "MishpachaHUD,QualityEpic"
 msgid "EPIC"
 msgstr "אפית"
 
 #. Key:	QualityHigh
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1824)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1824)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1869)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1869)
 msgctxt "MishpachaHUD,QualityHigh"
 msgid "HIGH"
 msgstr "גבוהה"
 
 #. Key:	QualityLow
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1824)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1824)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1869)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1869)
 msgctxt "MishpachaHUD,QualityLow"
 msgid "LOW"
 msgstr "נמוכה"
 
 #. Key:	QualityMedium
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1824)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1824)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1869)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1869)
 msgctxt "MishpachaHUD,QualityMedium"
 msgid "MEDIUM"
 msgstr "בינונית"
 
 #. Key:	QualityCustom
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1825)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1825)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1870)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1870)
 msgctxt "MishpachaHUD,QualityCustom"
 msgid "CUSTOM"
 msgstr "מותאמת"
 
 #. Key:	MenuGraphics
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1826)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1826)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1871)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1871)
 msgctxt "MishpachaHUD,MenuGraphics"
 msgid "GRAPHICS: {0}"
 msgstr "גרפיקה: {0}"
 
 #. Key:	MenuGraphicsDetail
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1826)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1826)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1871)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1871)
 msgctxt "MishpachaHUD,MenuGraphicsDetail"
 msgid "Medium suits a GTX 1650 laptop"
 msgstr "בינונית מתאימה לנייד עם GTX 1650"
 
 #. Key:	FpsUnlimited
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1831)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1831)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1876)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1876)
 msgctxt "MishpachaHUD,FpsUnlimited"
 msgid "UNLIMITED"
 msgstr "ללא הגבלה"
 
 #. Key:	MenuFps
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1832)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1832)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1877)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1877)
 msgctxt "MishpachaHUD,MenuFps"
 msgid "FRAME RATE LIMIT: {0}"
 msgstr "הגבלת פריימים: {0}"
 
 #. Key:	MenuFpsDetail
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1832)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1832)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1877)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1877)
 msgctxt "MishpachaHUD,MenuFpsDetail"
 msgid "A limit keeps the laptop cooler"
 msgstr "הגבלה שומרת על הנייד קריר יותר"
 
 #. Key:	MenuLanguage
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1837)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1837)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1882)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1882)
 msgctxt "MishpachaHUD,MenuLanguage"
 msgid "LANGUAGE: {0}"
 msgstr "שפה: {0}"
 
 #. Key:	MenuLanguageDetail
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1838)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1838)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1883)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1883)
 msgctxt "MishpachaHUD,MenuLanguageDetail"
 msgid "English / Hebrew"
 msgstr "אנגלית / עברית"
 
 #. Key:	MenuLanguageNoFont
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1838)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1838)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1883)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1883)
 msgctxt "MishpachaHUD,MenuLanguageNoFont"
 msgid "Hebrew needs the Hebrew font (Tools/ImportFonts.py)"
 msgstr "עברית צריכה את הגופן העברי (Tools/ImportFonts.py)"
 
 #. Key:	MenuTitle
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1945)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1945)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1990)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1990)
 msgctxt "MishpachaHUD,MenuTitle"
 msgid "MISHPACHA"
 msgstr "משפחה"
 
 #. Key:	MenuTagline
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1946)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1946)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1991)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1991)
 msgctxt "MishpachaHUD,MenuTagline"
 msgid "THE SELA FAMILY   /   TEL AVIR"
 msgstr "משפחת סלע   /   תל אויר"
 
 #. Key:	PagePaused
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1951)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1951)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1996)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1996)
 msgctxt "MishpachaHUD,PagePaused"
 msgid "PAUSED"
 msgstr "משחק מושהה"
 
 #. Key:	PageMultiplayer
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1952)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1952)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1997)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1997)
 msgctxt "MishpachaHUD,PageMultiplayer"
 msgid "MULTIPLAYER"
 msgstr "מולטיפלייר"
 
 #. Key:	PageSessions
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1953)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1953)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1998)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1998)
 msgctxt "MishpachaHUD,PageSessions"
 msgid "GAMES ON YOUR NETWORK"
 msgstr "משחקים ברשת שלך"
 
 #. Key:	PageSettings
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1954)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1954)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1999)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(1999)
 msgctxt "MishpachaHUD,PageSettings"
 msgid "SETTINGS"
 msgstr "הגדרות"
 
 #. Key:	HintSelect
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2012)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2012)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2057)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2057)
 msgctxt "MishpachaHUD,HintSelect"
 msgid "Select"
 msgstr "בחירה"
 
 #. Key:	KeyEnter
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2012)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2012)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2057)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2057)
 msgctxt "MishpachaHUD,KeyEnter"
 msgid "ENTER"
 msgstr ""
 
 #. Key:	HintMove
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2013)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2013)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2058)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2058)
 msgctxt "MishpachaHUD,HintMove"
 msgid "Move"
 msgstr "מעבר"
 
 #. Key:	KeyWS
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2013)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2013)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2058)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2058)
 msgctxt "MishpachaHUD,KeyWS"
 msgid "W / S"
 msgstr ""
 
 #. Key:	HintBack
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2016)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2016)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2061)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2061)
 msgctxt "MishpachaHUD,HintBack"
 msgid "Back"
 msgstr "חזרה"
 
 #. Key:	KeyP
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2016)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2016)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2061)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2061)
 msgctxt "MishpachaHUD,KeyP"
 msgid "P"
 msgstr ""
 
 #. Key:	HintMap
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2053)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2053)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2098)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2098)
 msgctxt "MishpachaHUD,HintMap"
 msgid "Map"
 msgstr "מפה"
 
 #. Key:	KeyMMap
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2053)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2053)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2098)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2098)
 msgctxt "MishpachaHUD,KeyMMap"
 msgid "M"
 msgstr ""
 
 #. Key:	HintExit
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2054)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2054)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2099)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2099)
 msgctxt "MishpachaHUD,HintExit"
 msgid "Exit car"
 msgstr "יציאה מהרכב"
 
 #. Key:	KeyF
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2054)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2054)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2099)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2099)
 msgctxt "MishpachaHUD,KeyF"
 msgid "F"
 msgstr ""
 
 #. Key:	HintHandbrake
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2055)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2055)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2100)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2100)
 msgctxt "MishpachaHUD,HintHandbrake"
 msgid "Handbrake"
 msgstr "בלם יד"
 
 #. Key:	KeySpace
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2055)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2055)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2100)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2100)
 msgctxt "MishpachaHUD,KeySpace"
 msgid "SPACE"
 msgstr ""
 
 #. Key:	HintRadio
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2056)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2056)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2101)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2101)
 msgctxt "MishpachaHUD,HintRadio"
 msgid "Radio"
 msgstr "רדיו"
 
 #. Key:	KeyR
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2056)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2056)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2101)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2101)
 msgctxt "MishpachaHUD,KeyR"
 msgid "R"
 msgstr ""
 
 #. Key:	HintLights
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2057)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2057)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2102)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2102)
 msgctxt "MishpachaHUD,HintLights"
 msgid "Lights"
 msgstr "אורות"
 
 #. Key:	KeyH
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2057)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2057)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2102)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2102)
 msgctxt "MishpachaHUD,KeyH"
 msgid "H"
 msgstr "H"
 
 #. Key:	HintWeapons
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2060)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2060)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2105)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2105)
 msgctxt "MishpachaHUD,HintWeapons"
 msgid "Weapons"
 msgstr "נשקים"
 
 #. Key:	KeyTabWeapons
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2060)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2060)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2105)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2105)
 msgctxt "MishpachaHUD,KeyTabWeapons"
 msgid "TAB"
 msgstr ""
 
 #. Key:	HintSwitch
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2062)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2062)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2107)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2107)
 msgctxt "MishpachaHUD,HintSwitch"
 msgid "Switch"
 msgstr "החלפה"
 
 #. Key:	Key123
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2062)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2062)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2107)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2107)
 msgctxt "MishpachaHUD,Key123"
 msgid "1 2 3"
 msgstr ""
 
 #. Key:	HintAbility
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2063)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2063)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2108)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2108)
 msgctxt "MishpachaHUD,HintAbility"
 msgid "Ability"
 msgstr "יכולת"
 
 #. Key:	KeyQ
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2063)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2063)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2108)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2108)
 msgctxt "MishpachaHUD,KeyQ"
 msgid "Q"
 msgstr ""
 
 #. Key:	HintCar
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2064)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2064)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2109)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2109)
 msgctxt "MishpachaHUD,HintCar"
 msgid "Car"
 msgstr "רכב"
 
 #. Key:	HintSprint
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2065)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2065)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2110)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2110)
 msgctxt "MishpachaHUD,HintSprint"
 msgid "Sprint"
 msgstr "ריצה"
 
 #. Key:	KeyShift
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2065)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2065)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2110)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2110)
 msgctxt "MishpachaHUD,KeyShift"
 msgid "SHIFT"
 msgstr ""
 
 #. Key:	Reloading
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2148)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2148)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2193)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2193)
 msgctxt "MishpachaHUD,Reloading"
 msgid "RELOADING"
 msgstr "טוען"
 
 #. Key:	AmmoFmt
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2149)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2149)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2194)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2194)
 msgctxt "MishpachaHUD,AmmoFmt"
 msgid "{0} / {1}"
 msgstr ""
 
 #. Key:	Unarmed
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2272)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2272)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2317)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2317)
 msgctxt "MishpachaHUD,Unarmed"
 msgid "Unarmed"
 msgstr "ידיים"
 
 #. Key:	UnarmedUpper
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2279)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2279)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2324)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2324)
 msgctxt "MishpachaHUD,UnarmedUpper"
 msgid "UNARMED"
 msgstr "ידיים"
 
 #. Key:	StatDamage
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2289)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2289)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2334)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2334)
 msgctxt "MishpachaHUD,StatDamage"
 msgid "DAMAGE"
 msgstr "נזק"
 
 #. Key:	StatRate
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2290)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2290)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2335)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2335)
 msgctxt "MishpachaHUD,StatRate"
 msgid "FIRE RATE"
 msgstr "קצב אש"
 
 #. Key:	StatRange
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2291)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2291)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2336)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2336)
 msgctxt "MishpachaHUD,StatRange"
 msgid "RANGE"
 msgstr "טווח"
 
 #. Key:	StatMag
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2292)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2292)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2337)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2337)
 msgctxt "MishpachaHUD,StatMag"
 msgid "MAG {0}"
 msgstr "מחסנית {0}"
 
 #. Key:	WheelHint
-#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2294)
-#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2294)
+#. SourceLocation:	Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2339)
+#: Source/Mishpacha/Private/UI/MishpachaHUD.cpp(2339)
 msgctxt "MishpachaHUD,WheelHint"
 msgid "Release TAB to equip"
 msgstr "שחרר TAB כדי לבחור"
@@ -1258,6 +1265,13 @@ msgctxt "MishpachaRadio,Off"
 msgid "Radio off"
 msgstr "רדיו כבוי"
 
+#. Key:	RockHaIr
+#. SourceLocation:	Source/Mishpacha/Private/Vehicles/MishpachaVehicle.cpp(487)
+#: Source/Mishpacha/Private/Vehicles/MishpachaVehicle.cpp(487)
+msgctxt "MishpachaRadio,RockHaIr"
+msgid "Radio: Rock HaIr"
+msgstr "רדיו: רוק העיר"
+
 #. Key:	TelAvirFM
 #. SourceLocation:	Source/Mishpacha/Private/Vehicles/MishpachaVehicle.cpp(487)
 #: Source/Mishpacha/Private/Vehicles/MishpachaVehicle.cpp(487)
@@ -1265,579 +1279,628 @@ msgctxt "MishpachaRadio,TelAvirFM"
 msgid "Radio: Tel Avir FM"
 msgstr "רדיו: תל אויר FM"
 
-#. Key:	PlaceDropoff
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1000)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1000)
-msgctxt "MishpachaGreybox,PlaceDropoff"
-msgid "Family Drop-off"
-msgstr "נקודת האיסוף"
-
-#. Key:	PlaceHospital
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1001)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1001)
-msgctxt "MishpachaGreybox,PlaceHospital"
-msgid "Hospital"
-msgstr "בית החולים"
-
-#. Key:	PlaceHome
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1002)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1002)
-msgctxt "MishpachaGreybox,PlaceHome"
-msgid "Sela Family"
-msgstr "משפחת סלע"
-
-#. Key:	BizMarketStall
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1239)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1239)
-msgctxt "MishpachaGreybox,BizMarketStall"
-msgid "Pomegranate Stall"
-msgstr "דוכן הרימונים"
-
-#. Key:	BizBeachKiosk
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1240)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1240)
-msgctxt "MishpachaGreybox,BizBeachKiosk"
-msgid "Beach Kiosk"
-msgstr "קיוסק בחוף"
-
-#. Key:	BizCarWash
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1241)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1241)
-msgctxt "MishpachaGreybox,BizCarWash"
-msgid "Car Wash"
-msgstr "שטיפת מכוניות"
-
-#. Key:	BizGarage
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1242)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1242)
-msgctxt "MishpachaGreybox,BizGarage"
-msgid "Moshe's Garage"
-msgstr "המוסך של משה"
-
-#. Key:	BizHummus
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1243)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1243)
-msgctxt "MishpachaGreybox,BizHummus"
-msgid "Hummus Place"
-msgstr "חומוסיה"
-
-#. Key:	BizClub
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1244)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1244)
-msgctxt "MishpachaGreybox,BizClub"
-msgid "Night Club"
-msgstr "מועדון לילה"
-
-#. Key:	Rafi01Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1416)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1416)
-msgctxt "MishpachaGreybox,Rafi01Title"
-msgid "Collection at the Market"
-msgstr "גבייה בשוק"
-
-#. Key:	Rafi01Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1417)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1417)
-msgctxt "MishpachaGreybox,Rafi01Desc"
-msgid "A stall owner in the Old Yafeh market stopped paying. Remind him who runs this city."
-msgstr "בעל דוכן בשוק יפה העתיקה הפסיק לשלם. תזכיר לו מי מנהל את העיר."
-
-#. Key:	Rafi01A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1419)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1419)
-msgctxt "MishpachaGreybox,Rafi01A"
-msgid "Go to the market (yellow pillar near the beach)"
-msgstr "לך לשוק (העמוד הצהוב ליד החוף)"
-
-#. Key:	Rafi01ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1420)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1420)
-msgctxt "MishpachaGreybox,Rafi01ASay"
-msgid "Three months Itzik hasn't paid. Today he pays for all three."
-msgstr "שלושה חודשים איציק לא שילם. היום הוא משלם על שלושתם."
-
-#. Key:	Rafi01B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1421)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1421)
-msgctxt "MishpachaGreybox,Rafi01B"
-msgid "If the cops are on you, lose them"
-msgstr "אם השוטרים עליך, תתחמק מהם"
-
-#. Key:	Rafi02Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1424)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1424)
-msgctxt "MishpachaGreybox,Rafi02Title"
-msgid "Rival Crew"
-msgstr "כנופיה יריבה"
-
-#. Key:	Rafi02Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1425)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1425)
-msgctxt "MishpachaGreybox,Rafi02Desc"
-msgid "Some crew from out of town set up shop at Moshe's garage. On our street."
-msgstr "איזה צוות מחוץ לעיר התמקם במוסך של משה. ברחוב שלנו."
-
-#. Key:	Rafi02A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1428)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1428)
-msgctxt "MishpachaGreybox,Rafi02A"
-msgid "Drive to Moshe's garage"
-msgstr "סע למוסך של משה"
-
-#. Key:	Rafi02ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1429)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1429)
-msgctxt "MishpachaGreybox,Rafi02ASay"
-msgid "Moshe called. Strangers in his garage, and they're not there for an oil change."
-msgstr "משה התקשר. זרים במוסך שלו, והם לא באו להחליף שמן."
-
-#. Key:	Rafi02B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1430)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1430)
-msgctxt "MishpachaGreybox,Rafi02B"
-msgid "Take out the rival crew (press Q to call the boys)"
-msgstr "חסל את הכנופיה (Q כדי לקרוא לחבר'ה)"
-
-#. Key:	Rafi02BSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1431)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1431)
-msgctxt "MishpachaGreybox,Rafi02BSay"
-msgid "Nobody does business in Tel Avir without asking the Sela family."
-msgstr "אף אחד לא עושה עסקים בתל אויר בלי לשאול את משפחת סלע."
-
-#. Key:	Rafi02C
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1432)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1432)
-msgctxt "MishpachaGreybox,Rafi02C"
-msgid "Lose the police"
-msgstr "תתחמק מהמשטרה"
-
-#. Key:	Shira01Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1436)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1436)
-msgctxt "MishpachaGreybox,Shira01Title"
-msgid "Dad's Phone"
-msgstr "הטלפון של אבא"
-
-#. Key:	Shira01Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1437)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1437)
-msgctxt "MishpachaGreybox,Shira01Desc"
-msgid "Dad's phone is sitting in the police evidence warehouse. Get it out before they unlock it."
-msgstr "הטלפון של אבא נמצא במחסן המוצגים של המשטרה. צריך להוציא אותו לפני שיפרצו אותו."
-
-#. Key:	Shira01A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1439)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1439)
-msgctxt "MishpachaGreybox,Shira01A"
-msgid "Get to the evidence warehouse"
-msgstr "הגיעי למחסן המוצגים"
-
-#. Key:	Shira01ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1440)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1440)
-msgctxt "MishpachaGreybox,Shira01ASay"
-msgid "If they read what's on that phone, all three of us go down. Me first."
-msgstr "אם יקראו מה יש בטלפון הזה, שלושתנו נופלים. אני ראשונה."
-
-#. Key:	Shira01B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1441)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1441)
-msgctxt "MishpachaGreybox,Shira01B"
-msgid "Grab a car"
-msgstr "תשיגי רכב"
-
-#. Key:	Shira01C
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1442)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1442)
-msgctxt "MishpachaGreybox,Shira01C"
-msgid "Bring the phone to the family drop-off"
-msgstr "הביאי את הטלפון לנקודת האיסוף של המשפחה"
-
-#. Key:	Shira02Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1445)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1445)
-msgctxt "MishpachaGreybox,Shira02Title"
-msgid "The Witness"
-msgstr "העד"
-
-#. Key:	Shira02Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1446)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1446)
-msgctxt "MishpachaGreybox,Shira02Desc"
-msgid "A witness against the family is at the hospital. Shira wants to talk to him before the prosecutor does."
-msgstr "עד נגד המשפחה שוכב בבית החולים. שירה רוצה לדבר איתו לפני הפרקליטות."
-
-#. Key:	Shira02A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1449)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1449)
-msgctxt "MishpachaGreybox,Shira02A"
-msgid "Go to the hospital"
-msgstr "סעי לבית החולים"
-
-#. Key:	Shira02ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1450)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1450)
-msgctxt "MishpachaGreybox,Shira02ASay"
-msgid "I'm his lawyer as of this morning. He just doesn't know it yet."
-msgstr "מהבוקר אני עורכת הדין שלו. הוא פשוט עוד לא יודע."
-
-#. Key:	Shira02B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1451)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1451)
-msgctxt "MishpachaGreybox,Shira02B"
-msgid "Talk to the witness (stay close)"
-msgstr "דברי עם העד (הישארי קרוב)"
-
-#. Key:	Shira02BSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1452)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1452)
-msgctxt "MishpachaGreybox,Shira02BSay"
-msgid "Nobody's asking you to lie. Just to remember a little less."
-msgstr "אף אחד לא מבקש ממך לשקר. רק לזכור קצת פחות."
-
-#. Key:	Shira02C
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1453)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1453)
-msgctxt "MishpachaGreybox,Shira02C"
-msgid "Get a car"
-msgstr "תשיגי רכב"
-
-#. Key:	Shira02D
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1454)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1454)
-msgctxt "MishpachaGreybox,Shira02D"
-msgid "Take him somewhere quiet (the family drop-off)"
-msgstr "קחי אותו למקום שקט (נקודת האיסוף)"
-
-#. Key:	Shira02DSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1455)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1455)
-msgctxt "MishpachaGreybox,Shira02DSay"
-msgid "Seatbelt. You're no use to anyone dead."
-msgstr "חגורה. מת אתה לא שווה כלום לאף אחד."
-
-#. Key:	Omer01Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1459)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1459)
-msgctxt "MishpachaGreybox,Omer01Title"
-msgid "Last Delivery"
-msgstr "משלוח אחרון"
-
-#. Key:	Omer01Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1460)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1460)
-msgctxt "MishpachaGreybox,Omer01Desc"
-msgid "One last package for the family before the big trip. What could go wrong?"
-msgstr "חבילה אחרונה למשפחה לפני הטיול הגדול. מה כבר יכול להשתבש?"
-
-#. Key:	Omer01A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1462)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1462)
-msgctxt "MishpachaGreybox,Omer01A"
-msgid "Get a ride"
-msgstr "תשיג טרמפ"
-
-#. Key:	Omer01ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1463)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1463)
-msgctxt "MishpachaGreybox,Omer01ASay"
-msgid "Rafi says it's just shoes. Nobody wraps shoes like this."
-msgstr "רפי אומר שזה סתם נעליים. אף אחד לא עוטף נעליים ככה."
-
-#. Key:	Omer01B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1464)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1464)
-msgctxt "MishpachaGreybox,Omer01B"
-msgid "Deliver the package to Moshe's garage"
-msgstr "תמסור את החבילה במוסך של משה"
-
-#. Key:	Omer01C
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1465)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1465)
-msgctxt "MishpachaGreybox,Omer01C"
-msgid "Lose anyone following you"
-msgstr "תתחמק ממי שעוקב אחריך"
-
-#. Key:	Omer02Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1468)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1468)
-msgctxt "MishpachaGreybox,Omer02Title"
-msgid "Eye in the Sky"
-msgstr "עין בשמיים"
-
-#. Key:	Omer02Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1469)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1469)
-msgctxt "MishpachaGreybox,Omer02Desc"
-msgid "The warehouse has new guards, and they aren't police. Omer gets a look from above first."
-msgstr "במחסן יש שומרים חדשים, והם לא שוטרים. עומר מסתכל מלמעלה קודם."
-
-#. Key:	Omer02A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1472)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1472)
-msgctxt "MishpachaGreybox,Omer02A"
-msgid "Go to the evidence warehouse"
-msgstr "סע למחסן המוצגים"
-
-#. Key:	Omer02ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1473)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1473)
-msgctxt "MishpachaGreybox,Omer02ASay"
-msgid "Two years in the drone unit. Finally useful for something."
-msgstr "שנתיים ביחידת הרחפנים. סוף סוף זה שווה משהו."
-
-#. Key:	Omer02B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1474)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1474)
-msgctxt "MishpachaGreybox,Omer02B"
-msgid "Take out the guards (press Q: the drone marks them)"
-msgstr "חסל את השומרים (Q: הרחפן מסמן אותם)"
-
-#. Key:	Omer02BSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1475)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1475)
-msgctxt "MishpachaGreybox,Omer02BSay"
-msgid "Three on the ground. They haven't seen me. Yet."
-msgstr "שלושה על הקרקע. הם לא ראו אותי. עדיין."
-
-#. Key:	Omer02C
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1476)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1476)
-msgctxt "MishpachaGreybox,Omer02C"
-msgid "Lose the police"
-msgstr "תתחמק מהמשטרה"
-
-#. Key:	Family01Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1480)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1480)
-msgctxt "MishpachaGreybox,Family01Title"
-msgid "The Handover"
-msgstr "ההעברה"
-
-#. Key:	Family01Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1481)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1481)
-msgctxt "MishpachaGreybox,Family01Desc"
-msgid "Rafi has the money. Shira has the judge. They need to meet without anyone seeing them together."
-msgstr "לרפי יש את הכסף. לשירה יש את השופט. הם צריכים להיפגש בלי שאף אחד יראה אותם יחד."
-
-#. Key:	Family01A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1486)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1486)
-msgctxt "MishpachaGreybox,Family01A"
-msgid "Rafi: leave the envelope at the market"
-msgstr "רפי: תשאיר את המעטפה בשוק"
-
-#. Key:	Family01ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1487)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1487)
-msgctxt "MishpachaGreybox,Family01ASay"
-msgid "Shira, it's at the market. Under the pomegranates. Don't make that face."
-msgstr "שירה, זה בשוק. מתחת לרימונים. אל תעשי את הפרצוף הזה."
-
-#. Key:	Family01B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1488)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1488)
-msgctxt "MishpachaGreybox,Family01B"
-msgid "Switch to Shira (press 2)"
-msgstr "החלף לשירה (לחץ 2)"
-
-#. Key:	Family01BSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1489)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1489)
-msgctxt "MishpachaGreybox,Family01BSay"
-msgid "This is the last time, Rafi. I mean it this time."
-msgstr "זו הפעם האחרונה, רפי. הפעם אני רצינית."
-
-#. Key:	Family01C
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1490)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1490)
-msgctxt "MishpachaGreybox,Family01C"
-msgid "Shira: pick up the envelope at the market"
-msgstr "שירה: אספי את המעטפה בשוק"
-
-#. Key:	Family01D
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1491)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1491)
-msgctxt "MishpachaGreybox,Family01D"
-msgid "Deliver it to the judge's driver at the hospital"
-msgstr "מסרי אותה לנהג של השופט בבית החולים"
-
-#. Key:	Family01DSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1492)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1492)
-msgctxt "MishpachaGreybox,Family01DSay"
-msgid "Hospital parking. Nobody remembers faces at a hospital."
-msgstr "החניה של בית החולים. אף אחד לא זוכר פרצופים בבית חולים."
-
-#. Key:	Family02Title
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1496)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1496)
-msgctxt "MishpachaGreybox,Family02Title"
-msgid "The Whole Family"
-msgstr "כל המשפחה"
-
-#. Key:	Family02Desc
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1497)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1497)
-msgctxt "MishpachaGreybox,Family02Desc"
-msgid "The out-of-town crew grabbed Shira's witness and they're holding him at the evidence warehouse. If he talks, all three go down. For once, the Selas work one job together."
-msgstr "הכנופיה מחוץ לעיר חטפה את העד של שירה ומחזיקה אותו במחסן הראיות. אם הוא ידבר, שלושתם נופלים. הפעם, כל האחים על אותה עבודה."
-
-#. Key:	Family02A
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1504)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1504)
-msgctxt "MishpachaGreybox,Family02A"
-msgid "Omer: get eyes on the warehouse"
-msgstr "עומר: תבדוק את המחסן מקרוב"
-
-#. Key:	Family02ASay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1505)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1505)
-msgctxt "MishpachaGreybox,Family02ASay"
-msgid "Rafi, Shira, I found him. Back room. You're not going to like who's guarding him."
-msgstr "רפי, שירה, מצאתי אותו. בחדר האחורי. לא תאהבו מי שומר עליו."
-
-#. Key:	Family02B
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1506)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1506)
-msgctxt "MishpachaGreybox,Family02B"
-msgid "Take out the guards (press Q: the drone marks them)"
-msgstr "חסל את השומרים (Q: הרחפן מסמן אותם)"
-
-#. Key:	Family02BSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1507)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1507)
-msgctxt "MishpachaGreybox,Family02BSay"
-msgid "Everyone keeps saying I'm the baby. Watch this."
-msgstr "כולם אומרים שאני התינוק. תסתכלו על זה."
-
-#. Key:	Family02I
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1508)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1508)
-msgctxt "MishpachaGreybox,Family02I"
-msgid "Lose the police"
-msgstr "התחמק מהמשטרה"
-
-#. Key:	Family02C
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1509)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1509)
-msgctxt "MishpachaGreybox,Family02C"
-msgid "Switch to Rafi (press 1)"
-msgstr "עבור לרפי (מקש 1)"
-
-#. Key:	Family02CSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1510)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1510)
-msgctxt "MishpachaGreybox,Family02CSay"
-msgid "Good work, kid. Now they'll send everything they have. Let them."
-msgstr "עבודה טובה, ילד. עכשיו הם ישלחו את כל מה שיש להם. שישלחו."
-
-#. Key:	Family02D
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1511)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1511)
-msgctxt "MishpachaGreybox,Family02D"
-msgid "Rafi: get to Moshe's garage, their base"
-msgstr "רפי: סע למוסך של משה, הבסיס שלהם"
-
-#. Key:	Family02DSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1512)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1512)
-msgctxt "MishpachaGreybox,Family02DSay"
-msgid "They came to my street. I'm going to theirs."
-msgstr "הם באו לרחוב שלי. אני הולך לרחוב שלהם."
-
-#. Key:	Family02E
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1513)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1513)
-msgctxt "MishpachaGreybox,Family02E"
-msgid "Finish the crew (press Q to call the boys)"
-msgstr "גמור את הכנופיה (Q קורא לחבר'ה)"
-
-#. Key:	Family02ESay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1514)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1514)
-msgctxt "MishpachaGreybox,Family02ESay"
-msgid "Dad built this with his hands. Nobody takes it from us."
-msgstr "אבא בנה את זה בידיים. אף אחד לא לוקח את זה מאיתנו."
-
-#. Key:	Family02F
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1516)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1516)
-msgctxt "MishpachaGreybox,Family02F"
-msgid "Switch to Shira (press 2)"
-msgstr "עבור לשירה (מקש 2)"
-
-#. Key:	Family02FSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1517)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1517)
-msgctxt "MishpachaGreybox,Family02FSay"
-msgid "Now that you two are done shooting, let me clean this up legally."
-msgstr "עכשיו, כשסיימתם לירות, תנו לי לנקות את זה לפי החוק."
-
-#. Key:	Family02G
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1518)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1518)
-msgctxt "MishpachaGreybox,Family02G"
-msgid "Shira: meet the judge's driver at the hospital"
-msgstr "שירה: פגשי את הנהג של השופט בבית החולים"
-
-#. Key:	Family02GSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1519)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1519)
-msgctxt "MishpachaGreybox,Family02GSay"
-msgid "One signature and that warehouse never existed."
-msgstr "חתימה אחת, והמחסן הזה מעולם לא היה קיים."
-
-#. Key:	Family02H
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1520)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1520)
-msgctxt "MishpachaGreybox,Family02H"
-msgid "Wait for the signature (stay close)"
-msgstr "חכי לחתימה (הישארי קרוב)"
-
-#. Key:	Family02HSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1521)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1521)
-msgctxt "MishpachaGreybox,Family02HSay"
-msgid "I told Rafi the last time was the last time. I lied to him, too."
-msgstr "אמרתי לרפי שהפעם האחרונה היא האחרונה. גם לו שיקרתי."
-
-#. Key:	Family02J
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1523)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1523)
-msgctxt "MishpachaGreybox,Family02J"
-msgid "Come home: the family drop-off"
-msgstr "הביתה: נקודת המסירה של המשפחה"
-
-#. Key:	Family02JSay
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1524)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1524)
-msgctxt "MishpachaGreybox,Family02JSay"
-msgid "Sit down, all of you. Dad would have hated this. Then he'd have poured three glasses."
-msgstr "שבו, כולכם. אבא היה שונא את זה. ואז היה מוזג שלוש כוסות."
+#. Key:	YamFM
+#. SourceLocation:	Source/Mishpacha/Private/Vehicles/MishpachaVehicle.cpp(487)
+#: Source/Mishpacha/Private/Vehicles/MishpachaVehicle.cpp(487)
+msgctxt "MishpachaRadio,YamFM"
+msgid "Radio: Yam FM"
+msgstr "רדיו: ים FM"
 
 #. Key:	PlaceMarket
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(997)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(997)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1168)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1168)
 msgctxt "MishpachaGreybox,PlaceMarket"
 msgid "Old Yafeh Market"
 msgstr "שוק יפה העתיקה"
 
 #. Key:	PlaceWarehouse
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(998)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(998)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1169)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1169)
 msgctxt "MishpachaGreybox,PlaceWarehouse"
 msgid "Evidence Warehouse"
 msgstr "מחסן המוצגים"
 
 #. Key:	PlaceGarage
-#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(999)
-#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(999)
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1170)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1170)
 msgctxt "MishpachaGreybox,PlaceGarage"
 msgid "Moshe's Garage"
 msgstr "המוסך של משה"
+
+#. Key:	PlaceDropoff
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1171)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1171)
+msgctxt "MishpachaGreybox,PlaceDropoff"
+msgid "Family Drop-off"
+msgstr "נקודת האיסוף"
+
+#. Key:	PlaceHospital
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1172)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1172)
+msgctxt "MishpachaGreybox,PlaceHospital"
+msgid "Hospital"
+msgstr "בית החולים"
+
+#. Key:	PlaceHome
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1173)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1173)
+msgctxt "MishpachaGreybox,PlaceHome"
+msgid "Sela Family"
+msgstr "משפחת סלע"
+
+#. Key:	BizMarketStall
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1416)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1416)
+msgctxt "MishpachaGreybox,BizMarketStall"
+msgid "Pomegranate Stall"
+msgstr "דוכן הרימונים"
+
+#. Key:	BizBeachKiosk
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1417)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1417)
+msgctxt "MishpachaGreybox,BizBeachKiosk"
+msgid "Beach Kiosk"
+msgstr "קיוסק בחוף"
+
+#. Key:	BizCarWash
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1418)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1418)
+msgctxt "MishpachaGreybox,BizCarWash"
+msgid "Car Wash"
+msgstr "שטיפת מכוניות"
+
+#. Key:	BizGarage
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1419)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1419)
+msgctxt "MishpachaGreybox,BizGarage"
+msgid "Moshe's Garage"
+msgstr "המוסך של משה"
+
+#. Key:	BizHummus
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1420)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1420)
+msgctxt "MishpachaGreybox,BizHummus"
+msgid "Hummus Place"
+msgstr "חומוסיה"
+
+#. Key:	BizClub
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1421)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1421)
+msgctxt "MishpachaGreybox,BizClub"
+msgid "Night Club"
+msgstr "מועדון לילה"
+
+#. Key:	Rafi01Title
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1593)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1593)
+msgctxt "MishpachaGreybox,Rafi01Title"
+msgid "Collection at the Market"
+msgstr "גבייה בשוק"
+
+#. Key:	Rafi01Desc
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1594)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1594)
+msgctxt "MishpachaGreybox,Rafi01Desc"
+msgid "A stall owner in the Old Yafeh market stopped paying. Remind him who runs this city."
+msgstr "בעל דוכן בשוק יפה העתיקה הפסיק לשלם. תזכיר לו מי מנהל את העיר."
+
+#. Key:	Rafi01A
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1596)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1596)
+msgctxt "MishpachaGreybox,Rafi01A"
+msgid "Go to the market (yellow pillar near the beach)"
+msgstr "לך לשוק (העמוד הצהוב ליד החוף)"
+
+#. Key:	Rafi01ASay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1597)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1597)
+msgctxt "MishpachaGreybox,Rafi01ASay"
+msgid "Three months Itzik hasn't paid. Today he pays for all three."
+msgstr "שלושה חודשים איציק לא שילם. היום הוא משלם על שלושתם."
+
+#. Key:	Rafi01B
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1598)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1598)
+msgctxt "MishpachaGreybox,Rafi01B"
+msgid "If the cops are on you, lose them"
+msgstr "אם השוטרים עליך, תתחמק מהם"
+
+#. Key:	Rafi02Title
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1601)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1601)
+msgctxt "MishpachaGreybox,Rafi02Title"
+msgid "Rival Crew"
+msgstr "כנופיה יריבה"
+
+#. Key:	Rafi02Desc
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1602)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1602)
+msgctxt "MishpachaGreybox,Rafi02Desc"
+msgid "Some crew from out of town set up shop at Moshe's garage. On our street."
+msgstr "איזה צוות מחוץ לעיר התמקם במוסך של משה. ברחוב שלנו."
+
+#. Key:	Rafi02A
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1605)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1605)
+msgctxt "MishpachaGreybox,Rafi02A"
+msgid "Drive to Moshe's garage"
+msgstr "סע למוסך של משה"
+
+#. Key:	Rafi02ASay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1606)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1606)
+msgctxt "MishpachaGreybox,Rafi02ASay"
+msgid "Moshe called. Strangers in his garage, and they're not there for an oil change."
+msgstr "משה התקשר. זרים במוסך שלו, והם לא באו להחליף שמן."
+
+#. Key:	Rafi02B
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1607)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1607)
+msgctxt "MishpachaGreybox,Rafi02B"
+msgid "Take out the rival crew (press Q to call the boys)"
+msgstr "חסל את הכנופיה (Q כדי לקרוא לחבר'ה)"
+
+#. Key:	Rafi02BSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1608)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1608)
+msgctxt "MishpachaGreybox,Rafi02BSay"
+msgid "Nobody does business in Tel Avir without asking the Sela family."
+msgstr "אף אחד לא עושה עסקים בתל אויר בלי לשאול את משפחת סלע."
+
+#. Key:	Rafi02C
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1609)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1609)
+msgctxt "MishpachaGreybox,Rafi02C"
+msgid "Lose the police"
+msgstr "תתחמק מהמשטרה"
+
+#. Key:	Shira01Title
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1613)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1613)
+msgctxt "MishpachaGreybox,Shira01Title"
+msgid "Dad's Phone"
+msgstr "הטלפון של אבא"
+
+#. Key:	Shira01Desc
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1614)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1614)
+msgctxt "MishpachaGreybox,Shira01Desc"
+msgid "Dad's phone is sitting in the police evidence warehouse. Get it out before they unlock it."
+msgstr "הטלפון של אבא נמצא במחסן המוצגים של המשטרה. צריך להוציא אותו לפני שיפרצו אותו."
+
+#. Key:	Shira01A
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1616)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1616)
+msgctxt "MishpachaGreybox,Shira01A"
+msgid "Get to the evidence warehouse"
+msgstr "הגיעי למחסן המוצגים"
+
+#. Key:	Shira01ASay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1617)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1617)
+msgctxt "MishpachaGreybox,Shira01ASay"
+msgid "If they read what's on that phone, all three of us go down. Me first."
+msgstr "אם יקראו מה יש בטלפון הזה, שלושתנו נופלים. אני ראשונה."
+
+#. Key:	Shira01B
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1618)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1618)
+msgctxt "MishpachaGreybox,Shira01B"
+msgid "Grab a car"
+msgstr "תשיגי רכב"
+
+#. Key:	Shira01C
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1619)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1619)
+msgctxt "MishpachaGreybox,Shira01C"
+msgid "Bring the phone to the family drop-off"
+msgstr "הביאי את הטלפון לנקודת האיסוף של המשפחה"
+
+#. Key:	Shira02Title
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1622)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1622)
+msgctxt "MishpachaGreybox,Shira02Title"
+msgid "The Witness"
+msgstr "העד"
+
+#. Key:	Shira02Desc
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1623)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1623)
+msgctxt "MishpachaGreybox,Shira02Desc"
+msgid "A witness against the family is at the hospital. Shira wants to talk to him before the prosecutor does."
+msgstr "עד נגד המשפחה שוכב בבית החולים. שירה רוצה לדבר איתו לפני הפרקליטות."
+
+#. Key:	Shira02A
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1626)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1626)
+msgctxt "MishpachaGreybox,Shira02A"
+msgid "Go to the hospital"
+msgstr "סעי לבית החולים"
+
+#. Key:	Shira02ASay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1627)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1627)
+msgctxt "MishpachaGreybox,Shira02ASay"
+msgid "I'm his lawyer as of this morning. He just doesn't know it yet."
+msgstr "מהבוקר אני עורכת הדין שלו. הוא פשוט עוד לא יודע."
+
+#. Key:	Shira02B
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1628)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1628)
+msgctxt "MishpachaGreybox,Shira02B"
+msgid "Talk to the witness (stay close)"
+msgstr "דברי עם העד (הישארי קרוב)"
+
+#. Key:	Shira02BSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1629)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1629)
+msgctxt "MishpachaGreybox,Shira02BSay"
+msgid "Nobody's asking you to lie. Just to remember a little less."
+msgstr "אף אחד לא מבקש ממך לשקר. רק לזכור קצת פחות."
+
+#. Key:	Shira02C
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1630)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1630)
+msgctxt "MishpachaGreybox,Shira02C"
+msgid "Get a car"
+msgstr "תשיגי רכב"
+
+#. Key:	Shira02D
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1631)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1631)
+msgctxt "MishpachaGreybox,Shira02D"
+msgid "Take him somewhere quiet (the family drop-off)"
+msgstr "קחי אותו למקום שקט (נקודת האיסוף)"
+
+#. Key:	Shira02DSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1632)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1632)
+msgctxt "MishpachaGreybox,Shira02DSay"
+msgid "Seatbelt. You're no use to anyone dead."
+msgstr "חגורה. מת אתה לא שווה כלום לאף אחד."
+
+#. Key:	Omer01Title
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1636)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1636)
+msgctxt "MishpachaGreybox,Omer01Title"
+msgid "Last Delivery"
+msgstr "משלוח אחרון"
+
+#. Key:	Omer01Desc
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1637)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1637)
+msgctxt "MishpachaGreybox,Omer01Desc"
+msgid "One last package for the family before the big trip. What could go wrong?"
+msgstr "חבילה אחרונה למשפחה לפני הטיול הגדול. מה כבר יכול להשתבש?"
+
+#. Key:	Omer01A
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1639)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1639)
+msgctxt "MishpachaGreybox,Omer01A"
+msgid "Get a ride"
+msgstr "תשיג טרמפ"
+
+#. Key:	Omer01ASay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1640)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1640)
+msgctxt "MishpachaGreybox,Omer01ASay"
+msgid "Rafi says it's just shoes. Nobody wraps shoes like this."
+msgstr "רפי אומר שזה סתם נעליים. אף אחד לא עוטף נעליים ככה."
+
+#. Key:	Omer01B
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1641)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1641)
+msgctxt "MishpachaGreybox,Omer01B"
+msgid "Deliver the package to Moshe's garage"
+msgstr "תמסור את החבילה במוסך של משה"
+
+#. Key:	Omer01C
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1642)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1642)
+msgctxt "MishpachaGreybox,Omer01C"
+msgid "Lose anyone following you"
+msgstr "תתחמק ממי שעוקב אחריך"
+
+#. Key:	Omer02Title
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1645)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1645)
+msgctxt "MishpachaGreybox,Omer02Title"
+msgid "Eye in the Sky"
+msgstr "עין בשמיים"
+
+#. Key:	Omer02Desc
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1646)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1646)
+msgctxt "MishpachaGreybox,Omer02Desc"
+msgid "The warehouse has new guards, and they aren't police. Omer gets a look from above first."
+msgstr "במחסן יש שומרים חדשים, והם לא שוטרים. עומר מסתכל מלמעלה קודם."
+
+#. Key:	Omer02A
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1649)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1649)
+msgctxt "MishpachaGreybox,Omer02A"
+msgid "Go to the evidence warehouse"
+msgstr "סע למחסן המוצגים"
+
+#. Key:	Omer02ASay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1650)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1650)
+msgctxt "MishpachaGreybox,Omer02ASay"
+msgid "Two years in the drone unit. Finally useful for something."
+msgstr "שנתיים ביחידת הרחפנים. סוף סוף זה שווה משהו."
+
+#. Key:	Omer02B
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1651)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1651)
+msgctxt "MishpachaGreybox,Omer02B"
+msgid "Take out the guards (press Q: the drone marks them)"
+msgstr "חסל את השומרים (Q: הרחפן מסמן אותם)"
+
+#. Key:	Omer02BSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1652)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1652)
+msgctxt "MishpachaGreybox,Omer02BSay"
+msgid "Three on the ground. They haven't seen me. Yet."
+msgstr "שלושה על הקרקע. הם לא ראו אותי. עדיין."
+
+#. Key:	Omer02C
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1653)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1653)
+msgctxt "MishpachaGreybox,Omer02C"
+msgid "Lose the police"
+msgstr "תתחמק מהמשטרה"
+
+#. Key:	Family01Title
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1657)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1657)
+msgctxt "MishpachaGreybox,Family01Title"
+msgid "The Handover"
+msgstr "ההעברה"
+
+#. Key:	Family01Desc
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1658)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1658)
+msgctxt "MishpachaGreybox,Family01Desc"
+msgid "Rafi has the money. Shira has the judge. They need to meet without anyone seeing them together."
+msgstr "לרפי יש את הכסף. לשירה יש את השופט. הם צריכים להיפגש בלי שאף אחד יראה אותם יחד."
+
+#. Key:	Family01A
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1663)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1663)
+msgctxt "MishpachaGreybox,Family01A"
+msgid "Rafi: leave the envelope at the market"
+msgstr "רפי: תשאיר את המעטפה בשוק"
+
+#. Key:	Family01ASay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1664)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1664)
+msgctxt "MishpachaGreybox,Family01ASay"
+msgid "Shira, it's at the market. Under the pomegranates. Don't make that face."
+msgstr "שירה, זה בשוק. מתחת לרימונים. אל תעשי את הפרצוף הזה."
+
+#. Key:	Family01B
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1665)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1665)
+msgctxt "MishpachaGreybox,Family01B"
+msgid "Switch to Shira (press 2)"
+msgstr "החלף לשירה (לחץ 2)"
+
+#. Key:	Family01BSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1666)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1666)
+msgctxt "MishpachaGreybox,Family01BSay"
+msgid "This is the last time, Rafi. I mean it this time."
+msgstr "זו הפעם האחרונה, רפי. הפעם אני רצינית."
+
+#. Key:	Family01C
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1667)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1667)
+msgctxt "MishpachaGreybox,Family01C"
+msgid "Shira: pick up the envelope at the market"
+msgstr "שירה: אספי את המעטפה בשוק"
+
+#. Key:	Family01D
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1668)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1668)
+msgctxt "MishpachaGreybox,Family01D"
+msgid "Deliver it to the judge's driver at the hospital"
+msgstr "מסרי אותה לנהג של השופט בבית החולים"
+
+#. Key:	Family01DSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1669)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1669)
+msgctxt "MishpachaGreybox,Family01DSay"
+msgid "Hospital parking. Nobody remembers faces at a hospital."
+msgstr "החניה של בית החולים. אף אחד לא זוכר פרצופים בבית חולים."
+
+#. Key:	Family02Title
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1673)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1673)
+msgctxt "MishpachaGreybox,Family02Title"
+msgid "The Whole Family"
+msgstr "כל המשפחה"
+
+#. Key:	Family02Desc
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1674)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1674)
+msgctxt "MishpachaGreybox,Family02Desc"
+msgid "The out-of-town crew grabbed Shira's witness and they're holding him at the evidence warehouse. If he talks, all three go down. For once, the Selas work one job together."
+msgstr "הכנופיה מחוץ לעיר חטפה את העד של שירה ומחזיקה אותו במחסן הראיות. אם הוא ידבר, שלושתם נופלים. הפעם, כל האחים על אותה עבודה."
+
+#. Key:	Family02A
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1681)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1681)
+msgctxt "MishpachaGreybox,Family02A"
+msgid "Omer: get eyes on the warehouse"
+msgstr "עומר: תבדוק את המחסן מקרוב"
+
+#. Key:	Family02ASay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1682)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1682)
+msgctxt "MishpachaGreybox,Family02ASay"
+msgid "Rafi, Shira, I found him. Back room. You're not going to like who's guarding him."
+msgstr "רפי, שירה, מצאתי אותו. בחדר האחורי. לא תאהבו מי שומר עליו."
+
+#. Key:	Family02B
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1683)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1683)
+msgctxt "MishpachaGreybox,Family02B"
+msgid "Take out the guards (press Q: the drone marks them)"
+msgstr "חסל את השומרים (Q: הרחפן מסמן אותם)"
+
+#. Key:	Family02BSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1684)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1684)
+msgctxt "MishpachaGreybox,Family02BSay"
+msgid "Everyone keeps saying I'm the baby. Watch this."
+msgstr "כולם אומרים שאני התינוק. תסתכלו על זה."
+
+#. Key:	Family02I
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1685)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1685)
+msgctxt "MishpachaGreybox,Family02I"
+msgid "Lose the police"
+msgstr "התחמק מהמשטרה"
+
+#. Key:	Family02C
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1686)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1686)
+msgctxt "MishpachaGreybox,Family02C"
+msgid "Switch to Rafi (press 1)"
+msgstr "עבור לרפי (מקש 1)"
+
+#. Key:	Family02CSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1687)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1687)
+msgctxt "MishpachaGreybox,Family02CSay"
+msgid "Good work, kid. Now they'll send everything they have. Let them."
+msgstr "עבודה טובה, ילד. עכשיו הם ישלחו את כל מה שיש להם. שישלחו."
+
+#. Key:	Family02D
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1688)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1688)
+msgctxt "MishpachaGreybox,Family02D"
+msgid "Rafi: get to Moshe's garage, their base"
+msgstr "רפי: סע למוסך של משה, הבסיס שלהם"
+
+#. Key:	Family02DSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1689)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1689)
+msgctxt "MishpachaGreybox,Family02DSay"
+msgid "They came to my street. I'm going to theirs."
+msgstr "הם באו לרחוב שלי. אני הולך לרחוב שלהם."
+
+#. Key:	Family02E
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1690)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1690)
+msgctxt "MishpachaGreybox,Family02E"
+msgid "Finish the crew (press Q to call the boys)"
+msgstr "גמור את הכנופיה (Q קורא לחבר'ה)"
+
+#. Key:	Family02ESay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1691)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1691)
+msgctxt "MishpachaGreybox,Family02ESay"
+msgid "Dad built this with his hands. Nobody takes it from us."
+msgstr "אבא בנה את זה בידיים. אף אחד לא לוקח את זה מאיתנו."
+
+#. Key:	Family02F
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1693)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1693)
+msgctxt "MishpachaGreybox,Family02F"
+msgid "Switch to Shira (press 2)"
+msgstr "עבור לשירה (מקש 2)"
+
+#. Key:	Family02FSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1694)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1694)
+msgctxt "MishpachaGreybox,Family02FSay"
+msgid "Now that you two are done shooting, let me clean this up legally."
+msgstr "עכשיו, כשסיימתם לירות, תנו לי לנקות את זה לפי החוק."
+
+#. Key:	Family02G
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1695)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1695)
+msgctxt "MishpachaGreybox,Family02G"
+msgid "Shira: meet the judge's driver at the hospital"
+msgstr "שירה: פגשי את הנהג של השופט בבית החולים"
+
+#. Key:	Family02GSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1696)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1696)
+msgctxt "MishpachaGreybox,Family02GSay"
+msgid "One signature and that warehouse never existed."
+msgstr "חתימה אחת, והמחסן הזה מעולם לא היה קיים."
+
+#. Key:	Family02H
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1697)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1697)
+msgctxt "MishpachaGreybox,Family02H"
+msgid "Wait for the signature (stay close)"
+msgstr "חכי לחתימה (הישארי קרוב)"
+
+#. Key:	Family02HSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1698)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1698)
+msgctxt "MishpachaGreybox,Family02HSay"
+msgid "I told Rafi the last time was the last time. I lied to him, too."
+msgstr "אמרתי לרפי שהפעם האחרונה היא האחרונה. גם לו שיקרתי."
+
+#. Key:	Family02J
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1700)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1700)
+msgctxt "MishpachaGreybox,Family02J"
+msgid "Come home: the family drop-off"
+msgstr "הביתה: נקודת המסירה של המשפחה"
+
+#. Key:	Family02JSay
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1701)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(1701)
+msgctxt "MishpachaGreybox,Family02JSay"
+msgid "Sit down, all of you. Dad would have hated this. Then he'd have poured three glasses."
+msgstr "שבו, כולכם. אבא היה שונא את זה. ואז היה מוזג שלוש כוסות."
+
+#. Key:	DistrictMarket
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(223)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(223)
+msgctxt "MishpachaGreybox,DistrictMarket"
+msgid "Old Yafeh Market"
+msgstr "שוק יפו העתיקה"
+
+#. Key:	DistrictPort
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(224)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(224)
+msgctxt "MishpachaGreybox,DistrictPort"
+msgid "Tel Avir Port"
+msgstr "נמל תל אביר"
+
+#. Key:	DistrictReligious
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(225)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(225)
+msgctxt "MishpachaGreybox,DistrictReligious"
+msgid "Neve Torah"
+msgstr "נווה תורה"
+
+#. Key:	DistrictTowers
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(226)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(226)
+msgctxt "MishpachaGreybox,DistrictTowers"
+msgid "Emek HaCloud"
+msgstr "עמק הענן"
+
+#. Key:	DistrictBeach
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(227)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(227)
+msgctxt "MishpachaGreybox,DistrictBeach"
+msgid "The Beach"
+msgstr "החוף"
+
+#. Key:	DistrictCenter
+#. SourceLocation:	Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(228)
+#: Source/Mishpacha/Private/World/CityGreyboxGenerator.cpp(228)
+msgctxt "MishpachaGreybox,DistrictCenter"
+msgid "City Center"
+msgstr "מרכז העיר"
 
 #. Key:	OnlyRafi
 #. SourceLocation:	Source/Mishpacha/Private/World/MishpachaEmpireSubsystem.cpp(137)
@@ -1887,4 +1950,144 @@ msgstr "{0} בטוח. רפי משלם על זה ₪{1}."
 msgctxt "MishpachaEmpire,Lost"
 msgid "{0} is gone. Buying it back costs {1} NIS."
 msgstr "{0} אבד. לקנות אותו בחזרה עולה ₪{1}."
+
+#. Key:	CallerMom
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(44)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(44)
+msgctxt "MishpachaPhone,CallerMom"
+msgid "Mom"
+msgstr "אמא"
+
+#. Key:	CallerMoshe
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(45)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(45)
+msgctxt "MishpachaPhone,CallerMoshe"
+msgid "Moshe"
+msgstr "משה"
+
+#. Key:	CallerItzik
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(46)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(46)
+msgctxt "MishpachaPhone,CallerItzik"
+msgid "Itzik"
+msgstr "איציק"
+
+#. Key:	CallerEzra
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(47)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(47)
+msgctxt "MishpachaPhone,CallerEzra"
+msgid "Uncle Ezra"
+msgstr "דוד עזרא"
+
+#. Key:	CallerUnknown
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(48)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(48)
+msgctxt "MishpachaPhone,CallerUnknown"
+msgid "Blocked Number"
+msgstr "מספר חסוי"
+
+#. Key:	CallerAccountant
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(49)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(49)
+msgctxt "MishpachaPhone,CallerAccountant"
+msgid "The Accountant"
+msgstr "רואה החשבון"
+
+#. Key:	MomDinner1
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(52)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(52)
+msgctxt "MishpachaPhone,MomDinner1"
+msgid "You're eating? All three of you look thin to me."
+msgstr "אתם אוכלים? שלושתכם נראים לי רזים."
+
+#. Key:	MomDinner2
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(53)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(53)
+msgctxt "MishpachaPhone,MomDinner2"
+msgid "Friday, at my place. Everyone. No excuses and no phones at the table."
+msgstr "שישי אצלי. כולם. בלי תירוצים ובלי טלפונים על השולחן."
+
+#. Key:	ItzikPaid1
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(55)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(55)
+msgctxt "MishpachaPhone,ItzikPaid1"
+msgid "Tell Rafi it's all there. Three months. Counted it twice."
+msgstr "תגיד לרפי שהכול שם. שלושה חודשים. ספרתי פעמיים."
+
+#. Key:	ItzikPaid2
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(56)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(56)
+msgctxt "MishpachaPhone,ItzikPaid2"
+msgid "And tell him the pomegranates are on me. Please."
+msgstr "ותגיד לו שהרימונים עליי. בבקשה."
+
+#. Key:	EzraShoes1
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(58)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(58)
+msgctxt "MishpachaPhone,EzraShoes1"
+msgid "I heard you delivered some shoes. Heavy shoes, I heard."
+msgstr "שמעתי שמסרת נעליים. נעליים כבדות, שמעתי."
+
+#. Key:	EzraShoes2
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(59)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(59)
+msgctxt "MishpachaPhone,EzraShoes2"
+msgid "Your father started with shoes too. Be smarter than him."
+msgstr "גם אבא שלך התחיל מנעליים. תהיה חכם ממנו."
+
+#. Key:	MosheGarage1
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(61)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(61)
+msgctxt "MishpachaPhone,MosheGarage1"
+msgid "My garage is my garage again. I owe you people."
+msgstr "המוסך שלי שוב שלי. אני חייב לכם."
+
+#. Key:	MosheGarage2
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(62)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(62)
+msgctxt "MishpachaPhone,MosheGarage2"
+msgid "Bring any car by. On the house. Don't tell me where it came from."
+msgstr "תביאו כל רכב. על חשבון הבית. רק אל תספרו לי מאיפה הוא."
+
+#. Key:	UnknownHospital1
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(64)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(64)
+msgctxt "MishpachaPhone,UnknownHospital1"
+msgid "Nice visit at the hospital. We saw the whole thing."
+msgstr "ביקור יפה בבית החולים. ראינו הכול."
+
+#. Key:	UnknownHospital2
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(65)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(65)
+msgctxt "MishpachaPhone,UnknownHospital2"
+msgid "Your family isn't the only one with friends in this city."
+msgstr "המשפחה שלכם לא היחידה עם חברים בעיר הזאת."
+
+#. Key:	AccountantBooks1
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(67)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(67)
+msgctxt "MishpachaPhone,AccountantBooks1"
+msgid "The new place is on the books. On the clean books."
+msgstr "המקום החדש בספרים. בספרים הנקיים."
+
+#. Key:	AccountantBooks2
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(68)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(68)
+msgctxt "MishpachaPhone,AccountantBooks2"
+msgid "Buy more and I can make the numbers smile. Rival crews, that I can't fix."
+msgstr "תקנו עוד ואני אגרום למספרים לחייך. כנופיות יריבות, את זה אני לא מסדר."
+
+#. Key:	MomNews1
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(70)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(70)
+msgctxt "MishpachaPhone,MomNews1"
+msgid "I saw the news. I'm not asking anything."
+msgstr "ראיתי את החדשות. אני לא שואלת כלום."
+
+#. Key:	MomNews2
+#. SourceLocation:	Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(71)
+#: Source/Mishpacha/Private/World/MishpachaPhoneSubsystem.cpp(71)
+msgctxt "MishpachaPhone,MomNews2"
+msgid "Your father would be proud, God help us. Friday, seven o'clock."
+msgstr "אבא שלכם היה גאה, ה' יעזור לנו. שישי, בשבע."
 

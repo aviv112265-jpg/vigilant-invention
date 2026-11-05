@@ -157,7 +157,7 @@ protected:
 	float RoofExitHeight = 250.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Vehicle|Radio", meta = (ClampMin = "1"))
-	int32 NumRadioStations = 3;
+	int32 NumRadioStations = 5;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	float LookSensitivity = 1.f;

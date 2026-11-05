@@ -6,6 +6,7 @@
 #include "UI/MishpachaText.h"
 #include "World/MishpachaBusiness.h"
 #include "World/MishpachaEmpireSubsystem.h"
+#include "World/MishpachaPhoneSubsystem.h"
 #include "Core/StoryGameMode.h"
 #include "Family/SiblingSpawnPoint.h"
 #include "Missions/MissionDefinition.h"
@@ -178,6 +179,54 @@ FVector ACityGreyboxGenerator::IntersectionLocal(int32 I, int32 J) const
 	const float ExtentY = BlocksY * BlockSize + (BlocksY + 1) * RoadWidth;
 	const float Step = BlockSize + RoadWidth;
 	return FVector(-ExtentX * 0.5f + RoadWidth * 0.5f + I * Step, -ExtentY * 0.5f + RoadWidth * 0.5f + J * Step, 0.f);
+}
+
+EMishpachaDistrict ACityGreyboxGenerator::DistrictOfBlock(int32 BX, int32 BY) const
+{
+	if (BX >= BlocksX - 2 && BY >= BlocksY - 2)
+	{
+		return EMishpachaDistrict::Towers; // "Emek HaCloud"
+	}
+	if (BX <= 1 && BY <= 1)
+	{
+		return EMishpachaDistrict::Market; // Old Yafeh, by the sea
+	}
+	if (BX == 0 && BY >= BlocksY / 2 - 1 && BY <= BlocksY / 2)
+	{
+		return EMishpachaDistrict::Port;
+	}
+	if (BX >= BlocksX - 2 && BY <= 1)
+	{
+		return EMishpachaDistrict::Religious;
+	}
+	return EMishpachaDistrict::Center;
+}
+
+EMishpachaDistrict ACityGreyboxGenerator::GetDistrictAt(const FVector& WorldLocation) const
+{
+	const FVector Local = GetActorTransform().InverseTransformPosition(WorldLocation);
+	const FVector Origin = IntersectionLocal(0, 0);
+	const float Step = BlockSize + RoadWidth;
+	const int32 BX = FMath::FloorToInt32((Local.X - Origin.X) / Step);
+	const int32 BY = FMath::FloorToInt32((Local.Y - Origin.Y) / Step);
+	if (BX < 0)
+	{
+		return EMishpachaDistrict::Beach;
+	}
+	return DistrictOfBlock(FMath::Clamp(BX, 0, BlocksX - 1), FMath::Clamp(BY, 0, BlocksY - 1));
+}
+
+FText ACityGreyboxGenerator::GetDistrictName(EMishpachaDistrict District)
+{
+	switch (District)
+	{
+	case EMishpachaDistrict::Market: return LOCTEXT("DistrictMarket", "Old Yafeh Market");
+	case EMishpachaDistrict::Port: return LOCTEXT("DistrictPort", "Tel Avir Port");
+	case EMishpachaDistrict::Religious: return LOCTEXT("DistrictReligious", "Neve Torah");
+	case EMishpachaDistrict::Towers: return LOCTEXT("DistrictTowers", "Emek HaCloud");
+	case EMishpachaDistrict::Beach: return LOCTEXT("DistrictBeach", "The Beach");
+	default: return LOCTEXT("DistrictCenter", "City Center");
+	}
 }
 
 FVector ACityGreyboxGenerator::ToWorld(const FVector& Local) const
@@ -659,10 +708,90 @@ void ACityGreyboxGenerator::BuildGeometry()
 		}
 	};
 
+	// Market stall on the sidewalk: a table under a striped canopy, crates of produce on it.
+	auto AddStall = [&](const FVector& Spot, float Yaw)
+	{
+		const FRotator Facing(0.f, Yaw, 0.f);
+		const float Ground = SidewalkHeight;
+		PaintBoxes.Add(FTransform(Facing, Spot + FVector(0.f, 0.f, Ground + 40.f), FVector(1.3f, 3.2f, 0.8f)), FLinearColor(0.32f, 0.2f, 0.1f), false, 0.f);
+		const FLinearColor Produce[] = { FLinearColor(0.8f, 0.08f, 0.1f), FLinearColor(0.95f, 0.5f, 0.05f), FLinearColor(0.2f, 0.55f, 0.1f), FLinearColor(0.95f, 0.8f, 0.1f), FLinearColor(0.4f, 0.1f, 0.4f) };
+		for (int32 Crate = 0; Crate < 3; ++Crate)
+		{
+			const FVector At = Spot + Facing.RotateVector(FVector(0.f, (Crate - 1) * 100.f, 0.f)) + FVector(0.f, 0.f, Ground + 90.f);
+			PaintBoxes.Add(FTransform(Facing, At, FVector(0.9f, 0.85f, 0.2f)), FLinearColor(0.6f, 0.45f, 0.25f), false, 0.f);
+			PaintBlobs.Add(FTransform(Facing, At + FVector(0.f, 0.f, 15.f), FVector(0.75f, 0.7f, 0.25f)), Produce[DetailStream.RandRange(0, UE_ARRAY_COUNT(Produce) - 1)], false, 0.f);
+		}
+		PaintBoxes.Add(FTransform(FRotator(0.f, Yaw, 0.f), Spot + FVector(0.f, 0.f, Ground + 245.f), FVector(2.f, 3.8f, 0.06f)), PickColor(Awnings, UE_ARRAY_COUNT(Awnings)), true, 0.f);
+		for (const float Side : { -1.f, 1.f })
+		{
+			PaintCylinders.Add(FTransform(FRotator::ZeroRotator, Spot + Facing.RotateVector(FVector(-90.f, Side * 180.f, 0.f)) + FVector(0.f, 0.f, Ground + 120.f), FVector(0.05f, 0.05f, 2.4f)), FLinearColor(0.4f, 0.4f, 0.4f), false, 0.f);
+		}
+	};
+
+	// Port yard: rows of stacked shipping containers.
+	auto AddContainerYard = [&](const FVector& Center)
+	{
+		const FLinearColor Boxes[] = { FLinearColor(0.6f, 0.1f, 0.05f), FLinearColor(0.05f, 0.25f, 0.5f), FLinearColor(0.1f, 0.4f, 0.2f), FLinearColor(0.75f, 0.45f, 0.05f), FLinearColor(0.35f, 0.35f, 0.38f) };
+		for (int32 Row = 0; Row < 3; ++Row)
+		{
+			for (int32 Column = 0; Column < 2; ++Column)
+			{
+				const int32 Stack = DetailStream.RandRange(1, 3);
+				for (int32 Level = 0; Level < Stack; ++Level)
+				{
+					const FVector At = Center + FVector((Row - 1) * 330.f, (Column - 0.5f) * 720.f, SidewalkHeight + 130.f + Level * 262.f);
+					PaintBoxes.Add(FTransform(FRotator::ZeroRotator, At, FVector(2.5f, 6.2f, 2.6f)), Boxes[DetailStream.RandRange(0, UE_ARRAY_COUNT(Boxes) - 1)], false, 0.f);
+				}
+			}
+		}
+	};
+
+	// Harbor crane, straddling the block.
+	auto AddCrane = [&](const FVector& Center)
+	{
+		const FLinearColor Yellow(0.9f, 0.65f, 0.05f);
+		const float Reach = 1100.f;
+		const float Top = 2300.f;
+		for (const float SideX : { -1.f, 1.f })
+		{
+			for (const float SideY : { -1.f, 1.f })
+			{
+				PaintBoxes.Add(FTransform(FRotator::ZeroRotator, Center + FVector(SideX * 500.f, SideY * Reach, SidewalkHeight + Top * 0.5f), FVector(1.2f, 1.2f, Top / 100.f)), Yellow, false, 0.f);
+			}
+		}
+		PaintBoxes.Add(FTransform(FRotator::ZeroRotator, Center + FVector(-300.f, 0.f, SidewalkHeight + Top), FVector(30.f, 2.f, 2.f)), Yellow, false, 0.f);
+		PaintBoxes.Add(FTransform(FRotator::ZeroRotator, Center + FVector(0.f, 0.f, SidewalkHeight + Top * 0.5f + 200.f), FVector(0.1f, 0.1f, Top / 100.f - 4.f)), FLinearColor(0.1f, 0.1f, 0.1f), false, 0.f);
+	};
+
+	// Laundry drying on a line along a wall.
+	auto AddLaundry = [&](const FVector& LotCenter, float SizeX, float SizeY, float Height)
+	{
+		const FVector Normal = DetailStream.FRand() < 0.5f ? FVector(1.f, 0.f, 0.f) : FVector(0.f, 1.f, 0.f);
+		const FVector Along(Normal.Y, Normal.X, 0.f);
+		const float Length = FMath::Abs(Normal.X) > 0.f ? SizeY : SizeX;
+		const float Out = (FMath::Abs(Normal.X) > 0.f ? SizeX : SizeY) * 0.5f + 40.f;
+		const FRotator Flat = Normal.Rotation();
+		const FVector Line = LotCenter + Normal * Out + FVector(0.f, 0.f, SidewalkHeight + FMath::Min(Height - 100.f, 560.f));
+		PaintBoxes.Add(FTransform(Flat, Line, FVector(0.02f, Length * 0.8f / 100.f, 0.02f)), FLinearColor(0.2f, 0.2f, 0.2f), false, 0.f);
+		const FLinearColor Clothes[] = { FLinearColor(0.92f, 0.92f, 0.9f), FLinearColor(0.05f, 0.05f, 0.07f), FLinearColor(0.7f, 0.8f, 0.92f), FLinearColor(0.9f, 0.88f, 0.8f) };
+		for (float T = -0.35f; T <= 0.35f; T += 0.1f)
+		{
+			PaintBoxes.Add(FTransform(Flat, Line + Along * (T * Length) + FVector(0.f, 0.f, -45.f), FVector(0.03f, 0.6f, 0.9f)), Clothes[DetailStream.RandRange(0, UE_ARRAY_COUNT(Clothes) - 1)], false, 0.f);
+		}
+	};
+
+	const FLinearColor MarketFacades[] = {
+		FLinearColor(0.84f, 0.74f, 0.56f), FLinearColor(0.8f, 0.66f, 0.46f), FLinearColor(0.76f, 0.52f, 0.36f), FLinearColor(0.88f, 0.8f, 0.64f) };
+	const FLinearColor ReligiousFacades[] = {
+		FLinearColor(0.9f, 0.88f, 0.8f), FLinearColor(0.87f, 0.84f, 0.74f), FLinearColor(0.83f, 0.8f, 0.7f) };
+	const FLinearColor PortFacades[] = {
+		FLinearColor(0.5f, 0.56f, 0.62f), FLinearColor(0.56f, 0.4f, 0.32f), FLinearColor(0.42f, 0.48f, 0.5f) };
+
 	for (int32 BX = 0; BX < BlocksX; ++BX)
 	{
 		for (int32 BY = 0; BY < BlocksY; ++BY)
 		{
+			const EMishpachaDistrict District = DistrictOfBlock(BX, BY);
 			const float X0 = MinX + RoadWidth + BX * Step;
 			const float Y0 = MinY + RoadWidth + BY * Step;
 			const FVector BlockCenter(X0 + BlockSize * 0.5f, Y0 + BlockSize * 0.5f, 0.f);
@@ -681,8 +810,22 @@ void ACityGreyboxGenerator::BuildGeometry()
 			}
 
 			// "Emek HaCloud": glass towers in the north-east corner of the grid.
-			const bool bTowerDistrict = (BX >= BlocksX - 2) && (BY >= BlocksY - 2);
+			const bool bTowerDistrict = District == EMishpachaDistrict::Towers;
 			const float Lot = BlockSize * 0.5f;
+
+			if (District == EMishpachaDistrict::Market && bStreetDetails && bPaintPerInstance)
+			{
+				// The market spills onto the sidewalks.
+				for (float T = 1000.f; T <= BlockSize - 1000.f; T += 1000.f)
+				{
+					AddStall(FVector(X0 + T, Y0 + 430.f, 0.f), 90.f);
+					AddStall(FVector(X0 + T, Y0 + BlockSize - 430.f, 0.f), -90.f);
+				}
+			}
+			if (District == EMishpachaDistrict::Port && bStreetDetails && bPaintPerInstance)
+			{
+				AddCrane(BlockCenter);
+			}
 
 			for (int32 LX = 0; LX < 2; ++LX)
 			{
@@ -703,6 +846,13 @@ void ACityGreyboxGenerator::BuildGeometry()
 						continue;
 					}
 
+					if (District == EMishpachaDistrict::Port && bStreetDetails && bPaintPerInstance && (LX + LY) % 2 == 0)
+					{
+						AddMapArea(LotCenter, Lot - 400.f, Lot - 400.f, EMishpachaMapAreaType::Plaza);
+						AddContainerYard(LotCenter);
+						continue;
+					}
+
 					float Height;
 					if (bTowerDistrict)
 					{
@@ -713,12 +863,33 @@ void ACityGreyboxGenerator::BuildGeometry()
 					}
 
 					// Bauhaus low-rises: 2-5 floors on "pilotis", the odd 8-12 floor block.
-					const int32 Floors = (Stream.FRand() < 0.1f) ? Stream.RandRange(8, 12) : Stream.RandRange(2, 5);
+					int32 Floors = (Stream.FRand() < 0.1f) ? Stream.RandRange(8, 12) : Stream.RandRange(2, 5);
+					if (District == EMishpachaDistrict::Market)
+					{
+						Floors = FMath::Min(Floors, 3); // old stone houses
+					}
+					else if (District == EMishpachaDistrict::Religious)
+					{
+						Floors = FMath::Clamp(Floors, 3, 4);
+					}
+					else if (District == EMishpachaDistrict::Port)
+					{
+						Floors = FMath::Min(Floors, 2);
+					}
 					Height = Floors * 320.f + 100.f;
 					const FTransform Building = Box(LotCenter + FVector(0.f, 0.f, SidewalkHeight + Height * 0.5f), FVector(SizeX, SizeY, Height));
 					AddMapArea(LotCenter, SizeX, SizeY, EMishpachaMapAreaType::Building);
-					const bool bShops = bPaintPerInstance && DetailStream.FRand() < 0.65f;
-					const FLinearColor FacadePaint = Facades[DetailStream.RandRange(0, UE_ARRAY_COUNT(Facades) - 1)];
+					const float ShopChance = District == EMishpachaDistrict::Market ? 1.f
+						: (District == EMishpachaDistrict::Religious || District == EMishpachaDistrict::Port ? 0.f : 0.65f);
+					const bool bShops = bPaintPerInstance && DetailStream.FRand() < ShopChance;
+					const FLinearColor FacadePaint = District == EMishpachaDistrict::Market ? MarketFacades[DetailStream.RandRange(0, UE_ARRAY_COUNT(MarketFacades) - 1)]
+						: District == EMishpachaDistrict::Religious ? ReligiousFacades[DetailStream.RandRange(0, UE_ARRAY_COUNT(ReligiousFacades) - 1)]
+						: District == EMishpachaDistrict::Port ? PortFacades[DetailStream.RandRange(0, UE_ARRAY_COUNT(PortFacades) - 1)]
+						: Facades[DetailStream.RandRange(0, UE_ARRAY_COUNT(Facades) - 1)];
+					if (District == EMishpachaDistrict::Religious && bStreetDetails && bPaintPerInstance)
+					{
+						AddLaundry(LotCenter, SizeX, SizeY, Height);
+					}
 					if (Stream.FRand() < 0.6f)
 					{
 						White.Add(Building);
@@ -1000,6 +1171,8 @@ void ACityGreyboxGenerator::BuildGeometry()
 		TPair<FIntPoint, FText>(FIntPoint(1, BlocksY - 2), LOCTEXT("PlaceDropoff", "Family Drop-off")),
 		TPair<FIntPoint, FText>(FIntPoint(1, BlocksY - 1), LOCTEXT("PlaceHospital", "Hospital")),
 		TPair<FIntPoint, FText>(FIntPoint(BlocksX / 2, BlocksY / 2), LOCTEXT("PlaceHome", "Sela Family")),
+		TPair<FIntPoint, FText>(FIntPoint(0, BlocksY / 2), GetDistrictName(EMishpachaDistrict::Port)),
+		TPair<FIntPoint, FText>(FIntPoint(BlocksX - 1, 1), GetDistrictName(EMishpachaDistrict::Religious)),
 	};
 	for (const TPair<FIntPoint, FText>& Place : Places)
 	{
@@ -1138,6 +1311,10 @@ void ACityGreyboxGenerator::SpawnGameplayActors()
 	if (Cast<AStoryGameMode>(World->GetAuthGameMode()))
 	{
 		SpawnBusinesses();
+		if (UMishpachaPhoneSubsystem* Phone = World->GetSubsystem<UMishpachaPhoneSubsystem>())
+		{
+			Phone->Start();
+		}
 	}
 
 	// --- Default missions, unless the level already has its own markers ---

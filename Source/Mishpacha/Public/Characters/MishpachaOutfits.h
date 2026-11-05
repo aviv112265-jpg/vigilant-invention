@@ -26,6 +26,8 @@ struct FMishpachaOutfit
 	/** Rafi: businessman / boss suit, classic black hair. Shira: lawyer's suit, long ginger bob. Omer: just out of the army - white tank top, swim shorts, flip-flops, brown buzz cut. */
 	static bool ForSibling(FName SiblingId, FMishpachaOutfit& Out);
 	static FMishpachaOutfit Civilian(FRandomStream& Stream, bool bFemale);
+	/** Neve Torah: black and white for the men, long dark dresses and head coverings for the women. */
+	static FMishpachaOutfit Religious(FRandomStream& Stream, bool bFemale);
 	static FMishpachaOutfit Police();
 	static FMishpachaOutfit Rival(FRandomStream& Stream);
 	static FMishpachaOutfit FamilySoldier();

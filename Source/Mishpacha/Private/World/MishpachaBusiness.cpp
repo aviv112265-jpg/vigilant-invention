@@ -9,7 +9,7 @@
 
 namespace
 {
-	UStaticMesh* LoadShape(const TCHAR* Name)
+	UStaticMesh* LoadBusinessShape(const TCHAR* Name)
 	{
 		return LoadObject<UStaticMesh>(nullptr, *FString::Printf(TEXT("/Engine/BasicShapes/%s.%s"), Name, Name), nullptr, LOAD_Quiet | LOAD_NoWarn);
 	}
@@ -71,8 +71,8 @@ void AMishpachaBusiness::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UStaticMesh* Cylinder = LoadShape(TEXT("Cylinder"));
-	UStaticMesh* Cube = LoadShape(TEXT("Cube"));
+	UStaticMesh* Cylinder = LoadBusinessShape(TEXT("Cylinder"));
+	UStaticMesh* Cube = LoadBusinessShape(TEXT("Cube"));
 	UMaterialInterface* Basic = LoadObject<UMaterialInterface>(nullptr, TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"), nullptr, LOAD_Quiet | LOAD_NoWarn);
 	UMaterialInterface* Glow = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Mishpacha/Materials/M_CarLight.M_CarLight"), nullptr, LOAD_Quiet | LOAD_NoWarn);
 	if (!Cylinder || !Cube || !Basic)

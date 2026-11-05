@@ -65,6 +65,10 @@ public:
 	int32 GetBlocksY() const { return BlocksY; }
 	float GetRoadWidth() const { return RoadWidth; }
 
+	/** Which neighborhood a world location is in, and its name. */
+	EMishpachaDistrict GetDistrictAt(const FVector& WorldLocation) const;
+	static FText GetDistrictName(EMishpachaDistrict District);
+
 	/** Traffic light color for cars crossing intersection Node along the grid's X (or Y): 0 red, 1 yellow, 2 green; -1 = no working light there. */
 	int32 GetSignalColor(const FIntPoint& Node, bool bAlongX) const;
 
@@ -249,6 +253,7 @@ private:
 	void SetupISM(UInstancedStaticMeshComponent* ISM, UStaticMesh* Mesh, UMaterialInterface* BaseMaterial, const FLinearColor& Color, bool bCollision);
 
 	/** Local-space center of the intersection between vertical road I and horizontal road J. */
+	EMishpachaDistrict DistrictOfBlock(int32 BX, int32 BY) const;
 	FVector IntersectionLocal(int32 I, int32 J) const;
 	FVector ToWorld(const FVector& Local) const;
 

@@ -45,6 +45,7 @@ public:
 	UMishpachaHUDWidget* GetHUDWidget() const { return HUDWidget; }
 
 	void ShowNotification(const FText& Message);
+	void ShowPhoneLine(const FText& Caller, const FText& Line, float Seconds);
 	void SetSwitchMenuOpen(bool bOpen);
 
 	// ----- Map (driven by AMishpachaPlayerController) -----
@@ -178,6 +179,13 @@ private:
 	// ----- Toasts / banners -----
 	FText LastNotification;
 	double LastNotificationTime = -1000.0;
+
+	FText PhoneCaller;
+	FText PhoneText;
+	double PhoneLineEnd = -1000.0;
+
+	int32 LastDistrict = INDEX_NONE;
+	double NextDistrictCheck = 0.0;
 	FText BannerTitle;
 	FText BannerSubtitle;
 	FLinearColor BannerColor = FLinearColor::White;
@@ -257,6 +265,8 @@ private:
 	void DrawBanner();
 	void DrawSubtitle();
 	void DrawBusinessInfo();
+	void DrawPhoneCall();
+	void UpdateDistrict();
 	void DrawControlsHint();
 	void DrawCrosshair();
 

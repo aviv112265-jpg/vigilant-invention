@@ -9,7 +9,10 @@
 #include "Core/MishpachaPlayerState.h"
 #include "Heat/HeatComponent.h"
 #include "World/MishpachaBusiness.h"
+#include "World/CityGreyboxGenerator.h"
 #include "World/MishpachaEmpireSubsystem.h"
+#include "World/MishpachaPhoneSubsystem.h"
+#include "World/MishpachaSounds.h"
 #include "Missions/MissionDefinition.h"
 #include "Missions/MissionStartMarker.h"
 #include "Missions/MissionSubsystem.h"
@@ -564,6 +567,19 @@ void AMishpachaPlayerController::ClientShowNotification_Implementation(const FTe
 	UE_LOG(LogMishpacha, Log, TEXT("[Notification] %s"), *Message.ToString());
 }
 
+void AMishpachaPlayerController::ClientPhoneRing_Implementation()
+{
+	MishpachaSounds::Play2D(this, TEXT("S_Phone_Ring"), 0.7f);
+}
+
+void AMishpachaPlayerController::ClientPhoneLine_Implementation(const FText& Caller, const FText& Line, float Seconds)
+{
+	if (AMishpachaHUD* MishpachaHUD = GetHUD<AMishpachaHUD>())
+	{
+		MishpachaHUD->ShowPhoneLine(Caller, Line, Seconds);
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Input handlers
 // ---------------------------------------------------------------------------
@@ -952,6 +968,28 @@ void AMishpachaPlayerController::Mish_EndAttack(int32 bDefended)
 	if (UMishpachaEmpireSubsystem* Empire = HasAuthority() ? GetWorld()->GetSubsystem<UMishpachaEmpireSubsystem>() : nullptr)
 	{
 		Empire->EndAttack(bDefended != 0);
+	}
+}
+
+void AMishpachaPlayerController::Mish_GoCross(int32 I, int32 J)
+{
+	TActorIterator<ACityGreyboxGenerator> City(GetWorld());
+	if (HasAuthority() && City && GetPawn())
+	{
+		GetPawn()->TeleportTo(City->GetIntersection(I, J) + FVector(0.f, 0.f, 120.f), GetPawn()->GetActorRotation());
+	}
+}
+
+void AMishpachaPlayerController::Mish_Radio()
+{
+	HandleRadio();
+}
+
+void AMishpachaPlayerController::Mish_Call()
+{
+	if (UMishpachaPhoneSubsystem* Phone = HasAuthority() ? GetWorld()->GetSubsystem<UMishpachaPhoneSubsystem>() : nullptr)
+	{
+		Phone->TryCall();
 	}
 }
 

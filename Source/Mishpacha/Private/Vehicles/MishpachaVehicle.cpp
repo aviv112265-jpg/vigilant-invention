@@ -484,7 +484,7 @@ void AMishpachaVehicle::UpdateSounds()
 	{
 		if (AMishpachaPlayerController* PC = IsLocallyControlled() ? Cast<AMishpachaPlayerController>(GetController()) : nullptr)
 		{
-			const FText Names[] = { NSLOCTEXT("MishpachaRadio", "Off", "Radio off"), NSLOCTEXT("MishpachaRadio", "TelAvirFM", "Radio: Tel Avir FM"), NSLOCTEXT("MishpachaRadio", "Mizrahi", "Radio: Mizrahi Wave") };
+			const FText Names[] = { NSLOCTEXT("MishpachaRadio", "Off", "Radio off"), NSLOCTEXT("MishpachaRadio", "TelAvirFM", "Radio: Tel Avir FM"), NSLOCTEXT("MishpachaRadio", "Mizrahi", "Radio: Mizrahi Wave"), NSLOCTEXT("MishpachaRadio", "YamFM", "Radio: Yam FM"), NSLOCTEXT("MishpachaRadio", "RockHaIr", "Radio: Rock HaIr") };
 			if (RadioStation >= 0 && RadioStation < UE_ARRAY_COUNT(Names) && (WantedStation > 0 || PlayingRadioStation > 0) && HasDriver())
 			{
 				PC->ClientShowNotification(Names[RadioStation]);
@@ -497,7 +497,7 @@ void AMishpachaVehicle::UpdateSounds()
 			RadioAudio->DestroyComponent();
 			RadioAudio = nullptr;
 		}
-		static const FName Stations[] = { NAME_None, TEXT("S_Radio_TelAvirFM"), TEXT("S_Radio_MizrahiWave") };
+		static const FName Stations[] = { NAME_None, TEXT("S_Radio_TelAvirFM"), TEXT("S_Radio_MizrahiWave"), TEXT("S_Radio_YamFM"), TEXT("S_Radio_RockHaIr") };
 		if (WantedStation > 0 && WantedStation < UE_ARRAY_COUNT(Stations))
 		{
 			RadioAudio = MishpachaSounds::MakeLoop(GetMesh(), Stations[WantedStation], 0.f, false);

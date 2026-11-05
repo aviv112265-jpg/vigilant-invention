@@ -107,6 +107,31 @@ FMishpachaOutfit FMishpachaOutfit::Civilian(FRandomStream& Stream, bool bFemale)
 	return Out;
 }
 
+FMishpachaOutfit FMishpachaOutfit::Religious(FRandomStream& Stream, bool bFemale)
+{
+	FMishpachaOutfit Out = Civilian(Stream, bFemale);
+	Out.bTankTop = false;
+	Out.bFlipFlops = false;
+	Out.SleeveEnd = 46.f;
+	Out.PantsEnd = 10.f;
+	Out.Shoes = FLinearColor(0.02f, 0.02f, 0.02f);
+	if (bFemale)
+	{
+		Out.bJacket = false;
+		Out.Top = Pick(Stream, { FLinearColor(0.05f, 0.06f, 0.14f), FLinearColor(0.12f, 0.08f, 0.1f), FLinearColor(0.2f, 0.2f, 0.24f) });
+		Out.Pants = Out.Top;
+		Out.Hair = Pick(Stream, { FLinearColor(0.3f, 0.32f, 0.4f), FLinearColor(0.08f, 0.08f, 0.1f), FLinearColor(0.45f, 0.4f, 0.4f) });
+		return Out;
+	}
+	Out.bJacket = true;
+	Out.Top = FLinearColor(0.92f, 0.92f, 0.9f);
+	Out.Jacket = FLinearColor(0.02f, 0.02f, 0.025f);
+	Out.Pants = Out.Jacket;
+	Out.Hair = FLinearColor(0.015f, 0.012f, 0.01f);
+	Out.HairStyle = 0.f;
+	return Out;
+}
+
 FMishpachaOutfit FMishpachaOutfit::Police()
 {
 	// Israel Police: light-blue shirt, dark navy trousers, black boots.

@@ -246,3 +246,32 @@ MishpachaHUD,BusinessBlip	₪
 MishpachaHUD,BusinessAttack	{0} תחת התקפה  {1}:{2}
 MishpachaHUD,BusinessBuy	F  לקנות את {0}: ₪{1}, מכניס ₪{2}
 MishpachaHUD,BusinessOwned	{0}: שלך, מכניס ₪{1}
+MishpachaGreybox,DistrictMarket	שוק יפו העתיקה
+MishpachaGreybox,DistrictPort	נמל תל אביר
+MishpachaGreybox,DistrictReligious	נווה תורה
+MishpachaGreybox,DistrictTowers	עמק הענן
+MishpachaGreybox,DistrictBeach	החוף
+MishpachaGreybox,DistrictCenter	מרכז העיר
+MishpachaRadio,YamFM	רדיו: ים FM
+MishpachaRadio,RockHaIr	רדיו: רוק העיר
+MishpachaHUD,PhoneLine	{0}: {1}
+MishpachaPhone,CallerMom	אמא
+MishpachaPhone,CallerMoshe	משה
+MishpachaPhone,CallerItzik	איציק
+MishpachaPhone,CallerEzra	דוד עזרא
+MishpachaPhone,CallerUnknown	מספר חסוי
+MishpachaPhone,CallerAccountant	רואה החשבון
+MishpachaPhone,MomDinner1	אתם אוכלים? שלושתכם נראים לי רזים.
+MishpachaPhone,MomDinner2	שישי אצלי. כולם. בלי תירוצים ובלי טלפונים על השולחן.
+MishpachaPhone,ItzikPaid1	תגיד לרפי שהכול שם. שלושה חודשים. ספרתי פעמיים.
+MishpachaPhone,ItzikPaid2	ותגיד לו שהרימונים עליי. בבקשה.
+MishpachaPhone,EzraShoes1	שמעתי שמסרת נעליים. נעליים כבדות, שמעתי.
+MishpachaPhone,EzraShoes2	גם אבא שלך התחיל מנעליים. תהיה חכם ממנו.
+MishpachaPhone,MosheGarage1	המוסך שלי שוב שלי. אני חייב לכם.
+MishpachaPhone,MosheGarage2	תביאו כל רכב. על חשבון הבית. רק אל תספרו לי מאיפה הוא.
+MishpachaPhone,UnknownHospital1	ביקור יפה בבית החולים. ראינו הכול.
+MishpachaPhone,UnknownHospital2	המשפחה שלכם לא היחידה עם חברים בעיר הזאת.
+MishpachaPhone,AccountantBooks1	המקום החדש בספרים. בספרים הנקיים.
+MishpachaPhone,AccountantBooks2	תקנו עוד ואני אגרום למספרים לחייך. כנופיות יריבות, את זה אני לא מסדר.
+MishpachaPhone,MomNews1	ראיתי את החדשות. אני לא שואלת כלום.
+MishpachaPhone,MomNews2	אבא שלכם היה גאה, ה' יעזור לנו. שישי, בשבע.

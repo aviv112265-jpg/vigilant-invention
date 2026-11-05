@@ -1556,6 +1556,51 @@ void AMishpachaHUD::DrawNotification()
 	DrawLabel(LastNotification, X + S(24.f), Y + (H - S(3.f) - TextSize.Y) * 0.5f, TextFont, WithAlpha(MishpachaHUDStyle::TextMain, Alpha));
 }
 
+void AMishpachaHUD::ShowPhoneLine(const FText& Caller, const FText& Line, float Seconds)
+{
+	PhoneCaller = Caller;
+	PhoneText = Line;
+	PhoneLineEnd = GetWorld()->GetRealTimeSeconds() + Seconds;
+}
+
+void AMishpachaHUD::DrawPhoneCall()
+{
+	if (GetWorld()->GetRealTimeSeconds() > PhoneLineEnd || PhoneText.IsEmpty())
+	{
+		return;
+	}
+	const FText Text = FText::Format(LOCTEXT("PhoneLine", "{0}: {1}"), PhoneCaller, PhoneText);
+	const FSlateFontInfo TextFont = Font(13.f);
+	const FVector2D TextSize = MeasureText(Text, TextFont);
+	const float W = TextSize.X + S(44.f);
+	const float H = S(40.f);
+	const float X = (Canvas->ClipX - W) * 0.5f;
+	const float Y = Canvas->ClipY - S(204.f);
+	FillRect(X, Y, W, H, FLinearColor(0.f, 0.f, 0.f, 0.65f));
+	FillRect(X, Y, W, S(3.f), MishpachaHUDStyle::Info);
+	DrawLabel(Text, X + S(22.f), Y + (H - TextSize.Y) * 0.5f, TextFont, FLinearColor::White);
+}
+
+void AMishpachaHUD::UpdateDistrict()
+{
+	const double Now = GetWorld()->GetRealTimeSeconds();
+	const ACityGreyboxGenerator* Gen = FindGenerator();
+	if (!Gen || Now < NextDistrictCheck)
+	{
+		return;
+	}
+	NextDistrictCheck = Now + 1.0;
+	const int32 District = static_cast<int32>(Gen->GetDistrictAt(GetPlayerLocation()));
+	if (District != LastDistrict)
+	{
+		if (LastDistrict != INDEX_NONE)
+		{
+			ShowNotification(ACityGreyboxGenerator::GetDistrictName(static_cast<EMishpachaDistrict>(District)));
+		}
+		LastDistrict = District;
+	}
+}
+
 void AMishpachaHUD::DrawBusinessInfo()
 {
 	using MishpachaHUDStyle::WithAlpha;
@@ -2332,7 +2377,9 @@ void AMishpachaHUD::DrawHUD()
 	DrawMissionCard();
 	DrawBanner();
 	DrawSubtitle();
+	DrawPhoneCall();
 	DrawBusinessInfo();
+	UpdateDistrict();
 	DrawNotification();
 	DrawControlsHint();
 	if (bWheelOpen)

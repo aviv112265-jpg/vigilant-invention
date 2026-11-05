@@ -175,6 +175,28 @@ def blip(freq, seconds, decay):
     return [math.sin(2 * math.pi * freq * (i / RATE)) * math.exp(-(i / RATE) * decay) for i in range(n)]
 
 
+# Lazy sea-side groove in C major, and a driving rock riff in E minor.
+YAM_MELODY = [3, None, 7, 10, None, 7, 3, None, 5, None, 8, 12, None, 8, 5, None, 7, None, 10, 14, None, 10, 7, None, 5, None, 3, 2, None, -2, 0, None]
+YAM_FM = radio([None if m is None else m + 12 for m in YAM_MELODY], [-21, -16, -14, -19], 78,
+               ["dum", None, None, "tek", None, None, "tek", None] * 4)
+ROCK_RIFF = [-5, -5, -2, -5, 0, -5, -2, -5, -5, -5, -2, -5, 2, 0, -2, -5, -8, -8, -5, -8, -3, -8, -5, -8, -7, -7, -3, -7, -2, -3, -5, -7]
+ROCK_HAIR = radio(ROCK_RIFF, [-29, -29, -33, -31], 142,
+                  ["dum", None, "tek", None, "dum", "dum", "tek", None] * 4)
+
+
+def phone_ring():
+    """Two warbling bursts, like an old landline."""
+    n = int(2.0 * RATE)
+    out = [0.0] * n
+    for start in (0.0, 0.5, 1.2, 1.7):
+        for i in range(int(0.34 * RATE)):
+            t = i / RATE
+            j = int(start * RATE) + i
+            if j < n:
+                out[j] += 0.5 * min(1.0, t * 60) * math.sin(2 * math.pi * 1400 * t) * (0.6 + 0.4 * math.sin(2 * math.pi * 24 * t))
+    return out
+
+
 SOUNDS = {
     "S_Shot_Pistol": (gunshot(0.6, 26, 18, 120, 5500), False),
     "S_Shot_SMG": (gunshot(0.35, 38, 25, 150, 7000), False),
@@ -184,6 +206,9 @@ SOUNDS = {
     "S_Siren_Loop": (siren_loop(), True),
     "S_Radio_TelAvirFM": (TEL_AVIR_FM, True),
     "S_Radio_MizrahiWave": (MIZRAHI_WAVE, True),
+    "S_Radio_YamFM": (YAM_FM, True),
+    "S_Radio_RockHaIr": (ROCK_HAIR, True),
+    "S_Phone_Ring": (phone_ring(), False),
     "S_City_Ambience": (city_ambience(), True),
     "S_UI_Click": (blip(1800, 0.05, 90), False),
     "S_UI_HitMarker": (blip(3200, 0.04, 120), False),

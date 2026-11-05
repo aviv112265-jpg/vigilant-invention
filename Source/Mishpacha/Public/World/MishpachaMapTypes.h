@@ -28,3 +28,14 @@ struct FMishpachaMapPlace
 	FVector Location = FVector::ZeroVector;
 	FText Label;
 };
+
+/** The city's neighborhoods: each has its own look and people. */
+enum class EMishpachaDistrict : uint8
+{
+	Center,
+	Market,
+	Port,
+	Religious,
+	Towers,
+	Beach
+};

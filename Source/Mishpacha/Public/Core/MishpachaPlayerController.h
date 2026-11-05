@@ -35,6 +35,14 @@ public:
 	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "UI")
 	void ClientShowNotification(const FText& Message);
 
+	/** A side character is calling: the phone rings. */
+	UFUNCTION(Client, Reliable)
+	void ClientPhoneRing();
+
+	/** One line of the call on screen. */
+	UFUNCTION(Client, Reliable)
+	void ClientPhoneLine(const FText& Caller, const FText& Line, float Seconds);
+
 	UFUNCTION(BlueprintPure, Category = "Family")
 	bool IsSwitchMenuOpen() const { return bSwitchMenuOpen; }
 
@@ -78,6 +86,18 @@ public:
 	/** Pay the businesses' income now. */
 	UFUNCTION(Exec)
 	void Mish_Income();
+
+	/** Teleport to intersection (I, J) of the street grid. */
+	UFUNCTION(Exec)
+	void Mish_GoCross(int32 I, int32 J);
+
+	/** In a car: next radio station. */
+	UFUNCTION(Exec)
+	void Mish_Radio();
+
+	/** Ring the phone now, if a call is available. */
+	UFUNCTION(Exec)
+	void Mish_Call();
 
 	/** End the attack now: 1 defended, 0 lost. */
 	UFUNCTION(Exec)

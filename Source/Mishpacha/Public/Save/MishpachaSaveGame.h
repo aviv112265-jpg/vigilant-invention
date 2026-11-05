@@ -47,4 +47,8 @@ public:
 	/** Taken by a rival crew at some point: half price to buy back. */
 	UPROPERTY(BlueprintReadWrite, Category = "Save")
 	TSet<FName> LostBusinesses;
+
+	/** Phone calls already taken (each plays once). */
+	UPROPERTY(BlueprintReadWrite, Category = "Save")
+	TSet<FName> PlayedCalls;
 };

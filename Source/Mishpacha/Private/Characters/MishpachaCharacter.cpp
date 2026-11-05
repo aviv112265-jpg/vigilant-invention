@@ -3,6 +3,7 @@
 #include "Characters/MishpachaWeapon.h"
 #include "Characters/MishpachaAnimInstance.h"
 #include "Characters/MishpachaOutfits.h"
+#include "World/CityGreyboxGenerator.h"
 #include "Math/RandomStream.h"
 #include "Mishpacha.h"
 #include "Vehicles/MishpachaVehicle.h"
@@ -747,7 +748,10 @@ void AMishpachaCharacter::ApplyOutfit()
 		}
 		else
 		{
-			Outfit = FMishpachaOutfit::Civilian(Stream, bFemaleBody);
+			TActorIterator<ACityGreyboxGenerator> City(GetWorld());
+			Outfit = City && City->GetDistrictAt(GetActorLocation()) == EMishpachaDistrict::Religious
+				? FMishpachaOutfit::Religious(Stream, bFemaleBody)
+				: FMishpachaOutfit::Civilian(Stream, bFemaleBody);
 		}
 	}
 	Outfit.Apply(GetMesh(), SiblingId == Shira || bFemaleBody);

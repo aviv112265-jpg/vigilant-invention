@@ -242,6 +242,7 @@ private:
 	void SpawnGameplayActors();
 	void SpawnParkedCars();
 	void SpawnStreetProps();
+	void SpawnBusinesses();
 	void CreateDefaultMissions(const TMap<FName, FVector>& Targets);
 	void MaintainCivilians();
 

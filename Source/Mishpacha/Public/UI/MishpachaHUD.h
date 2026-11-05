@@ -256,6 +256,7 @@ private:
 	void DrawNotification();
 	void DrawBanner();
 	void DrawSubtitle();
+	void DrawBusinessInfo();
 	void DrawControlsHint();
 	void DrawCrosshair();
 

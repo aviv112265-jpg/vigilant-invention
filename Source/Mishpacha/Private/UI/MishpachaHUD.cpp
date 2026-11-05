@@ -11,6 +11,8 @@
 #include "Missions/MissionStartMarker.h"
 #include "World/CityGreyboxGenerator.h"
 #include "World/MishpachaRouteGuide.h"
+#include "World/MishpachaBusiness.h"
+#include "GameFramework/GameStateBase.h"
 #include "World/MishpachaDayNight.h"
 #include "Characters/MishpachaWeapon.h"
 #include "World/MishpachaSounds.h"
@@ -1010,6 +1012,30 @@ void AMishpachaHUD::DrawMapContents(const FMapView& View, bool bFullMap)
 		DrawPolylineClipped(RoutePoints, View, S(bFullMap ? 4.f : 3.5f), RouteColor);
 	}
 
+	// Rafi's businesses: green for sale, gold his, red under attack (always shown when under attack).
+	for (TActorIterator<AMishpachaBusiness> It(World); It; ++It)
+	{
+		const EMishpachaBusinessState State = It->GetState();
+		if (State != EMishpachaBusinessState::UnderAttack && bMissionActive)
+		{
+			continue;
+		}
+		const FVector2D P = View.ToScreen(It->GetActorLocation());
+		if (!View.Contains(P, Blip))
+		{
+			continue;
+		}
+		const FLinearColor Color = State == EMishpachaBusinessState::UnderAttack ? FLinearColor(0.95f, 0.1f, 0.08f)
+			: (State == EMishpachaBusinessState::Owned ? MishpachaHUDStyle::Gold : FLinearColor(0.2f, 0.75f, 0.35f));
+		DrawDisc(P, Blip * 1.2f, MishpachaHUDStyle::Outline);
+		DrawDisc(P, Blip, Color);
+		DrawLabel(LOCTEXT("BusinessBlip", "$"), P.X, P.Y - S(bFullMap ? 8.f : 7.f), Font(bFullMap ? 10.f : 8.5f, true), FLinearColor::White, 0.5f, false);
+		if (bFullMap)
+		{
+			DrawLabel(It->GetDisplayName(), P.X + Blip * 1.8f, P.Y - S(8.f), Font(10.f), Color);
+		}
+	}
+
 	// Job markers (hidden while a job runs, like the beacons' job).
 	if (!bMissionActive)
 	{
@@ -1528,6 +1554,56 @@ void AMishpachaHUD::DrawNotification()
 	FillRect(X, Y, W, H, WithAlpha(MishpachaHUDStyle::Panel, Alpha));
 	FillRect(X, Y + H - S(3.f), W, S(3.f), WithAlpha(MishpachaHUDStyle::Info, Alpha));
 	DrawLabel(LastNotification, X + S(24.f), Y + (H - S(3.f) - TextSize.Y) * 0.5f, TextFont, WithAlpha(MishpachaHUDStyle::TextMain, Alpha));
+}
+
+void AMishpachaHUD::DrawBusinessInfo()
+{
+	using MishpachaHUDStyle::WithAlpha;
+	const float CenterX = Canvas->ClipX * 0.5f;
+
+	// A panel like the toast's, centered on the screen.
+	auto Panel = [this, CenterX](const FText& Text, float Y, const FLinearColor& Accent)
+	{
+		const FSlateFontInfo TextFont = Font(12.f, true);
+		const FVector2D TextSize = MeasureText(Text, TextFont);
+		const float W = TextSize.X + S(40.f);
+		const float H = S(36.f);
+		FillRect(CenterX - W * 0.5f, Y, W, H, MishpachaHUDStyle::Panel);
+		FillRect(CenterX - W * 0.5f, Y + H - S(3.f), W, S(3.f), Accent);
+		DrawLabel(Text, CenterX, Y + (H - S(3.f) - TextSize.Y) * 0.5f, TextFont, MishpachaHUDStyle::TextMain, 0.5f);
+	};
+
+	// Under attack: the clock, wherever the player is.
+	const AGameStateBase* GameState = GetWorld()->GetGameState();
+	for (TActorIterator<AMishpachaBusiness> It(GetWorld()); It; ++It)
+	{
+		if (It->GetState() == EMishpachaBusinessState::UnderAttack && GameState)
+		{
+			const int32 Left = FMath::Max(0, FMath::CeilToInt(It->GetAttackEndTime() - GameState->GetServerWorldTimeSeconds()));
+			FNumberFormattingOptions TwoDigits;
+			TwoDigits.MinimumIntegralDigits = 2;
+			Panel(FText::Format(LOCTEXT("BusinessAttack", "{0} under attack  {1}:{2}"), It->GetDisplayName(), FText::AsNumber(Left / 60), FText::AsNumber(Left % 60, &TwoDigits)),
+				S(78.f), FLinearColor(0.95f, 0.1f, 0.08f));
+		}
+	}
+
+	// Standing at a business: what it is.
+	const APlayerController* PC = GetOwningPlayerController();
+	const AMishpachaCharacter* PlayerCharacter = PC ? Cast<AMishpachaCharacter>(PC->GetPawn()) : nullptr;
+	const AMishpachaBusiness* Near = PlayerCharacter ? AMishpachaBusiness::FindNearest(GetWorld(), PlayerCharacter->GetActorLocation(), AMishpachaBusiness::InteractRadius) : nullptr;
+	if (!Near)
+	{
+		return;
+	}
+	const float Y = Canvas->ClipY - S(120.f);
+	if (Near->GetState() == EMishpachaBusinessState::ForSale)
+	{
+		Panel(FText::Format(LOCTEXT("BusinessBuy", "F  Buy {0}: {1} NIS, pays {2} NIS"), Near->GetDisplayName(), FText::AsNumber(Near->GetCurrentPrice()), FText::AsNumber(Near->GetIncome())), Y, MishpachaHUDStyle::Gold);
+	}
+	else
+	{
+		Panel(FText::Format(LOCTEXT("BusinessOwned", "{0}: yours, pays {1} NIS"), Near->GetDisplayName(), FText::AsNumber(Near->GetIncome())), Y, MishpachaHUDStyle::Gold);
+	}
 }
 
 void AMishpachaHUD::DrawBanner()
@@ -2256,6 +2332,7 @@ void AMishpachaHUD::DrawHUD()
 	DrawMissionCard();
 	DrawBanner();
 	DrawSubtitle();
+	DrawBusinessInfo();
 	DrawNotification();
 	DrawControlsHint();
 	if (bWheelOpen)

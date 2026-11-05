@@ -72,6 +72,9 @@ public:
 	void NotifySiblingDied(AMishpachaCharacter* DeadCharacter);
 	void WriteToSave(UMishpachaSaveGame* Save) const;
 
+	/** Pay a sibling: into the player's wallet if they're the one being played, otherwise onto their stored money. */
+	void AddSiblingMoney(FName SiblingId, int32 Amount);
+
 	UFUNCTION(BlueprintCallable, Category = "Family")
 	ESiblingSwitchResult RequestSwitch(APlayerController* PC, int32 TargetIndex);
 

@@ -12,6 +12,7 @@ class UInputMappingContext;
 class AMishpachaCharacter;
 class AMishpachaVehicle;
 class ADronePawn;
+class AMishpachaBusiness;
 
 /**
  * Routes input to whatever the player currently controls (a sibling on foot, a vehicle, Omer's drone).
@@ -62,6 +63,29 @@ public:
 	/** Set your wanted level (0-5), e.g. "Mish_Heat 4". */
 	UFUNCTION(Exec)
 	void Mish_Heat(int32 Level);
+
+	UFUNCTION(Exec)
+	void Mish_Money(int32 Amount);
+
+	/** Teleport to business N. */
+	UFUNCTION(Exec)
+	void Mish_GoBusiness(int32 Index);
+
+	/** Press the interact key (F). */
+	UFUNCTION(Exec)
+	void Mish_Interact();
+
+	/** Pay the businesses' income now. */
+	UFUNCTION(Exec)
+	void Mish_Income();
+
+	/** End the attack now: 1 defended, 0 lost. */
+	UFUNCTION(Exec)
+	void Mish_EndAttack(int32 bDefended);
+
+	/** Send a rival crew at an owned business now. */
+	UFUNCTION(Exec)
+	void Mish_Attack();
 
 	/** Report a witnessed crime N times at once (see ECrimeType, 2 = gunshot) - for balancing heat. */
 	UFUNCTION(Exec)
@@ -178,6 +202,9 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 	void ServerRequestSwitchSibling(int32 SiblingIndex);
+
+	UFUNCTION(Server, Reliable)
+	void ServerBuyBusiness(AMishpachaBusiness* Business);
 
 	// ----- Map input (always built in code; Tab works on foot, in cars and in the drone) -----
 	UPROPERTY(Transient)

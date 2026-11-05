@@ -1,6 +1,7 @@
 // MISHPACHA - the Sela family: three switchable siblings (Story mode).
 #include "Family/FamilySubsystem.h"
 #include "Family/SiblingDefinition.h"
+#include "Abilities/SiblingAbilityComponent.h"
 #include "Family/SiblingSpawnPoint.h"
 #include "Characters/MishpachaCharacter.h"
 #include "Core/MishpachaPlayerState.h"
@@ -311,6 +312,25 @@ void UFamilySubsystem::NotifySiblingDied(AMishpachaCharacter* DeadCharacter)
 			State.StoredTransform = FindSpawnTransform(State.Definition->SiblingId);
 		}
 		return;
+	}
+}
+
+void UFamilySubsystem::AddSiblingMoney(FName SiblingId, int32 Amount)
+{
+	const int32 Index = FindSiblingIndex(SiblingId);
+	if (!Siblings.IsValidIndex(Index))
+	{
+		return;
+	}
+	const APlayerController* PC = ControllingPlayer.Get();
+	AMishpachaPlayerState* PS = PC ? PC->GetPlayerState<AMishpachaPlayerState>() : nullptr;
+	if (Index == ActiveIndex && PS)
+	{
+		PS->AddMoney(Amount);
+	}
+	else
+	{
+		Siblings[Index].Money += Amount;
 	}
 }
 

@@ -8,6 +8,8 @@
 #include "Core/MishpachaGameInstance.h"
 #include "Core/MishpachaPlayerState.h"
 #include "Heat/HeatComponent.h"
+#include "World/MishpachaBusiness.h"
+#include "World/MishpachaEmpireSubsystem.h"
 #include "Missions/MissionDefinition.h"
 #include "Missions/MissionStartMarker.h"
 #include "Missions/MissionSubsystem.h"
@@ -668,7 +670,21 @@ void AMishpachaPlayerController::HandleInteract()
 	}
 	else if (AMishpachaCharacter* MyCharacter = GetMishpachaCharacter())
 	{
+		AMishpachaBusiness* Business = AMishpachaBusiness::FindNearest(GetWorld(), MyCharacter->GetActorLocation(), AMishpachaBusiness::InteractRadius);
+		if (Business && Business->GetState() == EMishpachaBusinessState::ForSale)
+		{
+			ServerBuyBusiness(Business);
+			return;
+		}
 		MyCharacter->Interact();
+	}
+}
+
+void AMishpachaPlayerController::ServerBuyBusiness_Implementation(AMishpachaBusiness* Business)
+{
+	if (UMishpachaEmpireSubsystem* Empire = GetWorld()->GetSubsystem<UMishpachaEmpireSubsystem>())
+	{
+		Empire->TryBuy(Business, this);
 	}
 }
 
@@ -898,6 +914,52 @@ void AMishpachaPlayerController::Mish_Crime(int32 CrimeType, int32 Count)
 		{
 			Heat->ReportCrime(static_cast<ECrimeType>(CrimeType), GetPawn()->GetActorLocation(), true);
 		}
+	}
+}
+
+void AMishpachaPlayerController::Mish_Money(int32 Amount)
+{
+	if (AMishpachaPlayerState* PS = HasAuthority() ? GetPlayerState<AMishpachaPlayerState>() : nullptr)
+	{
+		PS->AddMoney(Amount);
+	}
+}
+
+void AMishpachaPlayerController::Mish_GoBusiness(int32 Index)
+{
+	const UMishpachaEmpireSubsystem* Empire = GetWorld()->GetSubsystem<UMishpachaEmpireSubsystem>();
+	if (HasAuthority() && Empire && GetPawn() && Empire->GetBusinesses().IsValidIndex(Index) && Empire->GetBusinesses()[Index].IsValid())
+	{
+		GetPawn()->TeleportTo(Empire->GetBusinesses()[Index]->GetActorLocation() + FVector(250.f, 0.f, 120.f), GetPawn()->GetActorRotation());
+	}
+}
+
+void AMishpachaPlayerController::Mish_Interact()
+{
+	HandleInteract();
+}
+
+void AMishpachaPlayerController::Mish_Income()
+{
+	if (UMishpachaEmpireSubsystem* Empire = HasAuthority() ? GetWorld()->GetSubsystem<UMishpachaEmpireSubsystem>() : nullptr)
+	{
+		Empire->PayIncome();
+	}
+}
+
+void AMishpachaPlayerController::Mish_EndAttack(int32 bDefended)
+{
+	if (UMishpachaEmpireSubsystem* Empire = HasAuthority() ? GetWorld()->GetSubsystem<UMishpachaEmpireSubsystem>() : nullptr)
+	{
+		Empire->EndAttack(bDefended != 0);
+	}
+}
+
+void AMishpachaPlayerController::Mish_Attack()
+{
+	if (UMishpachaEmpireSubsystem* Empire = HasAuthority() ? GetWorld()->GetSubsystem<UMishpachaEmpireSubsystem>() : nullptr)
+	{
+		Empire->StartAttack();
 	}
 }
 

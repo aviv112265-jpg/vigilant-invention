@@ -229,3 +229,20 @@ MishpachaGreybox,Family02HSay	אמרתי לרפי שהפעם האחרונה הי
 MishpachaGreybox,Family02I	התחמק מהמשטרה
 MishpachaGreybox,Family02J	הביתה: נקודת המסירה של המשפחה
 MishpachaGreybox,Family02JSay	שבו, כולכם. אבא היה שונא את זה. ואז היה מוזג שלוש כוסות.
+MishpachaGreybox,BizMarketStall	דוכן הרימונים
+MishpachaGreybox,BizBeachKiosk	קיוסק בחוף
+MishpachaGreybox,BizCarWash	שטיפת מכוניות
+MishpachaGreybox,BizGarage	המוסך של משה
+MishpachaGreybox,BizHummus	חומוסיה
+MishpachaGreybox,BizClub	מועדון לילה
+MishpachaEmpire,OnlyRafi	רק רפי קונה עסקים.
+MishpachaEmpire,NoMoney	אין מספיק כסף: {0} עולה ₪{1}.
+MishpachaEmpire,Bought	{0} שלך. ₪{1} כל שתי דקות.
+MishpachaEmpire,Income	העסקים הכניסו לרפי ₪{0}.
+MishpachaEmpire,Attack	כנופיה יריבה משתלטת על {0}! תגיע לשם ועצור אותם.
+MishpachaEmpire,Defended	{0} בטוח. רפי משלם על זה ₪{1}.
+MishpachaEmpire,Lost	{0} אבד. לקנות אותו בחזרה עולה ₪{1}.
+MishpachaHUD,BusinessBlip	₪
+MishpachaHUD,BusinessAttack	{0} תחת התקפה  {1}:{2}
+MishpachaHUD,BusinessBuy	F  לקנות את {0}: ₪{1}, מכניס ₪{2}
+MishpachaHUD,BusinessOwned	{0}: שלך, מכניס ₪{1}

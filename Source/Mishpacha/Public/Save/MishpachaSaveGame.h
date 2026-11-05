@@ -39,4 +39,12 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Save")
 	int32 ActiveSiblingIndex = 0;
+
+	/** Rafi's businesses (AMishpachaBusiness ids). */
+	UPROPERTY(BlueprintReadWrite, Category = "Save")
+	TSet<FName> OwnedBusinesses;
+
+	/** Taken by a rival crew at some point: half price to buy back. */
+	UPROPERTY(BlueprintReadWrite, Category = "Save")
+	TSet<FName> LostBusinesses;
 };

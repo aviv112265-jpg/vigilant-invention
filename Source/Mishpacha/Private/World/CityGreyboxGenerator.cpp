@@ -4,6 +4,9 @@
 #include "Characters/MishpachaCat.h"
 #include "World/MishpachaStreetProp.h"
 #include "UI/MishpachaText.h"
+#include "World/MishpachaBusiness.h"
+#include "World/MishpachaEmpireSubsystem.h"
+#include "Core/StoryGameMode.h"
 #include "Family/SiblingSpawnPoint.h"
 #include "Missions/MissionDefinition.h"
 #include "Missions/MissionObjectives.h"
@@ -1132,6 +1135,11 @@ void ACityGreyboxGenerator::SpawnGameplayActors()
 		SpawnStreetProps();
 	}
 
+	if (Cast<AStoryGameMode>(World->GetAuthGameMode()))
+	{
+		SpawnBusinesses();
+	}
+
 	// --- Default missions, unless the level already has its own markers ---
 	const bool bHasMarkers = static_cast<bool>(TActorIterator<AMissionStartMarker>(World));
 	if (!bHasMarkers)
@@ -1203,6 +1211,37 @@ int32 ACityGreyboxGenerator::GetSignalColor(const FIntPoint& Node, bool bAlongX)
 		}
 	}
 	return -1;
+}
+
+void ACityGreyboxGenerator::SpawnBusinesses()
+{
+	UWorld* World = GetWorld();
+	UMishpachaEmpireSubsystem* Empire = World->GetSubsystem<UMishpachaEmpireSubsystem>();
+	if (!Empire)
+	{
+		return;
+	}
+
+	// On the sidewalk, part of the way along the block from a corner.
+	auto Spawn = [&](const TCHAR* Id, const FText& Name, int32 Price, int32 Income, int32 I, int32 J, float SX, float SY)
+	{
+		const FVector Local = IntersectionLocal(I, J) + FVector(SX * (RoadWidth * 0.5f + 1500.f), SY * (RoadWidth * 0.5f + 170.f), SidewalkHeight);
+		const FTransform Transform(ToWorld(Local));
+		AMishpachaBusiness* Business = World->SpawnActorDeferred<AMishpachaBusiness>(AMishpachaBusiness::StaticClass(), Transform, this, nullptr,
+			ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+		if (Business)
+		{
+			Business->Setup(FName(Id), Name, Price, Income);
+			Business->FinishSpawning(Transform);
+			Empire->RegisterBusiness(Business);
+		}
+	};
+	Spawn(TEXT("MarketStall"), LOCTEXT("BizMarketStall", "Pomegranate Stall"), 3000, 200, 1, 1, 1.f, 1.f);
+	Spawn(TEXT("BeachKiosk"), LOCTEXT("BizBeachKiosk", "Beach Kiosk"), 4000, 280, 1, BlocksY / 2, 1.f, -1.f);
+	Spawn(TEXT("CarWash"), LOCTEXT("BizCarWash", "Car Wash"), 6000, 420, BlocksX / 2, 1, 1.f, 1.f);
+	Spawn(TEXT("Garage"), LOCTEXT("BizGarage", "Moshe's Garage"), 9000, 650, BlocksX - 2, BlocksY - 1, 1.f, -1.f);
+	Spawn(TEXT("Hummus"), LOCTEXT("BizHummus", "Hummus Place"), 12000, 900, BlocksX / 2 + 1, BlocksY / 2 + 1, -1.f, 1.f);
+	Spawn(TEXT("Club"), LOCTEXT("BizClub", "Night Club"), 25000, 2000, BlocksX - 1, BlocksY / 2, -1.f, 1.f);
 }
 
 void ACityGreyboxGenerator::SpawnParkedCars()

@@ -37,6 +37,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Story")
 	bool bAutosaveOnSwitch = true;
 
+	/** Seconds between autosaves (money, positions); the game also saves when it closes. 0 = off. */
+	UPROPERTY(EditDefaultsOnly, Category = "Story", meta = (ClampMin = "0"))
+	float AutosaveInterval = 60.f;
+
+	FTimerHandle AutosaveTimer;
+
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	/** If FamilyDefinitions is empty, build Rafi / Shira / Omer in code (no Data Assets needed). */
 	UPROPERTY(EditDefaultsOnly, Category = "Story")
 	bool bAutoFamily = true;

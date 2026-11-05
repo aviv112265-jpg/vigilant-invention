@@ -888,6 +888,19 @@ void AMishpachaPlayerController::Mish_Heat(int32 Level)
 	}
 }
 
+void AMishpachaPlayerController::Mish_Crime(int32 CrimeType, int32 Count)
+{
+	AMishpachaPlayerState* PS = GetPlayerState<AMishpachaPlayerState>();
+	UHeatComponent* Heat = PS ? PS->GetHeatComponent() : nullptr;
+	if (HasAuthority() && Heat && GetPawn())
+	{
+		for (int32 Index = 0; Index < Count; ++Index)
+		{
+			Heat->ReportCrime(static_cast<ECrimeType>(CrimeType), GetPawn()->GetActorLocation(), true);
+		}
+	}
+}
+
 void AMishpachaPlayerController::Mish_EnterNearestCar()
 {
 	AMishpachaCharacter* MyCharacter = GetMishpachaCharacter();

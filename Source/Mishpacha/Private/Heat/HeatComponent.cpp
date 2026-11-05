@@ -1,5 +1,7 @@
 // MISHPACHA - "Heat" (Hom), the wanted system.
 #include "Heat/HeatComponent.h"
+#include "Mishpacha.h"
+#include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "Net/UnrealNetwork.h"
 
@@ -18,6 +20,10 @@ UHeatComponent::UHeatComponent()
 	CrimePoints.Add(ECrimeType::Carjacking, 25.f);
 	CrimePoints.Add(ECrimeType::Murder, 45.f);
 	CrimePoints.Add(ECrimeType::CopKilled, 100.f);
+
+	CrimeRepeatSeconds.Add(ECrimeType::PropertyDamage, 3.f);
+	CrimeRepeatSeconds.Add(ECrimeType::Assault, 2.f);
+	CrimeRepeatSeconds.Add(ECrimeType::Gunshot, 4.f);
 }
 
 void UHeatComponent::BeginPlay()
@@ -71,10 +77,21 @@ void UHeatComponent::ReportCrime(ECrimeType Crime, FVector Location, bool bWitne
 		return;
 	}
 
-	HeatPoints += Points;
 	LastKnownLocation = Location;
 	TimeSinceSpotted = 0.f;
+
+	// A magazine emptied at one target is one crime, not thirty.
+	const double Now = GetWorld()->GetTimeSeconds();
+	const double* LastTime = LastCrimeTime.Find(Crime);
+	if (LastTime && Now - *LastTime < CrimeRepeatSeconds.FindRef(Crime))
+	{
+		return;
+	}
+	LastCrimeTime.Add(Crime, Now);
+
+	HeatPoints += Points;
 	SetHeatLevel(FMath::Max(HeatLevel, ComputeLevelFromPoints()));
+	UE_LOG(LogMishpacha, Log, TEXT("Heat: +%.0f, now %.0f points, level %d"), Points, HeatPoints, HeatLevel);
 }
 
 void UHeatComponent::NotifySpottedByPolice(FVector SpottedLocation)

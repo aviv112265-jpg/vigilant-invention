@@ -79,6 +79,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Heat", meta = (ClampMin = "0"))
 	float SearchDurationPerLevel = 6.f;
 
+	/** A burst of the same crime is one incident: repeats inside this many seconds add no points (they still refresh the search). */
+	UPROPERTY(EditDefaultsOnly, Category = "Heat")
+	TMap<ECrimeType, float> CrimeRepeatSeconds;
+
 private:
 	UPROPERTY(ReplicatedUsing = OnRep_HeatLevel)
 	int32 HeatLevel = 0;
@@ -91,6 +95,7 @@ private:
 
 	/** Server-only accumulator. */
 	float HeatPoints = 0.f;
+	TMap<ECrimeType, double> LastCrimeTime;
 
 	UFUNCTION()
 	void OnRep_HeatLevel(int32 OldLevel);

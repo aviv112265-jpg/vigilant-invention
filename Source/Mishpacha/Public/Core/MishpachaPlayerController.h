@@ -63,6 +63,10 @@ public:
 	UFUNCTION(Exec)
 	void Mish_Heat(int32 Level);
 
+	/** Report a witnessed crime N times at once (see ECrimeType, 2 = gunshot) - for balancing heat. */
+	UFUNCTION(Exec)
+	void Mish_Crime(int32 CrimeType, int32 Count);
+
 	/** Get into the nearest car (handy for testing chases). */
 	UFUNCTION(Exec)
 	void Mish_EnterNearestCar();

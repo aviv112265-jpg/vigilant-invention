@@ -102,6 +102,25 @@ void AStoryGameMode::RespawnPlayer(AController* DeadController, const FVector& D
 	Super::RespawnPlayer(DeadController, DeathLocation);
 }
 
+void AStoryGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	if (AutosaveInterval > 0.f)
+	{
+		GetWorldTimerManager().SetTimer(AutosaveTimer, this, &AStoryGameMode::SaveProgress, AutosaveInterval, true);
+	}
+}
+
+void AStoryGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	GetWorldTimerManager().ClearTimer(AutosaveTimer);
+	if (EndPlayReason == EEndPlayReason::Quit)
+	{
+		SaveProgress(); // not on a level change: "new story" reloads the level after wiping the save
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
 void AStoryGameMode::SaveProgress()
 {
 	UMishpachaGameInstance* GI = GetGameInstance<UMishpachaGameInstance>();

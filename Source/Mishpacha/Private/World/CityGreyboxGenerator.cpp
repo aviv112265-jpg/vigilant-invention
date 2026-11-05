@@ -1466,12 +1466,14 @@ void ACityGreyboxGenerator::CreateDefaultMissions(const TMap<FName, FVector>& Ta
 		GreyboxNames::Omer, LOCTEXT("Family02ASay", "Rafi, Shira, I found him. Back room. You're not going to like who's guarding him."));
 	Say(RivalCrew(FinaleJob, GreyboxNames::Warehouse, 4, LOCTEXT("Family02B", "Take out the guards (press Q: the drone marks them)")),
 		GreyboxNames::Omer, LOCTEXT("Family02BSay", "Everyone keeps saying I'm the baby. Watch this."));
+	LoseHeat(FinaleJob, LOCTEXT("Family02I", "Lose the police"));
 	Say(SwitchTo(FinaleJob, GreyboxNames::Rafi, LOCTEXT("Family02C", "Switch to Rafi (press 1)")),
 		GreyboxNames::Rafi, LOCTEXT("Family02CSay", "Good work, kid. Now they'll send everything they have. Let them."));
 	Say(Reach(FinaleJob, GreyboxNames::Garage, LOCTEXT("Family02D", "Rafi: get to Moshe's garage, their base")),
 		GreyboxNames::Rafi, LOCTEXT("Family02DSay", "They came to my street. I'm going to theirs."));
 	Say(RivalCrew(FinaleJob, GreyboxNames::Garage, 6, LOCTEXT("Family02E", "Finish the crew (press Q to call the boys)")),
 		GreyboxNames::Rafi, LOCTEXT("Family02ESay", "Dad built this with his hands. Nobody takes it from us."));
+	LoseHeat(FinaleJob, LOCTEXT("Family02I", "Lose the police"));
 	Say(SwitchTo(FinaleJob, GreyboxNames::Shira, LOCTEXT("Family02F", "Switch to Shira (press 2)")),
 		GreyboxNames::Shira, LOCTEXT("Family02FSay", "Now that you two are done shooting, let me clean this up legally."));
 	Say(Reach(FinaleJob, GreyboxNames::Hospital, LOCTEXT("Family02G", "Shira: meet the judge's driver at the hospital")),

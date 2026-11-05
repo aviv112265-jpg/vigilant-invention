@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>עורך משימות - משפחה</title>
+<!-- MISHPACHA - mission and dialogue editor. Open this file in a browser (no server, nothing leaves the
+     machine). Exports Missions.json, which the game loads at startup: Content/Data/Missions.json in the
+     project, Build/Windows/Mishpacha/Content/Data/Missions.json in the packaged game.
+     Format: see CreateDefaultMissions in CityGreyboxGenerator.cpp. -->
+<style>
+:root { --bg:#f4f1ea; --panel:#fffdf8; --line:#d9d2c3; --text:#23201a; --dim:#6e675a; --accent:#a8560f; --accent-text:#fff; --bad:#b3261e; --ok:#2c6e49; --field:#fff; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#16181d; --panel:#1f2229; --line:#343843; --text:#ececec; --dim:#a0a4ad; --accent:#e0a040; --accent-text:#1a1208; --bad:#ff8a80; --ok:#7fd1a0; --field:#171a20; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 "Segoe UI", Arial, sans-serif; }
+header { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:12px 16px; background:var(--panel); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:2; }
+header h1 { font-size:18px; margin:0; margin-inline-end:auto; }
+main { display:grid; grid-template-columns:260px minmax(0,1fr); gap:16px; padding:16px; max-width:1200px; margin:auto; }
+@media (max-width:760px) { main { grid-template-columns:1fr; } }
+section, aside { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px; }
+h2 { font-size:15px; margin:0 0 8px; }
+button { font:inherit; padding:6px 12px; border:1px solid var(--line); border-radius:6px; background:var(--field); color:var(--text); cursor:pointer; }
+button:hover { border-color:var(--accent); }
+button.primary { background:var(--accent); color:var(--accent-text); border-color:var(--accent); font-weight:600; }
+button.small { padding:2px 8px; font-size:13px; }
+button.danger { color:var(--bad); }
+button:disabled { opacity:.4; cursor:default; }
+label { display:block; font-size:13px; color:var(--dim); margin-bottom:8px; }
+input, select, textarea { display:block; width:100%; margin-top:2px; font:inherit; color:var(--text); background:var(--field); border:1px solid var(--line); border-radius:6px; padding:6px 8px; }
+input[hidden] { display:none; }
+input[type=checkbox] { display:inline; width:auto; margin-inline-end:6px; }
+textarea { resize:vertical; min-height:58px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:0 12px; }
+.mission { display:block; width:100%; text-align:start; margin-bottom:6px; }
+.mission.active { border-color:var(--accent); box-shadow:inset 3px 0 0 var(--accent); }
+.mission small { display:block; color:var(--dim); }
+.step { border:1px solid var(--line); border-radius:8px; padding:10px; margin-bottom:10px; }
+.step-head { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+.step-head b { margin-inline-end:auto; }
+.problems { margin:0; padding-inline-start:18px; color:var(--bad); }
+.fine { color:var(--ok); }
+.hint { color:var(--dim); font-size:13px; }
+pre { direction:ltr; text-align:left; overflow:auto; max-height:260px; background:var(--field); border:1px solid var(--line); border-radius:6px; padding:8px; font-size:12px; }
+#toast { position:fixed; bottom:16px; inset-inline-start:16px; background:var(--accent); color:var(--accent-text); padding:8px 14px; border-radius:6px; opacity:0; transition:opacity .2s; pointer-events:none; }
+#toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>עורך משימות: משפחה</h1>
+  <button id="open">פתיחת Missions.json</button>
+  <button id="copy">העתקה</button>
+  <button id="save" class="primary">שמירת Missions.json</button>
+  <input id="file" type="file" accept=".json" hidden>
+</header>
+<main>
+  <aside>
+    <h2>משימות</h2>
+    <div id="list"></div>
+    <button id="add">+ משימה חדשה</button>
+  </aside>
+  <div>
+    <section id="editor"></section>
+    <section style="margin-top:16px">
+      <h2>בדיקה לפני שמירה</h2>
+      <div id="problems"></div>
+      <p class="hint">שמרו את הקובץ אל <bdi dir="ltr">Build\Windows\Mishpacha\Content\Data\Missions.json</bdi> והפעילו את המשחק מחדש. בעורך של Unreal הקובץ נמצא ב-<bdi dir="ltr">Content\Data\Missions.json</bdi>.</p>
+      <details><summary>הקובץ שייוצא</summary><pre id="preview"></pre></details>
+    </section>
+  </div>
+</main>
+<div id="toast"></div>
+<script>
+const SIBLINGS = { "": "כל אחד", Rafi: "רפי", Shira: "שירה", Omer: "עומר" };
+const PLACES = { Market: "השוק", Warehouse: "מחסן הראיות", Garage: "המוסך של משה", Dropoff: "נקודת המסירה", Hospital: "בית החולים" };
+const STEPS = {
+  reach: { name: "הגעה למקום", place: true },
+  crew: { name: "קרב עם כנופיה", place: true, count: true },
+  wait: { name: "המתנה במקום", place: true, seconds: true },
+  car: { name: "כניסה לרכב" },
+  loseHeat: { name: "התחמקות מהמשטרה" },
+  switch: { name: "החלפת אח", sibling: true },
+};
+const BUILT_IN = ["Rafi_01", "Rafi_02", "Shira_01", "Shira_02", "Omer_01", "Omer_02", "Family_01", "Family_02"];
+const KEY = "mishpacha-mission-editor";
+
+function newStep(type = "reach") {
+  return { type, text: "", speaker: "", line: "", place: "Market", count: 3, seconds: 8, sibling: "Rafi" };
+}
+function newMission(index) {
+  return { id: "Custom_" + String(index).padStart(2, "0"), title: "", description: "", sibling: "Rafi", reward: 1000, start: "Market", requires: [], allowSwitching: false, steps: [newStep()] };
+}
+
+let missions = [];
+let current = 0;
+try { missions = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch { missions = []; }
+if (!missions.length) missions = [newMission(1)];
+
+const $ = id => document.getElementById(id);
+const h = (tag, props = {}, ...children) => {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (k in el) el[k] = v;
+    else el.setAttribute(k, v);
+  }
+  el.append(...children);
+  return el;
+};
+function toast(text) {
+  const t = $("toast");
+  t.textContent = text;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+function field(label, input) { return h("label", {}, label, input); }
+function text(value, set, props = {}) {
+  return h("input", { value: value ?? "", oninput: e => { set(e.target.value); changed(); }, ...props });
+}
+function area(value, set) {
+  return h("textarea", { value: value ?? "", oninput: e => { set(e.target.value); changed(); } });
+}
+function select(options, value, set, redraw = false) {
+  const el = h("select", { onchange: e => { set(e.target.value); redraw ? render() : changed(); } });
+  for (const [k, name] of Object.entries(options)) el.append(h("option", { value: k }, name));
+  el.value = value;
+  return el;
+}
+
+// Only the fields that step type uses go into the file.
+function exportData() {
+  return {
+    missions: missions.map(m => ({
+      id: m.id, title: m.title, description: m.description, sibling: m.sibling, reward: Number(m.reward) || 0,
+      start: m.start, requires: m.requires, allowSwitching: !!m.allowSwitching,
+      steps: m.steps.map(s => {
+        const out = { type: s.type, text: s.text };
+        const kind = STEPS[s.type];
+        if (kind.place) out.place = s.place;
+        if (kind.count) out.count = Number(s.count) || 1;
+        if (kind.seconds) out.seconds = Number(s.seconds) || 1;
+        if (kind.sibling) out.sibling = s.sibling;
+        if (s.line) { out.speaker = s.speaker; out.line = s.line; }
+        return out;
+      }),
+    })),
+  };
+}
+function validate() {
+  const out = [];
+  const ids = new Set();
+  missions.forEach((m, i) => {
+    const name = m.title || "משימה " + (i + 1);
+    if (!/^[A-Za-z0-9_]+$/.test(m.id)) out.push(`${name}: המזהה חייב להיות באנגלית, בלי רווחים.`);
+    if (ids.has(m.id)) out.push(`${name}: המזהה ${m.id} כבר קיים.`);
+    if (BUILT_IN.includes(m.id)) out.push(`${name}: המזהה ${m.id} שמור למשימה קיימת במשחק.`);
+    ids.add(m.id);
+    if (!m.title.trim()) out.push(`${name}: חסרה כותרת.`);
+    if (!m.steps.length) out.push(`${name}: אין שלבים.`);
+    m.steps.forEach((s, n) => {
+      if (!s.text.trim()) out.push(`${name}, שלב ${n + 1}: חסר טקסט מטרה.`);
+      if (s.type === "switch" && !m.allowSwitching) out.push(`${name}, שלב ${n + 1}: החלפת אח דורשת לסמן "אפשר החלפת אחים".`);
+    });
+  });
+  return out;
+}
+function changed() {
+  try { localStorage.setItem(KEY, JSON.stringify(missions)); } catch {}
+  const problems = validate();
+  const box = $("problems");
+  box.replaceChildren(problems.length
+    ? h("ul", { className: "problems" }, ...problems.map(p => h("li", {}, p)))
+    : h("p", { className: "fine" }, "הכול תקין."));
+  $("preview").textContent = JSON.stringify(exportData(), null, 2);
+  const buttons = $("list").querySelectorAll(".mission");
+  missions.forEach((m, i) => {
+    if (buttons[i]) buttons[i].firstChild.textContent = m.title || "(ללא כותרת)";
+  });
+}
+
+function renderList() {
+  $("list").replaceChildren(...missions.map((m, i) => h("button", {
+    className: "mission" + (i === current ? " active" : ""),
+    onclick: () => { current = i; render(); },
+  }, m.title || "(ללא כותרת)", h("small", {}, `${SIBLINGS[m.sibling]} · ${m.steps.length} שלבים`))));
+}
+function moveStep(m, i, by) {
+  const [s] = m.steps.splice(i, 1);
+  m.steps.splice(i + by, 0, s);
+  render();
+}
+function renderStep(m, s, i) {
+  const kind = STEPS[s.type];
+  const fields = h("div", { className: "grid" },
+    field("סוג שלב", select(Object.fromEntries(Object.entries(STEPS).map(([k, v]) => [k, v.name])), s.type, v => s.type = v, true)));
+  if (kind.place) fields.append(field("מקום", select(PLACES, s.place, v => s.place = v)));
+  if (kind.count) fields.append(field("כמה יריבים", text(s.count, v => s.count = v, { type: "number", min: 1, max: 12 })));
+  if (kind.seconds) fields.append(field("כמה שניות", text(s.seconds, v => s.seconds = v, { type: "number", min: 1 })));
+  if (kind.sibling) fields.append(field("לאיזה אח", select({ Rafi: "רפי", Shira: "שירה", Omer: "עומר" }, s.sibling, v => s.sibling = v)));
+  return h("div", { className: "step" },
+    h("div", { className: "step-head" }, h("b", {}, `שלב ${i + 1}`),
+      h("button", { className: "small", disabled: i === 0, onclick: () => moveStep(m, i, -1), title: "למעלה", "aria-label": "העבר למעלה" }, "▲"),
+      h("button", { className: "small", disabled: i === m.steps.length - 1, onclick: () => moveStep(m, i, 1), title: "למטה", "aria-label": "העבר למטה" }, "▼"),
+      h("button", { className: "small danger", onclick: () => { m.steps.splice(i, 1); render(); } }, "מחיקה")),
+    fields,
+    field("טקסט המטרה שעל המסך", text(s.text, v => s.text = v)),
+    h("div", { className: "grid" },
+      field("מי מדבר", text(s.speaker, v => s.speaker = v, { placeholder: "Rafi / Shira / Omer או שם אחר" })),
+      field("שורת דיאלוג (לא חובה)", text(s.line, v => s.line = v))));
+}
+function renderEditor() {
+  const m = missions[current];
+  const requires = h("div", {});
+  for (const id of [...BUILT_IN, ...missions.filter(x => x !== m).map(x => x.id)]) {
+    requires.append(h("label", { style: "display:inline-block;margin-inline-end:12px" },
+      h("input", { type: "checkbox", checked: m.requires.includes(id), onchange: e => {
+        m.requires = e.target.checked ? [...m.requires, id] : m.requires.filter(x => x !== id);
+        changed();
+      } }), id));
+  }
+  $("editor").replaceChildren(
+    h("h2", {}, "פרטי המשימה"),
+    h("div", { className: "grid" },
+      field("מזהה (באנגלית)", text(m.id, v => m.id = v, { dir: "ltr" })),
+      field("מי מתחיל", select(SIBLINGS, m.sibling, v => m.sibling = v)),
+      field("נקודת התחלה", select(PLACES, m.start, v => m.start = v)),
+      field("פרס (₪)", text(m.reward, v => m.reward = v, { type: "number", min: 0, step: 100 }))),
+    field("כותרת", text(m.title, v => m.title = v)),
+    field("תיאור", area(m.description, v => m.description = v)),
+    h("label", {}, h("input", { type: "checkbox", checked: m.allowSwitching, onchange: e => { m.allowSwitching = e.target.checked; changed(); } }), "אפשר החלפת אחים באמצע המשימה"),
+    h("h2", {}, "נפתחת אחרי"), requires,
+    h("h2", {}, "שלבים"),
+    ...m.steps.map((s, i) => renderStep(m, s, i)),
+    h("button", { onclick: () => { m.steps.push(newStep()); render(); } }, "+ שלב"),
+    " ",
+    h("button", { onclick: () => {
+      const copy = JSON.parse(JSON.stringify(m));
+      copy.id += "_copy";
+      missions.splice(current + 1, 0, copy);
+      current++;
+      render();
+    } }, "שכפול משימה"),
+    " ",
+    h("button", { className: "danger", disabled: missions.length === 1, onclick: () => {
+      missions.splice(current, 1);
+      current = Math.max(0, current - 1);
+      render();
+    } }, "מחיקת משימה"));
+}
+function render() { renderList(); renderEditor(); changed(); }
+
+function loadText(json) {
+  const data = JSON.parse(json);
+  if (!Array.isArray(data.missions)) throw new Error("no missions");
+  missions = data.missions.map((m, i) => ({ ...newMission(i + 1), ...m, steps: (m.steps || []).map(s => ({ ...newStep(), ...s })) }));
+  if (!missions.length) missions = [newMission(1)];
+  current = 0;
+  render();
+  toast("הקובץ נטען");
+}
+$("add").onclick = () => { missions.push(newMission(missions.length + 1)); current = missions.length - 1; render(); };
+$("open").onclick = () => $("file").click();
+$("file").onchange = async e => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  try { loadText(await file.text()); } catch { toast("הקובץ לא תקין"); }
+};
+$("copy").onclick = async () => {
+  try { await navigator.clipboard.writeText(JSON.stringify(exportData(), null, 2)); toast("הועתק"); }
+  catch { toast("ההעתקה נכשלה, פתחו את \"הקובץ שייוצא\""); }
+};
+$("save").onclick = async () => {
+  const body = JSON.stringify(exportData(), null, 2);
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await showSaveFilePicker({ suggestedName: "Missions.json", types: [{ description: "JSON", accept: { "application/json": [".json"] } }] });
+      const stream = await handle.createWritable();
+      await stream.write(body);
+      await stream.close();
+      toast("נשמר");
+    } catch (error) {
+      if (error.name !== "AbortError") toast("השמירה נכשלה");
+    }
+    return;
+  }
+  const url = URL.createObjectURL(new Blob([body], { type: "application/json" }));
+  h("a", { href: url, download: "Missions.json" }).click();
+  URL.revokeObjectURL(url);
+};
+render();
+</script>
+</body>
+</html>

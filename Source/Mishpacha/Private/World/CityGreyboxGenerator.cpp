@@ -5,6 +5,11 @@
 #include "World/MishpachaStreetProp.h"
 #include "UI/MishpachaText.h"
 #include "World/MishpachaBusiness.h"
+#include "Dom/JsonObject.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "World/MishpachaEmpireSubsystem.h"
 #include "World/MishpachaPhoneSubsystem.h"
 #include "Core/StoryGameMode.h"
@@ -1722,6 +1727,130 @@ void ACityGreyboxGenerator::CreateDefaultMissions(const TMap<FName, FVector>& Ta
 			Marker->SetMission(Placement.Key);
 			Marker->FinishSpawning(MarkerTransform);
 		}
+	}
+
+	// Side jobs written in Tools/MissionEditor.html: a loose file, so they change without a rebuild.
+	FString JsonText;
+	TSharedPtr<FJsonObject> JsonRoot;
+	const FString JsonPath = FPaths::ProjectContentDir() / TEXT("Data/Missions.json");
+	const TArray<TSharedPtr<FJsonValue>>* JsonMissions = nullptr;
+	if (FFileHelper::LoadFileToString(JsonText, *JsonPath))
+	{
+		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonText);
+		if (!FJsonSerializer::Deserialize(Reader, JsonRoot) || !JsonRoot.IsValid() || !JsonRoot->TryGetArrayField(TEXT("missions"), JsonMissions))
+		{
+			UE_LOG(LogMishpacha, Warning, TEXT("Side jobs: %s isn't valid, skipping it."), *JsonPath);
+			JsonMissions = nullptr;
+		}
+	}
+	if (JsonMissions)
+	{
+		int32 Loaded = 0;
+		for (const TSharedPtr<FJsonValue>& Value : *JsonMissions)
+		{
+			const TSharedPtr<FJsonObject> Entry = Value->AsObject();
+			if (!Entry.IsValid())
+			{
+				continue;
+			}
+			const FName Id(*Entry->GetStringField(TEXT("id")));
+			const FName StartPlace(*Entry->GetStringField(TEXT("start")));
+			const FVector* StartSpot = Targets.Find(StartPlace);
+			const bool bTaken = DefaultMissions.ContainsByPredicate([&Id](const UMissionDefinition* Other) { return Other->MissionId == Id; });
+			if (Id.IsNone() || bTaken || !StartSpot)
+			{
+				UE_LOG(LogMishpacha, Warning, TEXT("Side jobs: skipping '%s' (empty or duplicate id, or unknown start place '%s')."), *Id.ToString(), *StartPlace.ToString());
+				continue;
+			}
+
+			UMissionDefinition* Mission = MakeMission(Id, FText::FromString(Entry->GetStringField(TEXT("title"))), FText::FromString(Entry->GetStringField(TEXT("description"))),
+				FName(*Entry->GetStringField(TEXT("sibling"))), FMath::Max(0, Entry->GetIntegerField(TEXT("reward"))));
+			Entry->TryGetBoolField(TEXT("allowSwitching"), Mission->bAllowSwitching);
+			const TArray<TSharedPtr<FJsonValue>>* Requires = nullptr;
+			if (Entry->TryGetArrayField(TEXT("requires"), Requires))
+			{
+				for (const TSharedPtr<FJsonValue>& Required : *Requires)
+				{
+					Mission->Prerequisites.Add(FName(*Required->AsString()));
+				}
+			}
+
+			const TArray<TSharedPtr<FJsonValue>>* Steps = nullptr;
+			if (Entry->TryGetArrayField(TEXT("steps"), Steps))
+			{
+				for (const TSharedPtr<FJsonValue>& StepValue : *Steps)
+				{
+					const TSharedPtr<FJsonObject> Step = StepValue->AsObject();
+					if (!Step.IsValid())
+					{
+						continue;
+					}
+					const FString Type = Step->GetStringField(TEXT("type"));
+					const FText Text = FText::FromString(Step->GetStringField(TEXT("text")));
+					FString PlaceName;
+					Step->TryGetStringField(TEXT("place"), PlaceName);
+					const FName Place(*PlaceName);
+					const bool bPlaceOk = Targets.Contains(Place);
+					UMissionObjective* Objective = nullptr;
+					if (Type == TEXT("reach") && bPlaceOk)
+					{
+						Objective = Reach(Mission, Place, Text);
+					}
+					else if (Type == TEXT("crew") && bPlaceOk)
+					{
+						int32 Count = 3;
+						Step->TryGetNumberField(TEXT("count"), Count);
+						Objective = RivalCrew(Mission, Place, FMath::Clamp(Count, 1, 12), Text);
+					}
+					else if (Type == TEXT("wait") && bPlaceOk)
+					{
+						double Seconds = 6.0;
+						Step->TryGetNumberField(TEXT("seconds"), Seconds);
+						Objective = WaitAt(Mission, Place, static_cast<float>(Seconds), Text);
+					}
+					else if (Type == TEXT("car"))
+					{
+						Objective = EnterCar(Mission, Text);
+					}
+					else if (Type == TEXT("loseHeat"))
+					{
+						Objective = LoseHeat(Mission, Text);
+					}
+					else if (Type == TEXT("switch"))
+					{
+						FString Sibling;
+						Step->TryGetStringField(TEXT("sibling"), Sibling);
+						Objective = SwitchTo(Mission, FName(*Sibling), Text);
+					}
+					else
+					{
+						UE_LOG(LogMishpacha, Warning, TEXT("Side jobs: %s has an unknown step '%s' (place '%s')."), *Id.ToString(), *Type, *PlaceName);
+					}
+					FString Speaker, Line;
+					if (Step->TryGetStringField(TEXT("line"), Line) && !Line.IsEmpty())
+					{
+						Step->TryGetStringField(TEXT("speaker"), Speaker);
+						Say(Objective, FName(*Speaker), FText::FromString(Line));
+					}
+				}
+			}
+
+			if (Mission->Objectives.Num() == 0)
+			{
+				UE_LOG(LogMishpacha, Warning, TEXT("Side jobs: %s has no usable steps."), *Id.ToString());
+				continue;
+			}
+			// Off to the side of the place's own beacon; side jobs at one place fan out.
+			const FVector MarkerSpot = *StartSpot + FRotator(0.f, Loaded * 55.f, 0.f).RotateVector(FVector(650.f, 250.f, 0.f));
+			const FTransform MarkerTransform(MarkerSpot);
+			if (AMissionStartMarker* Marker = World->SpawnActorDeferred<AMissionStartMarker>(AMissionStartMarker::StaticClass(), MarkerTransform, this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn))
+			{
+				Marker->SetMission(Mission);
+				Marker->FinishSpawning(MarkerTransform);
+			}
+			++Loaded;
+		}
+		UE_LOG(LogMishpacha, Log, TEXT("Side jobs: loaded %d from %s."), Loaded, *JsonPath);
 	}
 }
 

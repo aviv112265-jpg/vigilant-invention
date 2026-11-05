@@ -1,0 +1,31 @@
+{
+  "missions": [
+    {
+      "id": "Side_Coffee",
+      "title": "קפה של בוקר",
+      "description": "איציק מהשוק רוצה לדבר עם עומר. רק לדבר, הוא נשבע.",
+      "sibling": "Omer",
+      "reward": 800,
+      "start": "Dropoff",
+      "requires": ["Omer_01"],
+      "allowSwitching": false,
+      "steps": [
+        {
+          "type": "reach",
+          "text": "לך לשוק",
+          "place": "Market",
+          "speaker": "Omer",
+          "line": "איציק אמר קפה. אף אחד לא נפגש בשביל קפה."
+        },
+        {
+          "type": "wait",
+          "text": "תקשיב לאיציק (הישאר קרוב)",
+          "place": "Market",
+          "seconds": 6,
+          "speaker": "איציק",
+          "line": "תגיד לאחיך שאני משלם בזמן. רק שיפסיק לשלוח אנשים."
+        }
+      ]
+    }
+  ]
+}

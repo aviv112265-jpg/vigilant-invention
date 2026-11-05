@@ -178,6 +178,10 @@ namespace MishpachaText
 	FText SiblingName(FName SiblingId, bool bUpper)
 	{
 		// Same keys as the built-in family in StoryGameMode, so Hebrew.tsv translates them.
+		if (SiblingId.IsNone())
+		{
+			return FText::GetEmpty();
+		}
 		static const FName Rafi(TEXT("Rafi"));
 		static const FName Shira(TEXT("Shira"));
 		static const FName Omer(TEXT("Omer"));

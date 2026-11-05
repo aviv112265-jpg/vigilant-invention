@@ -12,6 +12,7 @@ public class Mishpacha : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
+			"Json", // side jobs from Content/Data/Missions.json
 			"AnimGraphRuntime", // code-built anim graph (MishpachaAnimInstance)
 			"InputCore",
 			"EnhancedInput",

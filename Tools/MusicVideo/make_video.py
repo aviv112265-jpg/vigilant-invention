@@ -107,7 +107,7 @@ def analyze(path):
     flux = norm(flux, 98)
     kicks = np.zeros(n, bool)
     last = -99
-    thr = smooth(flux, FPS) * 1.5 + 0.18
+    thr = smooth(flux, FPS) * 1.3 + 0.12
     for i in range(1, n - 1):
         if flux[i] > thr[i] and flux[i] >= flux[i - 1] and flux[i] >= flux[i + 1] and i - last >= 5:
             kicks[i] = True
@@ -122,12 +122,14 @@ def analyze(path):
     lowe = np.sqrt(sub ** 2 + bass ** 2)
     inten = 0.6 * norm(smooth(lowe, FPS), 90) + 0.4 * norm(smooth(rms, FPS), 90)
     inten = np.clip(inten, 0, 1)
+    raw_inten = inten
+    inten = smooth(inten, int(FPS * 2.5))  # sections, not single bars
     lo_, hi_ = np.percentile(inten, 15), np.percentile(inten, 85)
     if hi_ - lo_ < 0.15:  # track with no dynamics: treat it all as high energy
         mode = np.clip(inten, 0, 1)
     else:
         mode = np.clip((inten - (lo_ + 0.45 * (hi_ - lo_))) / (0.25 * (hi_ - lo_)), 0, 1)
-    mode = smooth(mode, FPS // 2)
+    mode = smooth(mode, FPS)
 
     drops = []
     for i in range(FPS * 2, n):
@@ -146,7 +148,7 @@ def analyze(path):
     f = {
         "n": n, "sub": norm(smooth(sub, 1)), "bass": norm(smooth(bass, 1)), "mid": norm(midb),
         "high": norm(smooth(high, 2)), "bars": bars, "kick": kick_env, "kicks": kicks,
-        "nkick": np.cumsum(kicks), "inten": inten, "mode": mode, "flash": flash, "drops": drops,
+        "nkick": np.cumsum(kicks), "inten": raw_inten, "mode": mode, "flash": flash, "drops": drops,
     }
     f["spin"] = np.cumsum(0.25 + 1.6 * mode + 1.2 * kick_env * mode) / FPS
     f["rise"] = np.cumsum(0.6 + 2.4 * mode) / FPS

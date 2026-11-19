@@ -478,12 +478,13 @@ def render_frames(i0, i1, f, A, sink):
             a_ = min(1.0, (t - L["start"]) / 0.15, (L["stop"] - t) / 0.25)
             if a_ > 0:
                 fade = [int(v * a_) for v in range(256)]
-                stamp(frame, halo.point(fade), CX, CY, (0, 0, 0))
-                stamp(frame, im.point(fade), CX, CY, col(GOLD, 0.55))
+                pulse = 1 + 0.07 * kick * m  # the line punches with the kick in the drops
+                stamp(frame, halo.point(fade), CX, CY, (0, 0, 0), pulse)
+                stamp(frame, im.point(fade), CX, CY, col(GOLD, 0.55), pulse)
                 x = int(max(0, min(im.width, x)))
                 lit = im.point(fade)
                 lit.paste(0, (0, 0, x, im.height))
-                stamp(frame, lit, CX, CY, col(mix(GOLD, HOT, 0.6 + 0.4 * kick)))
+                stamp(frame, lit, CX, CY, col(mix(GOLD, HOT, 0.6 + 0.4 * kick)), pulse)
         # post: shake, chromatic split, slice glitch, drop flash, vignette, fades
         a = np.asarray(frame)
         sh = int(m * (4 + 14 * sub) * kick)

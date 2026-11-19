@@ -12,8 +12,11 @@ title slamming on the kicks during the drops.
 Needs: ffmpeg, numpy, Pillow (with raqm for right-to-left text).
 """
 import argparse
+import difflib
+import json
 import math
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -170,6 +173,103 @@ def plot(f, path):
     im.save(path)
 
 
+# --------------------------------------------------------------------------- lyrics
+_MARKS = re.compile("[\u0591-\u05c7]")
+_FINALS = str.maketrans("ךםןףץ", "כמנפצ")
+_NAME = {"יהוה", "אדוני", "אדני", "יי", "ה"}
+
+
+def plain(w):
+    w = _MARKS.sub("", w)
+    w = re.sub("[^\u05d0-\u05ea]", "", w)
+    return w.translate(_FINALS)
+
+
+def _sim(a, b):
+    if a == b or (a in _NAME and b in _NAME):
+        return 1.0
+    return difflib.SequenceMatcher(None, a, b).ratio()
+
+
+def lyric_lines(path, max_words=5):
+    """Lyrics text -> display lines (lists of words), broken at verse ends and commas."""
+    text = open(path, encoding="utf-8").read()
+    lines = []
+    for verse in re.split("[:.\n]+", text):
+        for part in verse.split(","):
+            ws = part.split()
+            if not ws:
+                continue
+            k = math.ceil(len(ws) / max_words)
+            per = math.ceil(len(ws) / k)
+            lines += [ws[j:j + per] for j in range(0, len(ws), per)]
+    return lines
+
+
+def align_lyrics(lines, asr_path, total):
+    """Give every sung line word times, from a Whisper word-level transcript (asr json)."""
+    heard = [(plain(w["w"]), w["s"], w["e"]) for seg in json.load(open(asr_path, encoding="utf-8"))
+             for w in seg["words"]]
+    heard = [h for h in heard if h[0]]
+    words = [(li, wi, plain(w)) for li, ws in enumerate(lines) for wi, w in enumerate(ws)]
+    n, m = len(words), len(heard)
+    sc = np.zeros((n + 1, m + 1), np.float32)
+    bt = np.zeros((n + 1, m + 1), np.int8)
+    for a in range(1, n + 1):
+        wa = words[a - 1][2]
+        for b in range(1, m + 1):
+            r = _sim(wa, heard[b - 1][0])
+            best, how = sc[a - 1, b - 1] + (r * 2 if r >= 0.6 else -0.6), 0
+            if sc[a - 1, b] - 0.25 > best:
+                best, how = sc[a - 1, b] - 0.25, 1  # lyric word nobody heard
+            if sc[a, b - 1] - 0.25 > best:
+                best, how = sc[a, b - 1] - 0.25, 2  # heard word not in the lyrics
+            sc[a, b], bt[a, b] = best, how
+    t0 = [None] * n
+    t1 = [None] * n
+    a, b = n, m
+    while a and b:
+        how = bt[a, b]
+        if how == 0:
+            if _sim(words[a - 1][2], heard[b - 1][0]) >= 0.6:
+                t0[a - 1], t1[a - 1] = heard[b - 1][1], heard[b - 1][2]
+            a, b = a - 1, b - 1
+        elif how == 1:
+            a -= 1
+        else:
+            b -= 1
+    # fill short unheard runs between anchors; long runs were not sung, leave them out
+    known = [k for k in range(n) if t0[k] is not None]
+    for ka, kb in zip(known, known[1:]):
+        gap = kb - ka - 1
+        if gap and gap <= 6 and (t0[kb] - t1[ka]) / gap >= 0.12:
+            for j in range(gap):
+                t0[ka + 1 + j] = t1[ka] + (t0[kb] - t1[ka]) * j / gap
+                t1[ka + 1 + j] = t1[ka] + (t0[kb] - t1[ka]) * (j + 1) / gap
+    out = []
+    k = 0
+    for li, ws in enumerate(lines):
+        ts = t0[k:k + len(ws)]
+        te = t1[k:k + len(ws)]
+        k += len(ws)
+        got = [x for x in ts if x is not None]
+        if len(got) * 2 < len(ws):
+            continue
+        for j in range(len(ws)):  # words still unknown inside a line: spread evenly
+            if ts[j] is None:
+                prev = max([x for x in te[:j] if x is not None], default=got[0] - 0.3)
+                nxt = min([x for x in ts[j + 1:] if x is not None], default=prev + 0.4)
+                ts[j], te[j] = prev, max(prev, nxt)
+        ts = list(np.maximum.accumulate(ts))
+        out.append({"words": ws, "t": ts, "end": max(x for x in te if x is not None)})
+    out.sort(key=lambda L: L["t"][0])
+    for L, nxt in zip(out, out[1:] + [None]):
+        L["start"] = L["t"][0] - 0.12
+        L["stop"] = min(L["end"] + 1.5, nxt["t"][0] - 0.12 if nxt else total)
+        L["stop"] = max(L["stop"], L["start"] + 0.3)
+    return out
+
+
 # --------------------------------------------------------------------------- assets
 class Assets:
     def __init__(self):
@@ -182,7 +282,24 @@ class Assets:
         self.vig = np.clip(1.12 - r ** 2.2, 0.0, 1.0)[..., None].astype(np.float32)
         rng = np.random.default_rng(7)
         self.em = rng.random((260, 6))  # embers: x, y, speed, sway freq, sway amp, size
+        self._ly = {}
         self.fl = rng.random((46, 5))  # flying letters: x, y, speed, letter, size
+
+    def lyric(self, idx, words):
+        """Mask of one lyric line, its dark halo, and the x where each word ends (right to left)."""
+        if idx not in self._ly:
+            text = " ".join(words)
+            size = 96
+            kw = dict(direction="rtl", language="he")
+            while ImageFont.truetype(FONT_BOLD, size).getlength(text, **kw) > W - 320:
+                size -= 4
+            fnt = ImageFont.truetype(FONT_BOLD, size)
+            im = self._sprite(text, FONT_BOLD, size)
+            pad = size // 8
+            edges = [im.width - pad - fnt.getlength(" ".join(words[:k]), **kw) for k in range(len(words) + 1)]
+            halo = im.filter(ImageFilter.GaussianBlur(16)).point(lambda v: min(255, v * 3))
+            self._ly = {idx: (im, halo, edges)}  # keep only the current line
+        return self._ly[idx]
 
     @staticmethod
     def _sprite(text, font, size):
@@ -279,7 +396,8 @@ def draw_fresh(i, f, A):
         polygon(d, CX, CY, r * 1.12, 10, spin * 0.25, col(main, a * 0.45), 2, step=3)
 
     # Tree of Life with the ten psalms (breakdowns; ghosted in drops)
-    ta = (1 - m) * 0.95 + 0.10
+    sing = float(f["sing"][i])
+    ta = ((1 - m) * 0.95 + 0.10) * (1 - 0.55 * sing)
     sc = 94 * (1 + 0.05 * kick * m + 0.012 * math.sin(t * 0.7))
     pts = [(CX + x * sc * 1.55, CY + (y - 4.05) * sc * 0.93) for x, y in SEFIROT]
     stage = int(t / 1.7) % 12  # psalms light one by one, then all ten glow
@@ -297,9 +415,10 @@ def draw_fresh(i, f, A):
 
     # title
     intro = min(1.0, t / 4.0)
-    if m < 0.98:  # calm: quiet title under the tree
-        a = (1 - m) ** 2 * intro * (0.7 + 0.3 * bass)
+    if m < 0.98 or sing > 0.02:  # quiet title at the bottom (calm parts, and whenever lyrics show)
+        a = max((1 - m) ** 2, sing) * intro * (0.7 + 0.3 * bass)
         stamp(img, A.words[0], CX, H - 70, col(mix(GOLD, HOT, 0.35), a), 0.24)
+    m *= 1 - sing  # the big title steps aside for the lyrics
     if m > 0.02:  # drop: the words slam on the kicks
         w = A.words[int(f["nkick"][i]) // 2 % 3 if m > 0.6 else 0]
         scale = (0.72 if w is A.words[0] else 1.05) * (0.86 + 0.20 * kick + 0.05 * sub)
@@ -345,6 +464,26 @@ def render_frames(i0, i1, f, A, sink):
             stamp(frame, halo, CX, CY - 14, (0, 0, 0))
             stamp(frame, w.point(lambda v: int(v * ta)), CX, CY - 14, c)
 
+        L = f["lyric"][i]
+        if L is not None:  # sung line in the centre, lighting up word by word
+            im, halo, edges = A.lyric(id(L), L["words"])
+            ts = L["t"] + [L["end"]]
+            k = int(np.searchsorted(ts, t, side="right")) - 1
+            if k < 0:
+                x = edges[0]
+            elif k >= len(L["words"]):
+                x = edges[-1]
+            else:
+                x = edges[k] + (edges[k + 1] - edges[k]) * min(1.0, (t - ts[k]) / max(0.08, ts[k + 1] - ts[k]))
+            a_ = min(1.0, (t - L["start"]) / 0.15, (L["stop"] - t) / 0.25)
+            if a_ > 0:
+                fade = [int(v * a_) for v in range(256)]
+                stamp(frame, halo.point(fade), CX, CY, (0, 0, 0))
+                stamp(frame, im.point(fade), CX, CY, col(GOLD, 0.55))
+                x = int(max(0, min(im.width, x)))
+                lit = im.point(fade)
+                lit.paste(0, (0, 0, x, im.height))
+                stamp(frame, lit, CX, CY, col(mix(GOLD, HOT, 0.6 + 0.4 * kick)))
         # post: shake, chromatic split, slice glitch, drop flash, vignette, fades
         a = np.asarray(frame)
         sh = int(m * (4 + 14 * sub) * kick)
@@ -399,12 +538,25 @@ def main():
     ap.add_argument("--crf", type=int, default=22)
     ap.add_argument("--jobs", type=int, default=os.cpu_count())
     ap.add_argument("--plot")
+    ap.add_argument("--lyrics", help="lyrics text file")
+    ap.add_argument("--asr", help="word-level transcript json (see transcribe.py), needed with --lyrics")
     ap.add_argument("--still", nargs=2, metavar=("SECONDS", "PNG"))
     a = ap.parse_args()
 
     f = _F = analyze(a.audio)
     print(f"{f['n'] / FPS:.1f}s, {int(f['kicks'].sum())} kicks, drops at",
           [f"{d // FPS // 60}:{d // FPS % 60:02d}" for d in f["drops"]], flush=True)
+    f["lyric"] = [None] * f["n"]
+    sing = np.zeros(f["n"])
+    if a.lyrics:
+        timed = align_lyrics(lyric_lines(a.lyrics), a.asr, f["n"] / FPS)
+        for L in timed:
+            s0, s1 = int(L["start"] * FPS), min(f["n"], int(L["stop"] * FPS))
+            f["lyric"][s0:s1] = [L] * (s1 - s0)
+            sing[s0:s1] = 1
+            print(f"{L['start']:7.2f} {L['stop']:7.2f}  {' '.join(L['words'])}")
+        print(len(timed), "lyric lines timed", flush=True)
+    f["sing"] = np.clip(smooth(sing, FPS) * 1.0, 0, 1)
     if a.plot:
         plot(f, a.plot)
     if a.still:

@@ -286,26 +286,20 @@ class Assets:
         self.fl = rng.random((46, 5))  # flying letters: x, y, speed, letter, size
 
     def lyric(self, idx, words):
-        """One lyric line as separate words: (mask, dark halo, x offset from the line centre) each."""
+        """The words of one lyric line, each shown alone in the centre: (mask, dark halo, y offset)."""
         if idx not in self._ly:
-            text = " ".join(words)
-            size = 96
             kw = dict(direction="rtl", language="he")
-            while ImageFont.truetype(FONT_BOLD, size).getlength(text, **kw) > W - 320:
+            size = 132
+            while max(ImageFont.truetype(FONT_BOLD, size).getlength(w, **kw) for w in words) > W - 320:
                 size -= 4
             fnt = ImageFont.truetype(FONT_BOLD, size)
-            total = fnt.getlength(text, **kw)
-            space = fnt.getlength(" ")
+            ref = fnt.getbbox("אבלקץ", **kw)  # sprites are cropped to their ink: keep one baseline
             out = []
-            for k, w in enumerate(words):  # right to left
-                right = total / 2 - fnt.getlength(" ".join(words[:k]), **kw) - (space if k else 0)
+            for w in words:
                 im = self._sprite(w, FONT_BOLD, size)
-                halo = im.filter(ImageFilter.GaussianBlur(16)).point(lambda v: min(255, v * 3))
-                out.append((im, halo, right - fnt.getlength(w, **kw) / 2))
-            # every word sits on the same baseline: sprites are cropped to their ink, so align by ascent
-            asc = [fnt.getbbox(w, **kw) for w in words]
-            mid = (min(b[1] for b in asc) + max(b[3] for b in asc)) / 2
-            out = [(im, halo, dx, (b[1] + b[3]) / 2 - mid) for (im, halo, dx), b in zip(out, asc)]
+                halo = im.filter(ImageFilter.GaussianBlur(18)).point(lambda v: min(255, v * 3))
+                b = fnt.getbbox(w, **kw)
+                out.append((im, halo, (b[1] + b[3]) / 2 - (ref[1] + ref[3]) / 2))
             self._ly = {idx: out}  # keep only the current line
         return self._ly[idx]
 
@@ -473,20 +467,22 @@ def render_frames(i0, i1, f, A, sink):
             stamp(frame, w.point(lambda v: int(v * ta)), CX, CY - 14, c)
 
         L = f["lyric"][i]
-        if L is not None:  # sung line in the centre: each word pops in on its own time
-            out_a = min(1.0, (L["stop"] - t) / 0.25)
-            pulse = 1 + 0.07 * kick * m  # the line punches with the kick in the drops
-            for (im, halo, dx, dy), tw in zip(A.lyric(id(L), L["words"]), L["t"]):
+        if L is not None:  # one sung word at a time in the centre: pops in, leaves when the next arrives
+            pulse = 1 + 0.07 * kick * m  # the word punches with the kick in the drops
+            outs = L["t"][1:] + [L["stop"]]
+            for (im, halo, dy), tw, tout in zip(A.lyric(id(L), L["words"]), L["t"], outs):
                 p = (t - tw + 0.04) / 0.24
-                if p <= 0 or out_a <= 0:
+                e = (t - tout + 0.18) / 0.14  # exit: shrink a little and fade, gone just before the next word
+                if p <= 0 or e >= 1:
                     continue
+                e = max(0.0, e)
                 q = min(1.0, p) - 1
                 pop = (0.55 + 0.45 * (1 + 2.6 * q ** 3 + 1.6 * q ** 2)) * pulse  # soft overshoot, then settle
-                fade = [int(v * min(1.0, p * 2.5) * out_a) for v in range(256)]
+                pop *= 1 - 0.22 * e
+                fade = [int(v * min(1.0, p * 2.5) * (1 - e)) for v in range(256)]
                 heat = max(0.0, 1 - (t - tw) / 0.7)  # arrives white-hot, cools to gold
-                x, y = CX + dx * pulse, CY + dy * pulse
-                stamp(frame, halo.point(fade), x, y, (0, 0, 0), pop)
-                stamp(frame, im.point(fade), x, y, col(mix(GOLD, HOT, 0.25 + 0.75 * max(heat, 0.5 * kick))), pop)
+                stamp(frame, halo.point(fade), CX, CY + dy, (0, 0, 0), pop)
+                stamp(frame, im.point(fade), CX, CY + dy, col(mix(GOLD, HOT, 0.25 + 0.75 * max(heat, 0.5 * kick))), pop)
         # post: shake, chromatic split, slice glitch, drop flash, vignette, fades
         a = np.asarray(frame)
         sh = int(m * (4 + 14 * sub) * kick)

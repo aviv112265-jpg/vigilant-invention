@@ -25,3 +25,7 @@ Thumbs.db
 
 # Packaged game (Tools: RunUAT BuildCookRun -archivedirectory=Build)
 Build/
+
+# Python
+__pycache__/
+*.pyc

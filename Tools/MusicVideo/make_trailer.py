@@ -11,19 +11,21 @@ CLIPS_DIR holds the source clips by name (see SHOTS): c01.webm ... for the Rio f
 Wikimedia Commons, m<ID>.mp4 for Mixkit clips. Credits are in rio_trailer_credits.txt.
 """
 import argparse
+import json
 import os
 import subprocess
 import sys
 import tempfile
 from multiprocessing import Pool
 
-from PIL import Image, ImageDraw, ImageFont
+import numpy as np
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 W, H, FPS = 1920, 1080, 30
 BAR = 138  # letterbox bars, 2.39:1
 BEAT = 10.3333 / 16  # measured: a drop every 16 beats = 10.333 s (92.9 BPM)
 T0 = 10.366 - 16 * BEAT  # time of beat 0
-FONT = "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
+FONT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Fonts", "Anton-Regular.ttf")
 
 # (source, in-point seconds, beats, options). Options: speed, zoom (base crop zoom),
 # ay (0 = keep the top of the frame, 1 = the bottom), slow (gentle shot: no cut punch).
@@ -59,10 +61,37 @@ SHOTS = [
     # drop B4: half-beat flurry
     ("c06", 9.1, .5, R), ("m64", 9.0, .5, {}), ("c01", 14.0, .5, dict(zoom=1.1)), ("m4344", 7.0, .5, {}),
     ("c06", 34.2, .5, R), ("m33906", 12.0, .5, {}), ("c02", 28.0, .5, dict(zoom=1.1)), ("m4151", 9.0, .5, {}),
-    # last hit, then black
     ("m48358", 7.0, 1.5, dict(slow=1)),
+    # break 2 (beat 109.5): slow again
+    ("m4999", 1.0, 2.5, dict(slow=1)), ("m44370", 5.0, 4, dict(slow=1)), ("m1085", 3.0, 4, dict(slow=1)),
+    ("m41375", 2.0, 4, dict(slow=1)), ("m40080", 12.0, 4, dict(slow=1)),
+    # drop C1 (beat 128): every 2 beats
+    ("c03", 45.0, 2, dict(R, speed=2)), ("m52427", 0.5, 2, {}), ("c02", 30.0, 2, dict(zoom=1.1)),
+    ("m45453", 8.0, 2, {}), ("c04", 610.0, 2, dict(R, speed=2)), ("m36833", 9.0, 2, {}),
+    ("c10", 6.0, 2, dict(zoom=1.05)), ("m27539", 25.0, 2, {}),
+    # drop C2
+    ("m1128", 9.0, 2, {}), ("c03", 330.0, 2, dict(R, speed=2)),
+    ("m39917", 6.0, 1, {}), ("c01", 22.0, 1, dict(zoom=1.1)), ("m43486", 14.0, 1, {}), ("m326", 5.0, 1, {}),
+    ("c04", 700.0, 1, dict(R, speed=2)), ("m20634", 6.0, 1, {}), ("m3621", 9.0, 1, {}), ("m64", 12.0, 1, {}),
+    ("c06", 29.72, 1.5, R),
+    # break 3 (beat 157.5)
+    ("m44499", 5.0, 2.5, dict(slow=1)), ("m11270", 9.0, 4, dict(slow=1)), ("m42342", 7.0, 4, dict(slow=1)),
+    ("m44550", 6.0, 4, dict(slow=1)), ("m50998", 2.5, 4, dict(slow=1)),
+    # drop D1 (beat 176): night, every beat
+    ("m4344", 4.0, 1, {}), ("c03", 250.0, 1, dict(R, speed=2)), ("m14105", 8.0, 1, {}), ("m51298", 5.0, 1, {}),
+    ("m6754", 12.0, 1, {}), ("m40369", 10.0, 1, {}), ("m4136", 2.5, 1, {}), ("m33906", 16.0, 1, {}),
+    ("m42039", 9.0, 1, {}), ("m831", 8.0, 1, {}), ("c06", 157.6, 1, R), ("m51295", 10.0, 1, {}),
+    ("m341", 6.0, 1, {}), ("m40105", 12.0, 1, {}), ("m48504", 7.0, 1, {}), ("m4151", 12.0, 1, {}),
+    # drop D2
+    ("c04", 455.0, 1, dict(R, speed=2)), ("m35540", 4.0, 1, {}), ("c10", 12.0, 1, dict(zoom=1.05)), ("m63", 2.0, 1, {}),
+    ("c01", 8.0, 1, dict(zoom=1.1)), ("m33343", 4.0, 1, {}), ("c03", 180.0, 1, dict(R, speed=2)), ("m3625", 7.0, 1, {}),
+    # drop D3: half-beat flurry
+    ("c06", 9.1, .5, R), ("m64", 14.0, .5, {}), ("c02", 26.0, .5, dict(zoom=1.1)), ("m4344", 9.0, .5, {}),
+    ("c06", 34.2, .5, R), ("m33906", 19.0, .5, {}), ("c01", 16.0, .5, dict(zoom=1.1)), ("m4151", 14.0, .5, {}),
+    ("m1070", 10.0, .5, {}), ("m44545", 6.0, .5, {}), ("c03", 100.0, .5, dict(R, speed=2)), ("m43484", 1.5, .5, {}),
+    # last hit, then black for the title until the song ends
+    ("m48358", 9.0, 1, dict(slow=1)),
 ]
-TAIL = 5.5  # seconds of black for the end title
 
 GRADE = ("eq=saturation=1.32:contrast=1.08:gamma=0.96,"
          "colorbalance=rs=-0.05:bs=0.07:rm=0.03:rh=0.07:bh=-0.05,"
@@ -141,6 +170,71 @@ def caption_png(path, text):
     im.save(path)
 
 
+def word_sprite(text, hook):
+    """One lyric word: white (or sunset gradient for the hook) with a soft dark shadow."""
+    f = ImageFont.truetype(FONT, 230 if hook else 170)
+    box = f.getbbox(text)
+    pad = 40
+    w, h = box[2] - box[0] + pad * 2, box[3] - box[1] + pad * 2
+    mask = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(mask).text((pad - box[0], pad - box[1]), text, font=f, fill=255)
+    fill = Image.new("RGBA", (w, h), (255, 255, 255, 255))
+    if hook:
+        d = ImageDraw.Draw(fill)
+        for y in range(h):
+            t = min(1, max(0, (y - pad) / max(1, h - 2 * pad)))
+            d.line([(0, y), (w, y)], fill=(255, int(215 - 135 * t), int(80 + 120 * t), 255))
+    im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    shadow = mask.filter(ImageFilter.GaussianBlur(14)).point(lambda v: min(255, int(v * 1.6)))
+    im.paste((0, 0, 0, 255), (0, 6), shadow)
+    im.paste(fill, (0, 0), mask)
+    return im
+
+
+def burn_lyrics(master, words_path, out):
+    """Each sung word alone in the centre: pops in on its time, leaves as the next one arrives."""
+    words = json.load(open(words_path, encoding="utf-8"))
+    for w, nxt in zip(words, words[1:] + [None]):
+        w["out"] = min(w["t"] + 1.6, nxt["t"] if nxt else 1e9)
+        w["im"] = word_sprite(w["w"].upper(), w.get("hook"))
+    dec = subprocess.Popen(["ffmpeg", "-v", "error", "-i", master, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
+                           stdout=subprocess.PIPE)
+    enc = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
+                            "-r", str(FPS), "-i", "-", "-i", master, "-map", "0:v", "-map", "1:a",
+                            "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-maxrate", "10M", "-bufsize", "20M",
+                            "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", out], stdin=subprocess.PIPE)
+    n, k0 = 0, 0
+    while True:
+        buf = dec.stdout.read(W * H * 3)
+        if len(buf) < W * H * 3:
+            break
+        t = n / FPS
+        n += 1
+        while k0 < len(words) and words[k0]["out"] + 0.1 < t:
+            k0 += 1
+        live = [w for w in words[k0:k0 + 4] if w["t"] - 0.05 <= t < w["out"] + 0.02]
+        if live:
+            frame = Image.frombuffer("RGB", (W, H), buf).copy()
+            for w in live:
+                p = (t - w["t"] + 0.04) / 0.22
+                e = max(0.0, (t - w["out"] + 0.16) / 0.13)  # exit: shrink a little and fade
+                if p <= 0 or e >= 1:
+                    continue
+                q = min(1.0, p) - 1
+                scale = (0.5 + 0.5 * (1 + 3.2 * q ** 3 + 2.2 * q ** 2)) * (1 - 0.2 * e)  # overshoot, settle
+                alpha = min(1.0, p * 2.5) * (1 - e)
+                im = w["im"]
+                im = im.resize((max(2, int(im.width * scale)), max(2, int(im.height * scale))), Image.BILINEAR)
+                if alpha < 1:
+                    im.putalpha(im.getchannel("A").point(lambda v: int(v * alpha)))
+                frame.paste(im, ((W - im.width) // 2, (H - im.height) // 2), im)
+            buf = frame.tobytes()
+        enc.stdin.write(buf)
+    enc.stdin.close()
+    if enc.wait() or dec.wait():
+        raise SystemExit("lyrics pass failed")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("song")
@@ -148,6 +242,7 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--sheet")
     ap.add_argument("--title", default="TOMA TOMA")
+    ap.add_argument("--lyrics", help="per-word timings json (see toma_timing.py)")
     a = ap.parse_args()
     with tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.abspath(a.out))) as tmp:
         jobs, beat = [], 0.0
@@ -180,18 +275,23 @@ def main():
         title_png(title, a.title, "RIO DE JANEIRO")
         caption_png(cap, "RIO DE JANEIRO, BRASIL")
         te = end / FPS
-        total = te + TAIL
+        total = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                                      a.song], capture_output=True, text=True).stdout)
+        TAIL = total - te  # black under the end title, to the end of the song
         fc = (f"[0:v]tpad=stop_mode=add:stop_duration={TAIL}:color=black,fade=t=in:st=0:d=1.2[v0];"
               f"[2:v]format=rgba,fade=t=in:st=1.5:d=0.6:alpha=1,fade=t=out:st=4.6:d=0.6:alpha=1[cap];"
-              f"[3:v]format=rgba,fade=t=in:st={te + 0.25:.3f}:d=0.5:alpha=1,fade=t=out:st={total - 1.0:.3f}:d=0.9:alpha=1[ttl];"
-              f"[v0][cap]overlay=enable='between(t,1.5,5.3)'[v1];[v1][ttl]overlay=enable='gte(t,{te + 0.25:.3f})'[v];"
-              f"[1:a]atrim=0:{total:.3f},afade=t=out:st={te:.3f}:d={TAIL - 0.3:.3f}[a]")
+              f"[3:v]format=rgba,fade=t=in:st={te + 0.1:.3f}:d=0.3:alpha=1,fade=t=out:st={total - 0.6:.3f}:d=0.5:alpha=1[ttl];"
+              f"[v0][cap]overlay=enable='between(t,1.5,5.3)'[v1];[v1][ttl]overlay=enable='gte(t,{te + 0.1:.3f})'[v];"
+              f"[1:a]atrim=0:{total:.3f},afade=t=out:st={total - 0.4:.3f}:d=0.4[a]")
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", cat, "-i", a.song,
                         "-loop", "1", "-framerate", str(FPS), "-t", f"{total:.3f}", "-i", cap,
                         "-loop", "1", "-framerate", str(FPS), "-t", f"{total:.3f}", "-i", title,
                         "-filter_complex", fc, "-map", "[v]", "-map", "[a]", "-t", f"{total:.3f}",
-                        "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-maxrate", "10M", "-bufsize", "20M",
-                        "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", a.out], check=True)
+                        "-c:v", "libx264", "-preset", "medium", "-crf", "16" if a.lyrics else "19", "-maxrate", "16M" if a.lyrics else "10M", "-bufsize", "20M",
+                        "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart",
+                        os.path.join(tmp, "master.mp4") if a.lyrics else a.out], check=True)
+        if a.lyrics:
+            burn_lyrics(os.path.join(tmp, "master.mp4"), a.lyrics, a.out)
     print(f"wrote {a.out}: {len(SHOTS)} shots, {total:.1f}s")
 
 

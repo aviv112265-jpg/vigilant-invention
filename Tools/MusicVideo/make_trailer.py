@@ -192,10 +192,12 @@ def word_sprite(text, hook):
 
 
 def burn_lyrics(master, words_path, out):
-    """Each sung word alone in the centre: pops in on its time, leaves as the next one arrives."""
+    """Each sung word alone in the centre, popping in the moment it starts. It leaves when the next
+    one starts, or after a short hold. Entries with "end" (the hook) stay up for their whole stretch,
+    breathing with the beat."""
     words = json.load(open(words_path, encoding="utf-8"))
     for w, nxt in zip(words, words[1:] + [None]):
-        w["out"] = min(w["t"] + 1.6, nxt["t"] if nxt else 1e9)
+        w["out"] = w["end"] if "end" in w else min(w["t"] + 0.9, nxt["t"] if nxt else 1e9)
         w["im"] = word_sprite(w["w"].upper(), w.get("hook"))
     dec = subprocess.Popen(["ffmpeg", "-v", "error", "-i", master, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
                            stdout=subprocess.PIPE)
@@ -222,6 +224,9 @@ def burn_lyrics(master, words_path, out):
                     continue
                 q = min(1.0, p) - 1
                 scale = (0.5 + 0.5 * (1 + 3.2 * q ** 3 + 2.2 * q ** 2)) * (1 - 0.2 * e)  # overshoot, settle
+                if "end" in w:
+                    ph = ((t - T0) / BEAT) % 1
+                    scale *= 1 + 0.05 * max(0.0, 1 - ph / 0.35)
                 alpha = min(1.0, p * 2.5) * (1 - e)
                 im = w["im"]
                 im = im.resize((max(2, int(im.width * scale)), max(2, int(im.height * scale))), Image.BILINEAR)

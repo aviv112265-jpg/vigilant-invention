@@ -4,8 +4,9 @@
 
 Each word gets the moment it STARTS: Whisper's word start on the separated vocal stem
 (see vocals.py), nudged onto the nearest rise in the voice. Words the stem transcript lost
-fall back to the full-mix transcript. The "toma" hook is not timed word by word: it is one
-steady TOMA held over each stretch where it is sung (HOOKS below).
+fall back to the full-mix transcript. Whisper cannot count the fast "toma" hook, so those come
+straight from the voice: in each stretch where it is sung (HOOKS below) every vocal attack is
+one TOMA, and once the drop lands they run on the half-beat grid that best fits the attacks.
 """
 import difflib, json, re, sys, unicodedata, wave
 import numpy as np
@@ -22,8 +23,11 @@ Dale sin freno / pégate más / y no pares más /
 Se acerca se va / vuelve a caer / tu nombre en mi boca / me hace correr /
 Dale sin freno / pégate más / y no pares más""".replace("/", " ").split()
 # stretches where the hook is sung: from its first "toma" to just before the next lyric line
-HOOKS = [(7.90, 19.45), (38.84, 49.65), (54.60, 57.55), (80.14, 90.85), (95.62, 98.90), (112.40, 120.95),
-         (126.56, 129.40)]
+# (start s, end s, beat where the drop lands inside it, or None)
+HOOKS = [(7.90, 19.45, 16), (38.84, 49.65, 64), (54.60, 57.55, None), (80.14, 90.85, 128), (95.62, 98.90, None),
+         (112.40, 120.95, 176), (126.56, 129.40, None)]
+BEAT = 10.3333 / 16
+T0 = 10.366 - 16 * BEAT
 
 
 def norm(w):
@@ -35,7 +39,7 @@ def align(path):
     """Start time of each lyric word (None where it was not heard), by sequence alignment."""
     heard = [(norm(w["w"]), w["s"]) for s in json.load(open(path)) for w in s["words"]]
     heard = [h for h in heard if h[0] and not h[0].startswith("toma") and h[0] != "gracias"
-             and not any(a <= h[1] < b for a, b in HOOKS)]
+             and not any(a <= h[1] < b for a, b, _ in HOOKS)]
     n, m = len(LYR), len(heard)
     sim = lambda a, b: 1.0 if a == b else difflib.SequenceMatcher(None, a, b).ratio()
     sc = np.zeros((n + 1, m + 1)); bt = np.zeros((n + 1, m + 1), int)
@@ -86,7 +90,32 @@ for k in range(len(t) - 1):  # a lone unheard "y": just ahead of the word it lea
     if t[k] is None and t[k + 1] is not None and LYR[k] == "y":
         t[k] = t[k + 1] - 0.4; src[k] = "fill"
 words = [dict(w=LYR[k], t=round(t[k], 3)) for k in range(len(t)) if t[k] is not None]
-words += [dict(w="Toma", t=a, end=b, hook=1) for a, b in HOOKS]
+
+# the hook, from the voice itself
+r6 = np.maximum(env[6:] - env[:-6], 0) / peak
+def attacks(a, b):
+    got = []
+    for i in range(int(a * 200), min(int(b * 200), len(r6) - 13)):
+        if r6[i] > 0.18 and r6[i] == r6[max(0, i - 12):i + 13].max() and (not got or i / 200 - got[-1] > 0.12):
+            got.append(i / 200)
+    return [(x - T0) / BEAT for x in got]  # in beats
+for a, b, drop in HOOKS:
+    ba, bb = (a - T0) / BEAT, (b - T0) / BEAT
+    on = attacks(a, b)
+    split = drop if drop else bb
+    hook = [ba]  # sung phrase: one TOMA per attack, at least 0.4 beat apart
+    for x in on:
+        if x < split - 0.3 and x - hook[-1] >= 0.4:
+            hook.append(x)
+    if drop:  # over the drop: every half beat, at the phase the attacks sit on
+        late = [x for x in on if x >= drop]
+        phase = max(np.arange(0, 0.5, 0.01), key=lambda ph: sum(abs(((x - ph) * 2 + 0.5) % 1 - 0.5) < 0.12 for x in late))
+        x = drop + phase if phase >= 0.2 else drop + phase + 0.5
+        last = min(bb - 0.3, max(late) + 0.3) if late else drop
+        while x <= last:
+            hook.append(x); x += 0.5
+    print(f"hook {a:6.2f}-{b:6.2f}: {len(hook)} toma", ("(%d before the drop, %d after)" % (sum(h < drop for h in hook), sum(h >= drop for h in hook))) if drop else "")
+    words += [dict(w="Toma", t=round(T0 + h * BEAT, 3), hook=1) for h in hook]
 words.sort(key=lambda x: x["t"])
 json.dump(words, open(out, "w"), ensure_ascii=False, indent=0)
 print(len(words), "entries; not found:", [(k, LYR[k]) for k in range(len(t)) if t[k] is None])

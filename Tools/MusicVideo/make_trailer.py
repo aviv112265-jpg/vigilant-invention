@@ -218,8 +218,9 @@ def burn_lyrics(master, words_path, out):
         if live:
             frame = Image.frombuffer("RGB", (W, H), buf).copy()
             for w in live:
-                p = (t - w["t"] + 0.04) / 0.22
-                e = max(0.0, (t - w["out"] + 0.16) / 0.13)  # exit: shrink a little and fade
+                fast = bool(w.get("hook"))  # the hook comes every half beat: quicker in and out
+                p = (t - w["t"] + 0.04) / (0.14 if fast else 0.22)
+                e = max(0.0, (t - w["out"] + (0.09 if fast else 0.16)) / (0.07 if fast else 0.13))  # exit: shrink and fade
                 if p <= 0 or e >= 1:
                     continue
                 q = min(1.0, p) - 1

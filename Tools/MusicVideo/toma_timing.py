@@ -1,17 +1,20 @@
 """Per-word lyric timings for Toma Toma.
 
-    toma_timing.py ASR_VOCALS.json ASR_MIX.json VOCALS.wav OUT.json
+    toma_timing.py FORCED.json SECTIONS.json VOCAL.wav OUT.json ASR.json [ASR2.json ...]
 
-Each word gets the moment it STARTS: Whisper's word start on the separated vocal stem
-(see vocals.py), nudged onto the nearest rise in the voice. Words the stem transcript lost
-fall back to the full-mix transcript. Whisper cannot count the fast "toma" hook, so those come
-straight from the voice: in each stretch where it is sung (HOOKS below) every vocal attack is
-one TOMA, and once the drop lands they run on the half-beat grid that best fits the attacks.
+Each word gets the moment it STARTS:
+  1. forced alignment of the known lyrics to the clean vocal (force_align.py), where it is confident;
+  2. otherwise Whisper's word start (transcribe.py; first transcript that heard the word wins),
+     pushed forward out of any silence onto the moment the voice actually comes in.
+Whisper cannot count the fast "toma" hook, so those come straight from the voice: in each stretch
+where it is sung (HOOKS below) every vocal attack is one TOMA, and once the drop lands they run on
+the half-beat grid that best fits the attacks.
 """
 import difflib, json, re, sys, unicodedata, wave
 import numpy as np
 
-asr_v, asr_m, vocals, out = sys.argv[1:5]
+forced, sections, vocals, out = sys.argv[1:5]
+asrs = sys.argv[5:]
 LYR = """Mírame bien baby / yo sé lo que quieres / paso lento suave / tú no te detienes /
 Trae la cintura / suéltate en el suelo / yo te digo al oído / y tú rompes el hielo /
 Sube la presión / no mires atrás / cuando cae el beat / tú lo pides más /
@@ -62,34 +65,55 @@ def align(path):
     return t
 
 
-tv, tm = align(asr_v), align(asr_m)
-t = [a if a is not None else b for a, b in zip(tv, tm)]
-src = ["stem" if a is not None else ("mix" if b is not None else "-") for a, b in zip(tv, tm)]
-known = [k for k in range(len(t)) if t[k] is not None]
-for ka, kb in zip(known, known[1:]):  # a word or two nobody heard, between two that were: spread evenly
-    gap = kb - ka - 1
-    if gap and gap <= 3 and t[kb] - t[ka] < 3:
-        for j in range(gap):
-            t[ka + 1 + j] = t[ka] + (t[kb] - t[ka]) * (j + 1) / (gap + 1); src[ka + 1 + j] = "fill"
-
-# nudge each start onto the steepest rise of the voice close by
 w = wave.open(vocals); sr = w.getframerate()
 x = np.frombuffer(w.readframes(w.getnframes()), np.int16).reshape(-1, w.getnchannels()).mean(1) / 32768
 hop = sr // 200  # 5 ms
 env = np.sqrt((x[:len(x) // hop * hop].reshape(-1, hop) ** 2).mean(1))
 env = np.convolve(env, np.hanning(9) / np.hanning(9).sum(), mode="same")
-rise = np.maximum(env[4:] - env[:-4], 0); peak = np.percentile(env, 95)
-order = [k for k in range(len(t)) if t[k] is not None]
-for i, k in enumerate(order):
-    lo = t[k] - 0.08 if i == 0 else max(t[k] - 0.08, (t[order[i - 1]] + t[k]) / 2)
-    hi = t[k] + 0.14 if i == len(order) - 1 else min(t[k] + 0.14, (t[order[i + 1]] + t[k]) / 2)
-    a, b = int(lo * 200), int(hi * 200)
-    if b > a and rise[a:b].max() > 0.12 * peak:
-        t[k] = (a + int(rise[a:b].argmax())) / 200
-for k in range(len(t) - 1):  # a lone unheard "y": just ahead of the word it leads into
-    if t[k] is None and t[k + 1] is not None and LYR[k] == "y":
-        t[k] = t[k + 1] - 0.4; src[k] = "fill"
-words = [dict(w=LYR[k], t=round(t[k], 3)) for k in range(len(t)) if t[k] is not None]
+peak = np.percentile(env, 95)
+
+fa = json.load(open(forced, encoding="utf-8"))
+assert [norm(f["w"]) for f in fa] == [norm(w) for w in LYR], "forced alignment text differs from LYR"
+heard = [align(p) for p in asrs]
+n = len(LYR)
+# where to trust the forced alignment: not in a window it mostly failed on, nor in a run of 3+ weak words
+ok = [f["score"] >= 0.4 for f in fa]
+k = 0
+for sec in json.load(open(sections, encoding="utf-8")):
+    m = len(sec["text"].split())
+    if np.mean([f["score"] for f in fa[k:k + m]]) < 0.45:
+        ok[k:k + m] = [None] * m  # None: take the whole line from the transcripts
+    k += m
+k = 0
+while k < n:
+    j = k
+    while j < n and ok[j] is False:
+        j += 1
+    if j - k >= 3:
+        ok[k:j] = [None] * (j - k)
+    k = max(j, k + 1)
+t, src = [None] * n, ["-"] * n
+for k in range(n):
+    if ok[k] is not None:
+        t[k], src[k] = fa[k]["t"], "forced" if ok[k] else "weak"
+for k in range(n):
+    if t[k] is None:
+        lo = max([t[j] for j in range(k) if t[j] is not None], default=0)
+        hi = min([t[j] for j in range(k + 1, n) if t[j] is not None and src[j] != "heard"], default=1e9)
+        cand = [h[k] for h in heard if h[k] is not None and lo < h[k] < hi]
+        if cand:
+            a = int(cand[0] * 200)  # not in silence: wait for the voice
+            if env[a] < 0.10 * peak:
+                up = np.nonzero(env[a:a + 120] >= 0.12 * peak)[0]
+                if len(up) and (a + int(up[0])) / 200 < hi:
+                    cand[0] = (a + int(up[0])) / 200
+            t[k], src[k] = cand[0], "heard"
+        elif lo < fa[k]["t"] < hi:
+            t[k], src[k] = fa[k]["t"], "weak"
+for k in range(1, n):  # keep the order
+    if t[k] is not None and t[k - 1] is not None and t[k] <= t[k - 1]:
+        t[k] = t[k - 1] + 0.08
+words = [dict(w=LYR[k], t=round(t[k], 3)) for k in range(n) if t[k] is not None]
 
 # the hook, from the voice itself
 r6 = np.maximum(env[6:] - env[:-6], 0) / peak

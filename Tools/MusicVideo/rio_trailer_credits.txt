@@ -1,0 +1,15 @@
+Footage credits for the "Toma Toma" Rio de Janeiro video (make_trailer.py)
+
+Wikimedia Commons (attribution required; put these lines in the video description):
+  c06  "Hotel PORTOBAY RIO DE JANEIRO - Rio de Janeiro -- Brazil" by PortoBay, CC BY 3.0
+  c03  "DE COPACABANA AO LEME - ORLA - Rio de Janeiro - Brasil - 12-2021" by Meus Momentos, CC BY 3.0
+  c04  "DE SÃO CONRADO À IPANEMA - ORLA - Rio de Janeiro - BRASIL (12-2021)" by Meus Momentos, CC BY 3.0
+  c01  "Copacaabana-Rio" by Poiana11, CC BY 4.0
+  c10  "Rio de Janeiro, Copacabana Beach, samba" by Arian Zwegers, CC BY 2.0
+  c02  "CopacabanaRIOmusica" by Poiana11, CC0 (no attribution needed)
+  Source pages: https://commons.wikimedia.org/wiki/File:<title>
+  The clips were cropped, re-timed and colour graded.
+
+Mixkit (Mixkit Stock Video Free License, no attribution needed):
+  m<ID> clips come from https://mixkit.co/free-stock-video/ ; the number is the Mixkit video id.
+  These are generic beach, city, car and party shots, not filmed in Rio.
